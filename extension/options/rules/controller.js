@@ -8,13 +8,13 @@ import {
   getRuleOriginPattern,
   groupRulesByDomain,
   validateRuleDraft
-} from '../../shared/rules.js';
+} from '../../shared/domain/rules.js';
 import {
   onStorageChanged,
   removeOriginPermission,
   requestOriginPermission,
   storageLocalGet
-} from '../../shared/chrome-api.js';
+} from '../../shared/runtime/chrome-api.js';
 import {
   ACTIVATION_STORAGE_KEY,
   createDefaultActivation,
@@ -25,8 +25,8 @@ import {
   normalizeActivation,
   setActivationDuration,
   setMasterEnabled
-} from '../../shared/activation.js';
-import { setActivationState } from '../../shared/activation-api.js';
+} from '../../shared/domain/activation.js';
+import { setActivationState } from '../../shared/runtime/activation-api.js';
 import {
   PROFILE_STORAGE_KEY,
   createDefaultProfiles,
@@ -34,10 +34,10 @@ import {
   getProfileName,
   normalizeProfiles,
   resolveProfileId
-} from '../../shared/profiles.js';
-import { isRuleGranted } from '../../shared/site-access.js';
-import { createSiteAccessPreflight } from '../../shared/site-access-preflight.js';
-import { saveRuleBeforePermissionPrompt } from '../../shared/site-access-save.js';
+} from '../../shared/domain/profiles.js';
+import { isRuleGranted } from '../../shared/domain/site-access.js';
+import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
+import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
 import {
   activateProfile,
   readGrantedOrigins,
@@ -47,11 +47,11 @@ import {
   createConflictMap,
   renderDomainGroup,
   sortDomainGroups
-} from '../../shared/rule-render.js';
-import { commitRules, getStoredRules } from '../../shared/rule-api.js';
-import { confirmDestructiveAction } from '../../shared/confirmation-dialog.js';
+} from '../../shared/ui/rule-render.js';
+import { commitRules, getStoredRules } from '../../shared/runtime/rule-api.js';
+import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
-import { showStatus } from '../../shared/ui.js';
+import { showStatus } from '../../shared/ui/ui.js';
 import { getRuleWorkspaceSummary } from '../view-model.js';
 import { renderSiteAccessOverview } from '../site-access/controller.js';
 

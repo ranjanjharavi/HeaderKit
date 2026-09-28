@@ -7,25 +7,25 @@ import {
   getProfileName,
   removeRulesFromProfile,
   validateProfileDraft
-} from '../../shared/profiles.js';
+} from '../../shared/domain/profiles.js';
 import {
   getGrantedOrigins,
   removeOriginPermission,
   requestOriginPermissions,
   storageLocalSet
-} from '../../shared/chrome-api.js';
+} from '../../shared/runtime/chrome-api.js';
 import {
   createDefaultActivation,
   getTargetProfileId,
   setActiveProfile
-} from '../../shared/activation.js';
-import { setActivationState } from '../../shared/activation-api.js';
-import { getMissingProfileOrigins } from '../../shared/site-access.js';
-import { getNextRuleId, getRuleOriginPattern } from '../../shared/rules.js';
-import { commitRules } from '../../shared/rule-api.js';
-import { confirmDestructiveAction } from '../../shared/confirmation-dialog.js';
+} from '../../shared/domain/activation.js';
+import { setActivationState } from '../../shared/runtime/activation-api.js';
+import { getMissingProfileOrigins } from '../../shared/domain/site-access.js';
+import { getNextRuleId, getRuleOriginPattern } from '../../shared/domain/rules.js';
+import { commitRules } from '../../shared/runtime/rule-api.js';
+import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
-import { escapeHtml, showStatus } from '../../shared/ui.js';
+import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
 
 let refreshAll = async () => {};
 let profileEditor = null;

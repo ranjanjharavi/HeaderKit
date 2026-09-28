@@ -10,10 +10,10 @@ const popupRulesSource = readFileSync(new URL('../extension/popup/headers/contro
 const optionsRulesSource = readFileSync(new URL('../extension/options/rules/controller.js', import.meta.url), 'utf8');
 const optionsProfilesSource = readFileSync(new URL('../extension/options/profiles/controller.js', import.meta.url), 'utf8');
 const siteAccessControllerSource = readFileSync(new URL('../extension/options/site-access/controller.js', import.meta.url), 'utf8');
-const sharedRuleRenderSource = readFileSync(new URL('../extension/shared/rule-render.js', import.meta.url), 'utf8');
+const sharedRuleRenderSource = readFileSync(new URL('../extension/shared/ui/rule-render.js', import.meta.url), 'utf8');
 const backgroundSource = readFileSync(new URL('../extension/background.js', import.meta.url), 'utf8');
 const optionsStateSource = readFileSync(new URL('../extension/options/state.js', import.meta.url), 'utf8');
-const sharedUiSource = readFileSync(new URL('../extension/shared/ui.js', import.meta.url), 'utf8');
+const sharedUiSource = readFileSync(new URL('../extension/shared/ui/ui.js', import.meta.url), 'utf8');
 
 test('popup keeps profile context in the header and scopes rules with tabs', () => {
   assert.match(popupMarkup, /<main id="headers-panel" class="popup-shell">/);

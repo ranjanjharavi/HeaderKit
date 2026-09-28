@@ -1,4 +1,4 @@
-import { getRuleOriginPattern } from './rules.js';
+import { getRuleOriginPattern } from '../domain/rules.js';
 
 /**
  * Start the durable rule commit before opening Chrome's permission UI, without

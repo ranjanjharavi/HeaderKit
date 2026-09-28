@@ -10,7 +10,7 @@ import {
   getProfileOrigins,
   isOriginGranted,
   isRuleGranted
-} from '../extension/shared/site-access.js';
+} from '../extension/shared/domain/site-access.js';
 
 const rules = [
   { id: 1, domain: 'api.example.com', headerName: 'X-A', headerValue: 'a', enabled: true, profileId: 'default' },

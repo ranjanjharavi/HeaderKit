@@ -1,4 +1,4 @@
-import { getRuleIdentityKey, normalizeRules } from './rules.js';
+import { getRuleIdentityKey, normalizeRules } from '../shared/domain/rules.js';
 
 export async function commitRuleSet(nextRules, {
   profileIds = null,

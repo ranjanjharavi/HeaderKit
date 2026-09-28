@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createDefaultActivation } from '../extension/shared/activation.js';
-import { createDefaultProfiles } from '../extension/shared/profiles.js';
+import { createDefaultActivation } from '../extension/shared/domain/activation.js';
+import { createDefaultProfiles } from '../extension/shared/domain/profiles.js';
 import {
   getActivationDisplay,
   getManagerLinkLabel,

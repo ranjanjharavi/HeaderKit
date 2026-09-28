@@ -5,7 +5,7 @@ import {
   BADGE_ACTIVE_COLOR,
   BADGE_PAUSED_COLOR,
   resolveBadge
-} from '../extension/shared/badge.js';
+} from '../extension/background/badge.js';
 
 const rules = [
   { id: 1, domain: 'api.example.com', headerName: 'X-Auth', headerValue: 'a', enabled: true, profileId: 'default' },

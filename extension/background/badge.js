@@ -1,5 +1,5 @@
-import { countLiveRules, getTargetProfileId } from './activation.js';
-import { normalizeDomain } from './rules.js';
+import { countLiveRules, getTargetProfileId } from '../shared/domain/activation.js';
+import { normalizeDomain } from '../shared/domain/rules.js';
 
 export const BADGE_ACTIVE_COLOR = '#2563eb';
 export const BADGE_PAUSED_COLOR = '#64748b';

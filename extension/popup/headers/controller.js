@@ -9,7 +9,7 @@ import {
   getRuleOriginPattern,
   groupRulesByDomain,
   validateRuleDraft
-} from '../../shared/rules.js';
+} from '../../shared/domain/rules.js';
 import {
   createTab,
   getExtensionUrl,
@@ -19,7 +19,7 @@ import {
   removeOriginPermission,
   requestOriginPermission,
   storageLocalGet
-} from '../../shared/chrome-api.js';
+} from '../../shared/runtime/chrome-api.js';
 import {
   ACTIVATION_STORAGE_KEY,
   createDefaultActivation,
@@ -27,30 +27,30 @@ import {
   getTargetProfileId,
   normalizeActivation,
   setMasterEnabled
-} from '../../shared/activation.js';
-import { setActivationState } from '../../shared/activation-api.js';
+} from '../../shared/domain/activation.js';
+import { setActivationState } from '../../shared/runtime/activation-api.js';
 import {
   PROFILE_STORAGE_KEY,
   createDefaultProfiles,
   getProfileIds,
   getProfileName,
   normalizeProfiles
-} from '../../shared/profiles.js';
-import { isRuleGranted } from '../../shared/site-access.js';
-import { createSiteAccessPreflight } from '../../shared/site-access-preflight.js';
-import { saveRuleBeforePermissionPrompt } from '../../shared/site-access-save.js';
+} from '../../shared/domain/profiles.js';
+import { isRuleGranted } from '../../shared/domain/site-access.js';
+import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
+import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
 import {
   createConflictMap,
   renderDomainGroup,
   renderRuleRow,
   sortDomainGroups,
   sortRulesForDisplay
-} from '../../shared/rule-render.js';
-import { parseUserUrl } from '../../shared/urls.js';
-import { commitRules, getStoredRules } from '../../shared/rule-api.js';
-import { confirmDestructiveAction } from '../../shared/confirmation-dialog.js';
+} from '../../shared/ui/rule-render.js';
+import { parseUserUrl } from '../../shared/domain/urls.js';
+import { commitRules, getStoredRules } from '../../shared/runtime/rule-api.js';
+import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
-import { escapeHtml, showStatus } from '../../shared/ui.js';
+import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
 import {
   getActivationDisplay,
   getManagerLinkLabel,

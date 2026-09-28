@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { confirmDestructiveAction } from '../extension/shared/confirmation-dialog.js';
+import { confirmDestructiveAction } from '../extension/shared/ui/confirmation-dialog.js';
 
 class FakeElement extends EventTarget {
   constructor() {

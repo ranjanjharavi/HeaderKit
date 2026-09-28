@@ -1,4 +1,4 @@
-import { requirePrivacyConsent } from '../shared/privacy.js';
+import { requirePrivacyConsent } from '../shared/ui/privacy.js';
 import {
   bindRuleEvents,
   initializeRules,
@@ -7,7 +7,7 @@ import {
 } from './rules/controller.js';
 import { bindProfileEvents } from './profiles/controller.js';
 import { bindSiteAccessEvents } from './site-access/controller.js';
-import { showStatus } from '../shared/ui.js';
+import { showStatus } from '../shared/ui/ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {

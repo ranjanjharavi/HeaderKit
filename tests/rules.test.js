@@ -15,7 +15,7 @@ import {
   normalizePathPrefix,
   normalizeRules,
   validateRuleDraft
-} from '../extension/shared/rules.js';
+} from '../extension/shared/domain/rules.js';
 
 const sampleRules = [
   {

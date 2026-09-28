@@ -1,7 +1,7 @@
-import { getCurrentTab } from '../shared/chrome-api.js';
+import { getCurrentTab } from '../shared/runtime/chrome-api.js';
 import { bindHeaderEvents, initializeHeaders } from './headers/controller.js';
-import { requirePrivacyConsent } from '../shared/privacy.js';
-import { showStatus } from '../shared/ui.js';
+import { requirePrivacyConsent } from '../shared/ui/privacy.js';
+import { showStatus } from '../shared/ui/ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {

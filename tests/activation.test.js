@@ -17,7 +17,7 @@ import {
   setActiveProfile,
   setMasterEnabled,
   startBrowserSession
-} from '../extension/shared/activation.js';
+} from '../extension/shared/domain/activation.js';
 
 const stagingRule = { id: 1, enabled: true, profileId: 'staging' };
 const prodRule = { id: 2, enabled: true, profileId: 'prod' };

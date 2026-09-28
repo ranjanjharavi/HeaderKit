@@ -1,4 +1,4 @@
-import { getRuleOriginPattern } from './rules.js';
+import { getRuleOriginPattern } from '../domain/rules.js';
 
 /**
  * Shared composer state for the exact-site explanation shown before Chrome's

@@ -1,4 +1,4 @@
-import { storageLocalGet, storageLocalSet } from './chrome-api.js';
+import { storageLocalGet, storageLocalSet } from '../runtime/chrome-api.js';
 
 const PRIVACY_CONSENT_KEY = 'privacyConsentVersion';
 const PRIVACY_CONSENT_VERSION = 1;

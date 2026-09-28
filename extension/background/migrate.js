@@ -1,6 +1,6 @@
-import { ACTIVATION_STORAGE_KEY, normalizeActivation } from './activation.js';
-import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from './profiles.js';
-import { RULE_STORAGE_KEY, normalizeRules } from './rules.js';
+import { ACTIVATION_STORAGE_KEY, normalizeActivation } from '../shared/domain/activation.js';
+import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from '../shared/domain/profiles.js';
+import { RULE_STORAGE_KEY, normalizeRules } from '../shared/domain/rules.js';
 
 export const SCHEMA_VERSION_KEY = 'schemaVersion';
 export const CURRENT_SCHEMA_VERSION = 3;
