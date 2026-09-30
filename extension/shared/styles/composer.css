@@ -1,0 +1,121 @@
+.header-composer {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--focus-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08), var(--shadow-sm);
+}
+
+.header-composer[hidden] {
+  display: none;
+}
+
+.header-composer-body {
+  padding: var(--space-3);
+  animation: panel-in 0.18s ease;
+}
+
+.header-composer-body[hidden] {
+  display: none;
+}
+
+.header-composer-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.request-scope-options {
+  padding: 7px 10px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+}
+
+.request-scope-options summary {
+  color: var(--primary);
+  font-size: var(--type-support);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.scope-default-label {
+  margin-left: 6px;
+  color: var(--muted-foreground);
+  font-size: var(--type-support);
+  font-weight: 500;
+}
+
+.request-scope-options[open] summary {
+  margin-bottom: 8px;
+}
+
+.request-scope-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.request-scope-fields .field {
+  gap: 6px;
+}
+
+.request-scope-fields .field label {
+  height: 18px;
+}
+
+.request-scope-fields .field > input,
+.request-scope-fields .field > select {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  padding-block: 8px;
+}
+
+.request-scope-hint {
+  grid-column: 1 / -1;
+}
+
+.header-composer-actions {
+  margin-top: 0;
+}
+
+.site-access-preflight {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-2) 10px;
+  border: 1px solid var(--notice-border);
+  border-radius: var(--radius-md);
+  color: var(--muted-foreground);
+  background: var(--notice-soft);
+  font-size: var(--type-support);
+  line-height: 1.45;
+}
+
+.site-access-preflight[hidden] {
+  display: none;
+}
+
+.site-access-preflight svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  color: var(--notice);
+}
+
+.site-access-preflight strong {
+  display: block;
+  color: var(--foreground);
+  font-size: var(--type-support);
+}
+
+.site-access-preflight p {
+  margin: 2px 0 0;
+}
+
+.site-access-preflight code {
+  color: var(--notice);
+  font-family: var(--font-mono);
+  font-size: var(--type-support);
+}

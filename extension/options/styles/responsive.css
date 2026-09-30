@@ -1,0 +1,123 @@
+@media (max-width: 760px) {
+  .profile-tabs-bar {
+    flex-wrap: wrap;
+    gap: 0 var(--manager-section-space);
+    padding: 0 12px 6px;
+  }
+
+  .profile-tabs {
+    width: 100%;
+  }
+
+  .profile-tab {
+    min-height: 40px;
+    padding: 0 8px;
+  }
+
+  .profile-tab::after {
+    right: 8px;
+    left: 8px;
+  }
+
+  .profile-tabs-bar .quiet-action {
+    margin-left: 0;
+  }
+
+  .active-setup-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .active-run-summary {
+    flex-wrap: wrap;
+  }
+
+  .active-profile-run-label,
+  .options-summary {
+    white-space: normal;
+  }
+
+  .new-rule-btn {
+    width: 100%;
+  }
+
+  .rules-composer {
+    margin: 10px 12px 0;
+  }
+
+  .rules-composer .header-fields-row,
+  .request-scope-fields,
+  .options-shell .rule-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .options-shell .rule-edit-field-host,
+  .options-shell .rule-edit-field-profile {
+    grid-column: auto;
+  }
+
+  .rules-toolbar {
+    padding: 10px 12px 0;
+  }
+
+  .workspace-status.visible {
+    margin-right: 12px;
+    margin-left: 12px;
+  }
+
+  .rule-list {
+    padding: 10px 12px 12px;
+  }
+
+  .options-shell .rule-group-toggle {
+    padding-right: 10px;
+  }
+
+  .options-shell .rule-group-heading {
+    max-width: none;
+  }
+
+  .options-shell .rule-group-meta {
+    display: none;
+  }
+
+  .options-shell .domain-rule-content {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+  }
+
+  .options-shell .rule-identification {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .options-shell .rule-value-row {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .options-shell .rule-row-controls {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .options-shell .domain-rule-content {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .options-shell .rule-row-head {
+    display: flex;
+  }
+
+  .options-shell .rule-row-controls {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

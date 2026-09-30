@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { readStyles } from './helpers/source.js';
 
 const popupMarkup = readFileSync(new URL('../extension/popup/index.html', import.meta.url), 'utf8');
 const optionsMarkup = readFileSync(new URL('../extension/options/index.html', import.meta.url), 'utf8');
-const popupStyles = readFileSync(new URL('../extension/popup/popup.css', import.meta.url), 'utf8');
-const optionsStyles = readFileSync(new URL('../extension/options/options.css', import.meta.url), 'utf8');
+const sharedStyles = readStyles('extension/shared/styles/index.css');
+const popupStyles = sharedStyles + readStyles('extension/popup/popup.css');
+const optionsStyles = readStyles('extension/options/options.css');
 const popupRulesSource = readFileSync(new URL('../extension/popup/headers/controller.js', import.meta.url), 'utf8');
 const optionsRulesSource = readFileSync(new URL('../extension/options/rules/controller.js', import.meta.url), 'utf8');
 const optionsProfilesSource = readFileSync(new URL('../extension/options/profiles/controller.js', import.meta.url), 'utf8');

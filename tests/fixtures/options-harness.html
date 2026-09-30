@@ -133,7 +133,7 @@
       document.open();
       document.write(markup
         .replace('<head>', '<head><base href="/extension/options/">')
-        .replace('href="../popup/popup.css"', `href="../popup/popup.css?v=${cacheBust}"`)
+        .replace('href="../shared/styles/index.css"', `href="../shared/styles/index.css?v=${cacheBust}"`)
         .replace('href="options.css"', `href="options.css?v=${cacheBust}"`)
         .replace('<script type="module" src="main.js"></' + 'script>', `<script>window.chrome = window.__REQKIT_CHROME_STUB__;</` + `script><script type="module" src="main.js?v=${cacheBust}"></` + 'script>'));
       document.close();
