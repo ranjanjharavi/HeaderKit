@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createDefaultActivation } from '../extension/shared/domain/activation.js';
-import { createDefaultProfiles } from '../extension/shared/domain/profiles.js';
+import { createDefaultActivation } from '../../../extension/shared/domain/activation.js';
+import { createDefaultProfiles } from '../../../extension/shared/domain/profiles.js';
 import {
   getActivationDisplay,
   getManagerLinkLabel,
   getManagerPath
-} from '../extension/popup/headers/view-model.js';
+} from '../../../extension/popup/headers/view-model.js';
 
 const now = 2_000_000;
 const profiles = [

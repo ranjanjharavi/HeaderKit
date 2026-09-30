@@ -10,7 +10,7 @@ import {
   storageAreaRemove,
   storageLocalGet,
   storageLocalSet
-} from '../extension/shared/runtime/chrome-api.js';
+} from '../../extension/shared/runtime/chrome-api.js';
 
 function createChromeApi() {
   return {

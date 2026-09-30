@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { showStatus } from '../extension/shared/ui/ui.js';
+import { showStatus } from '../../../extension/shared/ui/ui.js';
 
 test('showStatus preserves component classes while adding transient state', () => {
   const classes = new Set(['status-msg', 'workspace-status']);

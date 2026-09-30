@@ -15,7 +15,7 @@ import {
   normalizeProfiles,
   resolveProfileId,
   validateProfileDraft
-} from '../extension/shared/domain/profiles.js';
+} from '../../extension/shared/domain/profiles.js';
 
 test('an empty or invalid profile list always yields the default profile', () => {
   assert.deepEqual(normalizeProfiles([]), createDefaultProfiles());

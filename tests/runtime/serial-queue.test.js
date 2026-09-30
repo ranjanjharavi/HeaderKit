@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createSerialQueue } from '../extension/shared/runtime/serial-queue.js';
+import { createSerialQueue } from '../../extension/shared/runtime/serial-queue.js';
 
 test('serial queue preserves enqueue order across asynchronous tasks', async () => {
   const enqueue = createSerialQueue();

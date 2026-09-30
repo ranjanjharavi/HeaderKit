@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { saveRuleBeforePermissionPrompt } from '../extension/shared/runtime/site-access-save.js';
+import { saveRuleBeforePermissionPrompt } from '../../extension/shared/runtime/site-access-save.js';
 
 const rule = {
   id: 1,

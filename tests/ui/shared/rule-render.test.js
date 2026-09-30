@@ -7,7 +7,7 @@ import {
   renderRuleRow,
   sortDomainGroups,
   sortRulesForDisplay
-} from '../extension/shared/ui/rule-render.js';
+} from '../../../extension/shared/ui/rule-render.js';
 
 test('rule display sorting prioritizes conflicts, then active rules', () => {
   const rules = [

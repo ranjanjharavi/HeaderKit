@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { commitRuleSet } from '../extension/background/rule-commit.js';
+import { commitRuleSet } from '../../extension/background/rule-commit.js';
 
 const previousRules = [{
   id: 1,

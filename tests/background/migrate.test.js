@@ -6,7 +6,7 @@ import {
   SCHEMA_VERSION_KEY,
   ensureMigrated,
   migrateState
-} from '../extension/background/migrate.js';
+} from '../../extension/background/migrate.js';
 
 const legacyState = {
   headerRules: [

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { parseUserUrl } from '../extension/shared/domain/urls.js';
+import { parseUserUrl } from '../../extension/shared/domain/urls.js';
 
 test('parseUserUrl defaults to HTTPS and preserves the URL port', () => {
   assert.equal(parseUserUrl('https://example.com:8443/path').url.hostname, 'example.com');

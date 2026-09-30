@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getRuleWorkspaceSummary } from '../extension/options/view-model.js';
+import { getRuleWorkspaceSummary } from '../../../extension/options/view-model.js';
 
 test('rule workspace summary describes an empty view', () => {
   assert.deepEqual(getRuleWorkspaceSummary([]), {
