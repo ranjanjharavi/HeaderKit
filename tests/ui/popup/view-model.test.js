@@ -7,7 +7,7 @@ import {
   getActivationDisplay,
   getManagerLinkLabel,
   getManagerPath
-} from '../../../extension/popup/headers/view-model.js';
+} from '../../../extension/popup/view-model.js';
 
 const now = 2_000_000;
 const profiles = [

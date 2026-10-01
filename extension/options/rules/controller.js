@@ -1,5 +1,4 @@
 import {
-  RULE_STORAGE_KEY,
   filterRulesByProfile,
   findActiveRuleConflict,
   getActiveRuleConflicts,
@@ -9,57 +8,28 @@ import {
   groupRulesByDomain,
   validateRuleDraft
 } from '../../shared/domain/rules.js';
-import {
-  onStorageChanged,
-  removeOriginPermission,
-  requestOriginPermission,
-  storageLocalGet
-} from '../../shared/runtime/chrome-api.js';
-import {
-  ACTIVATION_STORAGE_KEY,
-  createDefaultActivation,
-  formatRemainingTime,
-  getActivationStatus,
-  getRemainingMs,
-  getTargetProfileId,
-  normalizeActivation,
-  setActivationDuration,
-  setMasterEnabled
-} from '../../shared/domain/activation.js';
-import { setActivationState } from '../../shared/runtime/activation-api.js';
-import {
-  PROFILE_STORAGE_KEY,
-  createDefaultProfiles,
-  getProfileIds,
-  getProfileName,
-  normalizeProfiles,
-  resolveProfileId
-} from '../../shared/domain/profiles.js';
+import { removeOriginPermission, requestOriginPermission } from '../../shared/runtime/chrome-api.js';
+import { getTargetProfileId } from '../../shared/domain/activation.js';
+import { resolveProfileId } from '../../shared/domain/profiles.js';
 import { isRuleGranted } from '../../shared/domain/site-access.js';
 import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
 import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
-import {
-  activateProfile,
-  readGrantedOrigins,
-  renderProfiles
-} from '../profiles/controller.js';
-import {
-  createConflictMap,
-  renderDomainGroup,
-  sortDomainGroups
-} from '../../shared/ui/rule-render.js';
-import { commitRules, getStoredRules } from '../../shared/runtime/rule-api.js';
+import { createConflictMap, renderDomainGroup, sortDomainGroups } from '../../shared/ui/rule-render.js';
+import { commitRules } from '../../shared/runtime/rule-api.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
-import { state } from '../state.js';
+import { state, getActivation } from '../state.js';
+import { readGrantedOrigins } from '../../shared/runtime/site-access-api.js';
 import { showStatus } from '../../shared/ui/ui.js';
 import { getRuleWorkspaceSummary } from '../view-model.js';
-import { renderSiteAccessOverview } from '../site-access/controller.js';
 
 const SEARCH_VISIBLE_FROM = 5;
-const DURATION_OPTIONS = [3_600_000, 28_800_000];
 let siteAccessPreflight;
+let refreshWorkspace;
+let renderWorkspace;
 
-export function bindRuleEvents() {
+export function bindRuleEvents({ onRefresh, onRender }) {
+  refreshWorkspace = onRefresh;
+  renderWorkspace = onRender;
   document.getElementById('headerComposerToggle').addEventListener('click', toggleHeaderComposer);
   document.getElementById('cancelHeaderComposerBtn').addEventListener('click', cancelHeaderComposer);
 
@@ -73,233 +43,16 @@ export function bindRuleEvents() {
   ruleList.addEventListener('submit', handleRuleFormSubmit);
   ruleList.addEventListener('keydown', handleRuleFormKeydown);
   document.getElementById('ruleSearchInput').addEventListener('input', handleRuleSearchInput);
-  document.getElementById('masterSwitch').addEventListener('click', () => toggleMaster());
-  document.getElementById('resumeMasterBtn').addEventListener('click', resumeFromBanner);
-  const durationPills = document.getElementById('durationPills');
-  durationPills.addEventListener('click', handleDurationClick);
-  durationPills.addEventListener('keydown', handleDurationKeydown);
 
-  onStorageChanged((changes) => {
-    const touchesRules = RULE_STORAGE_KEY in changes
-      || ACTIVATION_STORAGE_KEY in changes
-      || PROFILE_STORAGE_KEY in changes;
-
-    if (touchesRules && !state.syncPaused) {
-      refreshFromStorage().catch((error) => {
-        console.error('Could not refresh header rules.', error);
-      });
-    }
-  });
 }
 
 export async function initializeRules({ editRuleId = null } = {}) {
-  await refreshFromStorage();
+  await refreshWorkspace();
 
   if (editRuleId && state.rules.some((rule) => rule.id === editRuleId)) {
     startEditingRule(editRuleId);
     document.querySelector('.rule-edit-form')?.scrollIntoView({ block: 'center' });
   }
-}
-
-export async function refreshFromStorage() {
-  await loadActivation();
-  state.rules = await getStoredRules();
-  renderRules();
-}
-
-async function loadActivation() {
-  try {
-    const stored = await storageLocalGet([PROFILE_STORAGE_KEY, ACTIVATION_STORAGE_KEY]);
-    const profiles = normalizeProfiles(stored[PROFILE_STORAGE_KEY]);
-    state.profiles = profiles;
-    state.activation = normalizeActivation(stored[ACTIVATION_STORAGE_KEY], {
-      profileIds: getProfileIds(profiles)
-    });
-  } catch (error) {
-    console.error('Could not read the activation state.', error);
-    state.profiles = createDefaultProfiles();
-    state.activation = createDefaultActivation();
-  }
-
-  state.grantedOrigins = await readGrantedOrigins();
-}
-
-function getActivation() {
-  return state.activation || createDefaultActivation();
-}
-
-async function toggleMaster(forceOn = false) {
-  const activation = getActivation();
-  const nextEnabled = forceOn || !activation.masterEnabled;
-  const controls = [
-    document.getElementById('masterSwitch'),
-    document.getElementById('resumeMasterBtn')
-  ];
-
-  controls.forEach((control) => {
-    control.disabled = true;
-  });
-
-  state.syncPaused = true;
-  try {
-    state.activation = await setActivationState(setMasterEnabled(activation, nextEnabled));
-    renderRules();
-    showStatus(
-      'headerStatus',
-      nextEnabled ? 'Header rules resumed.' : 'All header rules paused.',
-      'success'
-    );
-  } catch (error) {
-    console.error(error);
-    showStatus('headerStatus', error.message || 'Could not change the ReqKit switch.', 'error');
-  } finally {
-    state.syncPaused = false;
-    controls.forEach((control) => {
-      control.disabled = false;
-    });
-  }
-}
-
-function renderMasterSwitch() {
-  const activation = getActivation();
-  const status = getActivationStatus(activation);
-  const masterSwitch = document.getElementById('masterSwitch');
-
-  masterSwitch.setAttribute('aria-checked', String(activation.masterEnabled));
-  masterSwitch.setAttribute(
-    'aria-label',
-    activation.masterEnabled ? 'Pause all header rules' : 'Resume all header rules'
-  );
-  document.getElementById('masterSwitchLabel').textContent = activation.masterEnabled ? 'On' : 'Paused';
-
-  const banner = document.getElementById('masterPausedBanner');
-  banner.hidden = status === 'live';
-  if (status !== 'live') {
-    const parked = status === 'parked';
-    document.getElementById('masterPausedTitle').textContent = parked
-      ? 'No profile is active'
-      : 'All header rules are paused';
-    document.getElementById('masterPausedDetail').textContent = parked
-      ? `Resume to switch back to ${getProfileName(state.profiles, getTargetProfileId(activation))}. Your rules remain saved and editable.`
-      : 'No headers are being applied. Your rules stay saved and editable, with their own On or Paused settings.';
-  }
-}
-
-/**
- * The banner covers two different stops: the master switch, and an elapsed
- * timer that parked the profile. Resuming has to undo whichever it is.
- */
-async function resumeFromBanner() {
-  const activation = getActivation();
-
-  if (getActivationStatus(activation) === 'parked') {
-    await activateProfile(getTargetProfileId(activation));
-    return;
-  }
-
-  await toggleMaster(true);
-}
-
-function renderDurationField() {
-  const activation = getActivation();
-  const selectedValue = getDurationValue(activation);
-  const disabled = getActivationStatus(activation) !== 'live';
-  const chip = document.getElementById('expiryChip');
-  const remainingMs = getRemainingMs(activation);
-
-  document.querySelectorAll('[data-duration]').forEach((pill) => {
-    const selected = pill.dataset.duration === selectedValue;
-    pill.setAttribute('aria-checked', String(selected));
-    pill.tabIndex = selected ? 0 : -1;
-    pill.disabled = disabled;
-  });
-
-  chip.hidden = remainingMs === null;
-  if (remainingMs !== null) {
-    chip.textContent = formatRemainingTime(remainingMs);
-    chip.title = `Pauses in ${formatRemainingTime(remainingMs)}`;
-  }
-}
-
-function handleDurationClick(event) {
-  const pill = event.target.closest('[data-duration]');
-  if (!pill || pill.disabled || pill.getAttribute('aria-checked') === 'true') {
-    return;
-  }
-
-  selectDuration(pill.dataset.duration);
-}
-
-function handleDurationKeydown(event) {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-    return;
-  }
-
-  const pills = [...event.currentTarget.querySelectorAll('[data-duration]:not(:disabled)')];
-  const currentIndex = pills.indexOf(event.target.closest('[data-duration]'));
-  if (currentIndex < 0 || !pills.length) {
-    return;
-  }
-
-  event.preventDefault();
-  const nextIndex = event.key === 'Home'
-    ? 0
-    : event.key === 'End'
-      ? pills.length - 1
-      : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + pills.length) % pills.length;
-  pills[nextIndex].focus();
-  selectDuration(pills[nextIndex].dataset.duration);
-}
-
-function getDurationValue(activation) {
-  if (activation.untilBrowserClose) {
-    return 'session';
-  }
-  if (!activation.expiresAt) {
-    return 'indefinite';
-  }
-
-  return DURATION_OPTIONS.includes(activation.durationMs)
-    ? String(activation.durationMs)
-    : 'indefinite';
-}
-
-async function selectDuration(value) {
-  const activation = getActivation();
-  const next = value === 'session'
-    ? setActivationDuration(activation, { untilBrowserClose: true })
-    : setActivationDuration(activation, { durationMs: value === 'indefinite' ? null : Number(value) });
-
-  state.syncPaused = true;
-  setDurationPillsDisabled(true);
-  try {
-    state.activation = await setActivationState(next);
-    renderRules();
-    showStatus('activeSetupStatus', describeDuration(value), 'success');
-  } catch (error) {
-    console.error(error);
-    showStatus('activeSetupStatus', error.message || 'Could not set the timer.', 'error');
-  } finally {
-    state.syncPaused = false;
-    renderDurationField();
-  }
-}
-
-function setDurationPillsDisabled(disabled) {
-  document.querySelectorAll('[data-duration]').forEach((pill) => {
-    pill.disabled = disabled;
-  });
-}
-
-function describeDuration(value) {
-  if (value === 'session') {
-    return 'Rules will pause when Chrome closes.';
-  }
-  if (value === 'indefinite') {
-    return 'Rules stay on until you turn them off.';
-  }
-
-  return `Rules will pause in ${formatRemainingTime(Number(value))}.`;
 }
 
 function getVisibleRules() {
@@ -366,7 +119,7 @@ function handleRuleListClick(event) {
       break;
     case 'cancel-edit':
       state.editingId = null;
-      renderRules();
+      renderWorkspace();
       break;
     default:
       break;
@@ -375,7 +128,7 @@ function handleRuleListClick(event) {
 
 function handleRuleSearchInput(event) {
   state.searchQuery = event.target.value;
-  renderRules();
+  renderWorkspace();
 }
 
 async function handleRuleFormSubmit(event) {
@@ -413,7 +166,7 @@ function handleRuleFormKeydown(event) {
 
   event.preventDefault();
   state.editingId = null;
-  renderRules();
+  renderWorkspace();
 }
 
 async function handleComposerSubmit(event) {
@@ -485,11 +238,7 @@ export function renderRules() {
   const container = document.getElementById('ruleListContainer');
   const conflictMap = createConflictMap(getActiveRuleConflicts(state.rules, getActivation()));
   const conflictingIds = new Set(conflictMap.keys());
-  renderMasterSwitch();
-  renderProfiles();
-  renderDurationField();
   updateSummary();
-  renderSiteAccessOverview();
 
   const visibleRules = filterRulesBySearch(getVisibleRules(), state.searchQuery);
   if (!visibleRules.length) {
@@ -589,7 +338,7 @@ function toggleDomainGroup(domain) {
   } else {
     state.collapsedDomains.add(domain);
   }
-  renderRules();
+  renderWorkspace();
 }
 
 function startEditingRule(id) {
@@ -601,7 +350,7 @@ function startEditingRule(id) {
   setHeaderComposerExpanded(false, { reset: true });
   state.editingId = id;
   state.collapsedDomains.delete(rule.domain);
-  renderRules();
+  renderWorkspace();
   const domainInput = document.getElementById(`editDomain-${id}`);
   domainInput?.focus();
   domainInput?.select();
@@ -613,7 +362,7 @@ function toggleRuleValueVisibility(id) {
   } else {
     state.revealedRuleIds.add(id);
   }
-  renderRules();
+  renderWorkspace();
 }
 
 async function addRule() {
@@ -653,7 +402,7 @@ async function addRule() {
         if (result.permissionError) {
           console.error('Could not request site access.', result.permissionError);
         }
-        renderRules();
+        renderWorkspace();
         showStatus(
           'headerStatus',
           `Rule saved, but ReqKit still needs site access to https://${newRule.domain} before it can be applied.`,
@@ -725,7 +474,7 @@ async function saveEditedRule(id) {
   const currentRule = state.rules.find((rule) => rule.id === id);
   if (!currentRule) {
     state.editingId = null;
-    renderRules();
+    renderWorkspace();
     showStatus('headerStatus', 'That rule no longer exists.', 'error');
     return;
   }
@@ -804,7 +553,7 @@ function clearRuleSearch() {
   state.searchQuery = '';
   const searchInput = document.getElementById('ruleSearchInput');
   searchInput.value = '';
-  renderRules();
+  renderWorkspace();
   searchInput.focus();
 }
 
@@ -835,7 +584,7 @@ async function persistRules(rules) {
   state.syncPaused = true;
   try {
     state.rules = await commitRules(rules);
-    renderRules();
+    renderWorkspace();
   } finally {
     state.syncPaused = false;
   }

@@ -9,7 +9,6 @@ import {
   validateProfileDraft
 } from '../../shared/domain/profiles.js';
 import {
-  getGrantedOrigins,
   removeOriginPermission,
   requestOriginPermissions,
   storageLocalSet
@@ -25,6 +24,7 @@ import { getNextRuleId, getRuleOriginPattern } from '../../shared/domain/rules.j
 import { commitRules } from '../../shared/runtime/rule-api.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
+import { readGrantedOrigins } from '../../shared/runtime/site-access-api.js';
 import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
 
 let refreshAll = async () => {};
@@ -457,15 +457,6 @@ export async function activateProfile(id) {
     showStatus('activeSetupStatus', error.message || 'Could not activate that profile.', 'error');
   } finally {
     state.syncPaused = false;
-  }
-}
-
-export async function readGrantedOrigins() {
-  try {
-    return await getGrantedOrigins();
-  } catch (error) {
-    console.error('Could not read granted site access.', error);
-    return null;
   }
 }
 

@@ -1,3 +1,5 @@
+import { createDefaultActivation } from '../shared/domain/activation.js';
+
 export const state = {
   rules: [],
   profiles: [],
@@ -10,3 +12,7 @@ export const state = {
   searchQuery: '',
   syncPaused: false
 };
+
+export function getActivation() {
+  return state.activation || createDefaultActivation();
+}

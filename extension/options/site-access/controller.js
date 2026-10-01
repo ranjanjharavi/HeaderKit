@@ -1,7 +1,11 @@
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { removeOriginPermission } from '../../shared/runtime/chrome-api.js';
 import { getProfileName } from '../../shared/domain/profiles.js';
-import { filterOriginGrants, getRulesForOriginGrant, isBroadOrigin } from '../../shared/domain/site-access.js';
+import {
+  filterOriginGrants,
+  getRulesForOriginGrant,
+  isBroadOrigin
+} from '../../shared/domain/site-access.js';
 import { createSerialQueue } from '../../shared/runtime/serial-queue.js';
 import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
 import { state } from '../state.js';

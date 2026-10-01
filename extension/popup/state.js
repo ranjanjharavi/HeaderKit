@@ -1,3 +1,5 @@
+import { createDefaultActivation } from '../shared/domain/activation.js';
+
 export const state = {
   headers: {
     rules: [],
@@ -13,3 +15,7 @@ export const state = {
     syncPaused: false
   }
 };
+
+export function getActivation() {
+  return state.headers.activation || createDefaultActivation();
+}

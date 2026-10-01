@@ -2,8 +2,8 @@ import {
   formatRemainingTime,
   getRemainingMs,
   getTargetProfileId
-} from '../../shared/domain/activation.js';
-import { getProfileName } from '../../shared/domain/profiles.js';
+} from '../shared/domain/activation.js';
+import { getProfileName } from '../shared/domain/profiles.js';
 
 export function getActivationDisplay(profiles, activation, now = Date.now()) {
   const profileName = getProfileName(profiles, getTargetProfileId(activation));
