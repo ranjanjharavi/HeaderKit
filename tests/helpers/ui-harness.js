@@ -1,9 +1,10 @@
-export function createActivationHarness(t, { failCommit = false, holdCommit = false } = {}) {
+export function createUiHarness(t, { failCommit = false, holdCommit = false } = {}) {
   const originals = {
     document: globalThis.document,
     chrome: globalThis.chrome,
     setTimeout: globalThis.setTimeout,
-    clearTimeout: globalThis.clearTimeout
+    clearTimeout: globalThis.clearTimeout,
+    requestAnimationFrame: globalThis.requestAnimationFrame
   };
   const elements = new Map();
   const requests = [];
@@ -23,13 +24,19 @@ export function createActivationHarness(t, { failCommit = false, holdCommit = fa
       classList: {
         add: (...names) => names.forEach((name) => classes.add(name)),
         remove: (...names) => names.forEach((name) => classes.delete(name)),
-        contains: (name) => classes.has(name)
+        contains: (name) => classes.has(name),
+        toggle(name, enabled) {
+          if (enabled ?? !classes.has(name)) classes.add(name);
+          else classes.delete(name);
+        }
       },
       setAttribute: (name, value) => attributes.set(name, value),
       getAttribute: (name) => attributes.get(name),
       addEventListener: (name, handler) => handlers.set(name, handler),
       closest: () => node,
       focus() {},
+      select() {},
+      scrollIntoView() {},
       async dispatch(name, event = {}) {
         await handlers.get(name)({ target: node, ...event });
         // Duration handlers start a commit without returning its promise.
@@ -61,6 +68,7 @@ export function createActivationHarness(t, { failCommit = false, holdCommit = fa
       }
     }
   };
+  globalThis.requestAnimationFrame = (callback) => callback();
   globalThis.setTimeout = () => 0;
   globalThis.clearTimeout = () => {};
   t.after(() => Object.assign(globalThis, originals));

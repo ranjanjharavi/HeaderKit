@@ -12,7 +12,7 @@ import {
 } from '../../../extension/popup/activation/controller.js';
 import { state as optionsState } from '../../../extension/options/state.js';
 import { state as popupState } from '../../../extension/popup/state.js';
-import { createActivationHarness } from '../../helpers/activation-harness.js';
+import { createUiHarness } from '../../helpers/ui-harness.js';
 
 function resetState() {
   optionsState.activation = createDefaultActivation();
@@ -26,7 +26,7 @@ function resetState() {
 
 test('options pause commits activation and leaves saved rule flags intact', async (t) => {
   resetState();
-  const harness = createActivationHarness(t);
+  const harness = createUiHarness(t);
   let renders = 0;
   bindOptionsActivation({
     onChanged() { renders++; renderOptionsSwitch(); },
@@ -43,7 +43,7 @@ test('options pause commits activation and leaves saved rule flags intact', asyn
 
 test('options timer selection commits browser-session scope and refreshes radio state', async (t) => {
   resetState();
-  const harness = createActivationHarness(t);
+  const harness = createUiHarness(t);
   bindOptionsActivation({ onChanged: renderDurationField, onResumeProfile() {} });
   await harness.element('durationPills').dispatch('click', { target: harness.pills[3] });
   assert.equal(optionsState.activation.untilBrowserClose, true);
@@ -55,7 +55,7 @@ test('options timer selection commits browser-session scope and refreshes radio 
 
 test('options resume delegates a parked profile to profile activation', async (t) => {
   resetState();
-  const harness = createActivationHarness(t);
+  const harness = createUiHarness(t);
   optionsState.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'qa' };
   let resumedProfile;
   bindOptionsActivation({ onChanged() {}, onResumeProfile(id) { resumedProfile = id; } });
@@ -66,7 +66,7 @@ test('options resume delegates a parked profile to profile activation', async (t
 
 test('activation controls remain disabled until the worker commit finishes', async (t) => {
   resetState();
-  const harness = createActivationHarness(t, { holdCommit: true });
+  const harness = createUiHarness(t, { holdCommit: true });
   bindOptionsActivation({ onChanged() {}, onResumeProfile() {} });
   const commit = harness.element('masterSwitch').dispatch('click');
   assert.equal(harness.element('masterSwitch').disabled, true);
@@ -79,7 +79,7 @@ test('activation controls remain disabled until the worker commit finishes', asy
 
 test('popup pause refreshes the switch after a successful worker commit', async (t) => {
   resetState();
-  const harness = createActivationHarness(t);
+  const harness = createUiHarness(t);
   bindPopupActivation({ onChanged: renderPopupSwitch });
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(popupState.headers.activation.masterEnabled, false);
@@ -89,7 +89,7 @@ test('popup pause refreshes the switch after a successful worker commit', async 
 
 test('a rejected popup commit preserves activation and restores usable controls', async (t) => {
   resetState();
-  const harness = createActivationHarness(t, { failCommit: true });
+  const harness = createUiHarness(t, { failCommit: true });
   const originalError = console.error;
   console.error = () => {};
   t.after(() => { console.error = originalError; });

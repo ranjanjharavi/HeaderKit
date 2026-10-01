@@ -4,8 +4,8 @@ import { readSource, readStyles } from '../../helpers/source.js';
 
 const optionsMarkup = readSource('extension/options/index.html');
 const optionsStyles = readStyles('extension/options/options.css');
-const popupRulesSource = readSource('extension/popup/headers/controller.js') + readSource('extension/popup/activation/controller.js');
-const optionsRulesSource = readSource('extension/options/rules/controller.js') + readSource('extension/options/activation/controller.js');
+const popupRulesSource = readSource('extension/popup/headers/controller.js') + readSource('extension/popup/headers/composer.js') + readSource('extension/popup/headers/view.js') + readSource('extension/popup/headers/actions.js') + readSource('extension/popup/activation/controller.js');
+const optionsRulesSource = readSource('extension/options/rules/controller.js') + readSource('extension/options/rules/composer.js') + readSource('extension/options/rules/view.js') + readSource('extension/options/rules/actions.js') + readSource('extension/options/activation/controller.js');
 const optionsProfilesSource = readSource('extension/options/profiles/controller.js');
 const siteAccessControllerSource = readSource('extension/options/site-access/controller.js');
 const sharedRuleRenderSource = readSource('extension/shared/ui/rule-render.js');

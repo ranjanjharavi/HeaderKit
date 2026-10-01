@@ -4,7 +4,7 @@ import { readSource, readStyles } from '../../helpers/source.js';
 
 const popupMarkup = readSource('extension/popup/index.html');
 const popupStyles = readStyles('extension/shared/styles/index.css') + readStyles('extension/popup/popup.css');
-const popupRulesSource = readSource('extension/popup/headers/controller.js') + readSource('extension/popup/activation/controller.js');
+const popupRulesSource = readSource('extension/popup/headers/controller.js') + readSource('extension/popup/headers/composer.js') + readSource('extension/popup/headers/view.js') + readSource('extension/popup/headers/actions.js') + readSource('extension/popup/activation/controller.js');
 
 test('popup keeps profile context in the header and scopes rules with tabs', () => {
   assert.match(popupMarkup, /<main id="headers-panel" class="popup-shell">/);
