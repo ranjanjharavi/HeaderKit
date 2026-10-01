@@ -43,7 +43,7 @@
       const li = document.createElement('li'); li.textContent = benefit;
       document.getElementById('benefits').append(li);
     }
-    if (view.page) document.getElementById('productPreview').src = `${view.page}-harness.html?campaign=1`;
+    if (view.page) document.getElementById('productPreview').src = `/tests/fixtures/browser/${view.page}-harness.html?campaign=1`;
     else document.getElementById('productPreview').remove();
   </script>
 </body>
