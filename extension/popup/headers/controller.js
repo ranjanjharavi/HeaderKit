@@ -46,6 +46,15 @@ export function bindHeaderEvents() {
 
   document.getElementById('ruleListContainer').addEventListener('click', handleRuleListClick);
 
+  const refreshSiteAccess = () => {
+    readGrantedOrigins().then((origins) => {
+      state.headers.grantedOrigins = origins;
+      renderRules();
+    });
+  };
+  chrome.permissions.onAdded.addListener(refreshSiteAccess);
+  chrome.permissions.onRemoved.addListener(refreshSiteAccess);
+
   onStorageChanged((changes) => {
     const touchesRules = RULE_STORAGE_KEY in changes
       || ACTIVATION_STORAGE_KEY in changes

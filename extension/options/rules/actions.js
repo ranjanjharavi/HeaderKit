@@ -1,6 +1,7 @@
 import {
   findActiveRuleConflict,
   getNextRuleId,
+  getRuleOriginPattern,
   getRuleConflictMessage,
   validateRuleDraft
 } from '../../shared/domain/rules.js';
@@ -11,6 +12,7 @@ import { isRuleGranted } from '../../shared/domain/site-access.js';
 import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
 import { commitRules } from '../../shared/runtime/rule-api.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
+import { clearRuleFormError, showRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getActivation } from '../state.js';
 import {
   readGrantedOrigins,
@@ -33,8 +35,7 @@ export async function grantRuleAccess(id) {
   }
 
   try {
-    await ensureRulePermission(rule);
-    state.grantedOrigins = await readGrantedOrigins();
+    state.grantedOrigins = await ensureRulePermission(rule, state.grantedOrigins);
     await persistRules(state.rules);
     showStatus('headerStatus', `Site access granted for ${rule.domain}.`, 'success');
   } catch (error) {
@@ -44,13 +45,14 @@ export async function grantRuleAccess(id) {
 }
 
 export async function addRule() {
+  clearRuleFormError();
   const activation = getActivation();
   // New rules belong to the selected profile, which is also the profile shown
   // in the manager's rule list.
   const profileId = getTargetProfileId(activation);
   const validation = validateRuleDraft(readCreateDraft(), state.rules, { activation, profileId });
   if (!validation.ok) {
-    showStatus('headerStatus', validation.error, 'error');
+    showRuleFormError(validation);
     return false;
   }
 
@@ -102,7 +104,7 @@ export async function addRule() {
     return true;
   } catch (error) {
     console.error(error);
-    showStatus('headerStatus', error.message || 'Chrome rejected the new rule.', 'error');
+    showRuleFormError({ error: error.message || 'Chrome rejected the new rule.' });
     return false;
   }
 }
@@ -125,7 +127,7 @@ export async function toggleRule(id) {
     }
 
     try {
-      await ensureRulePermission(currentRule);
+      state.grantedOrigins = await ensureRulePermission(currentRule, state.grantedOrigins);
     } catch (error) {
       console.error(error);
       showStatus('headerStatus', error.message, 'error');
@@ -148,7 +150,6 @@ export async function toggleRule(id) {
 }
 
 export async function saveEditedRule(id) {
-  const statusId = `ruleEditStatus-${id}`;
   const currentRule = state.rules.find((rule) => rule.id === id);
   if (!currentRule) {
     state.editingId = null;
@@ -158,6 +159,7 @@ export async function saveEditedRule(id) {
   }
 
   const draft = readEditDraft(id);
+  clearRuleFormError(id);
   const nextProfileId = resolveProfileId(draft.profileId ?? currentRule.profileId);
   const validation = validateRuleDraft(draft, state.rules, {
     excludeId: id,
@@ -166,7 +168,7 @@ export async function saveEditedRule(id) {
     profileId: nextProfileId
   });
   if (!validation.ok) {
-    showStatus(statusId, validation.error, 'error');
+    showRuleFormError(validation, id);
     return;
   }
 
@@ -177,7 +179,7 @@ export async function saveEditedRule(id) {
 
   try {
     if (updatedRule.enabled) {
-      await ensureRulePermission(updatedRule);
+      state.grantedOrigins = await ensureRulePermission(updatedRule, state.grantedOrigins);
     }
     state.editingId = null;
     state.revealedRuleIds.delete(id);
@@ -189,7 +191,7 @@ export async function saveEditedRule(id) {
   } catch (error) {
     state.editingId = id;
     console.error(error);
-    showStatus(statusId, error.message || 'Could not update that rule.', 'error');
+    showRuleFormError({ error: error.message || 'Could not update that rule.' }, id);
   }
 }
 
@@ -201,12 +203,20 @@ export async function confirmDeleteRule(id) {
 
   const confirmed = await confirmDestructiveAction({
     title: `Delete ${rule.headerName}?`,
-    message: `The rule for ${rule.domain} will be permanently removed.`,
+    message: getDeleteMessage(rule),
     confirmLabel: 'Delete rule'
   });
   if (confirmed) {
     await deleteRule(id);
   }
+}
+
+function getDeleteMessage(rule) {
+  const releasesAccess = state.grantedOrigins?.has(getRuleOriginPattern(rule))
+    && !state.rules.some((candidate) => candidate.id !== rule.id && candidate.domain === rule.domain);
+  return `The rule for ${rule.domain} will be permanently removed.${releasesAccess
+    ? ' This is the last rule for this host, so its host-specific site access grant will also be removed.'
+    : ''}`;
 }
 
 async function deleteRule(id) {

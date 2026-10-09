@@ -19,6 +19,8 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
       id,
       disabled: false,
       hidden: false,
+      open: false,
+      returnValue: '',
       textContent: '',
       dataset: {},
       classList: {
@@ -32,13 +34,27 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
       },
       setAttribute: (name, value) => attributes.set(name, value),
       getAttribute: (name) => attributes.get(name),
-      addEventListener: (name, handler) => handlers.set(name, handler),
-      closest: () => node,
-      focus() {},
+      removeAttribute: (name) => attributes.delete(name),
+      addEventListener(name, handler, options = {}) {
+        if (!handlers.has(name)) handlers.set(name, new Map());
+        handlers.get(name).set(handler, options);
+      },
+      removeEventListener(name, handler) { handlers.get(name)?.delete(handler); },
+      closest: (selector) => selector === 'details' ? null : node,
+      focus() { globalThis.document.activeElement = node; },
+      showModal() { node.open = true; },
+      close(value = '') {
+        node.open = false;
+        node.returnValue = value;
+        node.dispatch('close');
+      },
       select() {},
       scrollIntoView() {},
       async dispatch(name, event = {}) {
-        await handlers.get(name)({ target: node, ...event });
+        for (const [handler, options] of [...(handlers.get(name) || [])]) {
+          if (options.once) handlers.get(name).delete(handler);
+          await handler({ target: node, ...event });
+        }
         // Duration handlers start a commit without returning its promise.
         await Promise.resolve();
       }

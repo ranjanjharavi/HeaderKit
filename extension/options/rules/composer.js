@@ -1,4 +1,5 @@
 import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
+import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state } from '../state.js';
 import { syncAddRuleActions } from './view.js';
 
@@ -13,6 +14,7 @@ export function bindComposerEvents({ onAddRule }) {
   const form = document.getElementById('headerComposerForm');
   form.addEventListener('submit', handleComposerSubmit);
   form.addEventListener('keydown', handleComposerKeydown);
+  form.addEventListener('input', () => clearRuleFormError());
 }
 
 async function handleComposerSubmit(event) {
@@ -69,6 +71,7 @@ export function setHeaderComposerExpanded(expanded, {
   syncAddRuleActions();
 
   if (reset) {
+    clearRuleFormError();
     siteAccessPreflight.hide();
     clearHeaderForm();
   }

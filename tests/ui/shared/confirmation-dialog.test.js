@@ -85,3 +85,38 @@ test('ReqKit confirmation resolves false when cancelled', async () => {
     globalThis.document = originalDocument;
   }
 });
+
+test('another action cannot replace a pending deletion confirmation', async () => {
+  const originalDocument = globalThis.document;
+  const fakeDocument = createDialogDocument();
+  globalThis.document = fakeDocument;
+
+  try {
+    const first = confirmDestructiveAction({ title: 'Delete X-Test?', message: 'First rule.' });
+    const second = confirmDestructiveAction({ title: 'Delete profile?', message: 'Another action.' });
+    assert.equal(await second, false);
+    assert.equal(fakeDocument.elements.confirmationTitle.textContent, 'Delete X-Test?');
+    fakeDocument.elements.confirmationConfirmBtn.dispatchEvent(new Event('click'));
+    assert.equal(await first, true);
+  } finally {
+    globalThis.document = originalDocument;
+  }
+});
+
+test('dismissing a dialog after a confirmed action does not confirm the next action', async () => {
+  const originalDocument = globalThis.document;
+  const fakeDocument = createDialogDocument();
+  globalThis.document = fakeDocument;
+
+  try {
+    const first = confirmDestructiveAction({ title: 'Delete X-Test?', message: 'First rule.' });
+    fakeDocument.elements.confirmationConfirmBtn.dispatchEvent(new Event('click'));
+    assert.equal(await first, true);
+
+    const second = confirmDestructiveAction({ title: 'Delete profile?', message: 'Another action.' });
+    fakeDocument.elements.confirmationDialog.close();
+    assert.equal(await second, false);
+  } finally {
+    globalThis.document = originalDocument;
+  }
+});

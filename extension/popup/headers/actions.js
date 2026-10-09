@@ -1,6 +1,7 @@
 import {
   findActiveRuleConflict,
   getNextRuleId,
+  getRuleOriginPattern,
   getRuleConflictMessage,
   validateRuleDraft
 } from '../../shared/domain/rules.js';
@@ -10,6 +11,7 @@ import { isRuleGranted } from '../../shared/domain/site-access.js';
 import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
 import { commitRules } from '../../shared/runtime/rule-api.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
+import { clearRuleFormError, showRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getActivation } from '../state.js';
 import {
   readGrantedOrigins,
@@ -21,6 +23,7 @@ import { siteAccessPreflight, readCreateDraft } from './composer.js';
 import { renderRules } from './view.js';
 
 export async function addRule() {
+  clearRuleFormError();
   const activation = getActivation();
   const profileId = getTargetProfileId(activation);
   const validation = validateRuleDraft(readCreateDraft(), state.headers.rules, {
@@ -28,7 +31,7 @@ export async function addRule() {
     profileId
   });
   if (!validation.ok) {
-    showStatus('headerStatus', validation.error, 'error');
+    showRuleFormError(validation);
     return false;
   }
 
@@ -85,12 +88,13 @@ export async function addRule() {
     return true;
   } catch (error) {
     console.error(error);
-    showStatus('headerStatus', error.message || 'Chrome rejected the new rule.', 'error');
+    showRuleFormError({ error: error.message || 'Chrome rejected the new rule.' });
     return false;
   }
 }
 
 export async function saveEditedRule(id) {
+  clearRuleFormError();
   const currentRule = state.headers.rules.find((rule) => rule.id === id);
   if (!currentRule) {
     showStatus('headerStatus', 'That rule no longer exists.', 'error');
@@ -105,7 +109,7 @@ export async function saveEditedRule(id) {
     profileId
   });
   if (!validation.ok) {
-    showStatus('headerStatus', validation.error, 'error');
+    showRuleFormError(validation);
     return false;
   }
 
@@ -116,7 +120,7 @@ export async function saveEditedRule(id) {
 
   try {
     if (updatedRule.enabled) {
-      await ensureRulePermission(updatedRule);
+      state.headers.grantedOrigins = await ensureRulePermission(updatedRule, state.headers.grantedOrigins);
     }
     await persistRules(updatedRules);
     if (currentRule.domain !== updatedRule.domain) {
@@ -127,7 +131,7 @@ export async function saveEditedRule(id) {
     return true;
   } catch (error) {
     console.error(error);
-    showStatus('headerStatus', error.message || 'Could not update that rule.', 'error');
+    showRuleFormError({ error: error.message || 'Could not update that rule.' });
     return false;
   }
 }
@@ -150,7 +154,7 @@ export async function toggleRule(id) {
     }
 
     try {
-      await ensureRulePermission(currentRule);
+      state.headers.grantedOrigins = await ensureRulePermission(currentRule, state.headers.grantedOrigins);
     } catch (error) {
       console.error(error);
       showStatus('headerStatus', error.message, 'error');
@@ -180,12 +184,20 @@ export async function confirmDeleteRule(id) {
 
   const confirmed = await confirmDestructiveAction({
     title: `Delete ${rule.headerName}?`,
-    message: `The rule for ${rule.domain} will be permanently removed.`,
+    message: getDeleteMessage(rule),
     confirmLabel: 'Delete rule'
   });
   if (confirmed) {
     await deleteRule(id);
   }
+}
+
+function getDeleteMessage(rule) {
+  const releasesAccess = state.headers.grantedOrigins?.has(getRuleOriginPattern(rule))
+    && !state.headers.rules.some((candidate) => candidate.id !== rule.id && candidate.domain === rule.domain);
+  return `The rule for ${rule.domain} will be permanently removed.${releasesAccess
+    ? ' This is the last rule for this host, so its host-specific site access grant will also be removed.'
+    : ''}`;
 }
 
 async function deleteRule(id) {
@@ -213,8 +225,7 @@ export async function grantRuleAccess(id) {
   }
 
   try {
-    await ensureRulePermission(rule);
-    state.headers.grantedOrigins = await readGrantedOrigins();
+    state.headers.grantedOrigins = await ensureRulePermission(rule, state.headers.grantedOrigins);
     // Re-commit so the worker rebuilds the rule set now that access exists.
     await persistRules(state.headers.rules);
     showStatus('headerStatus', `Site access granted for ${rule.domain}.`, 'success');

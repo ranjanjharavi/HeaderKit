@@ -1,4 +1,5 @@
 import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
+import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getScopedRules } from '../state.js';
 import { showStatus } from '../../shared/ui/ui.js';
 
@@ -17,6 +18,7 @@ export function bindComposerEvents({ onAddRule, onSaveRule }) {
   const form = document.getElementById('headerComposerForm');
   form.addEventListener('submit', handleComposerSubmit);
   form.addEventListener('keydown', handleComposerKeydown);
+  form.addEventListener('input', () => clearRuleFormError());
 }
 
 export function openRuleEditor(id) {
@@ -27,6 +29,7 @@ export function openRuleEditor(id) {
   }
 
   state.headers.editingId = id;
+  clearRuleFormError();
   siteAccessPreflight.hide();
   document.getElementById('domain').value = rule.domain;
   document.getElementById('headerName').value = rule.headerName;
@@ -84,6 +87,7 @@ function cancelHeaderComposer() {
 }
 
 export function openCreateComposer() {
+  clearRuleFormError();
   state.headers.editingId = null;
   siteAccessPreflight.hide();
   clearHeaderForm();
@@ -105,6 +109,7 @@ export function setHeaderComposerExpanded(expanded, {
   toggle.disabled = expanded || !state.headers.currentHostname;
 
   if (reset) {
+    clearRuleFormError();
     state.headers.editingId = null;
     siteAccessPreflight.hide();
     clearHeaderForm();

@@ -151,24 +151,30 @@ export function validateRuleDraft(draft, existingRules, {
     profileId ?? draft?.profileId ?? activation?.profileId ?? DEFAULT_PROFILE_ID
   );
 
-  if (!rule.domain || !rule.headerName || !rule.headerValue) {
-    return { ok: false, error: 'A valid HTTPS host, header name, and header value are required.' };
+  if (!rule.domain) {
+    return { ok: false, field: 'domain', error: 'Enter a valid HTTPS host, such as api.example.com.' };
+  }
+  if (!rule.headerName) {
+    return { ok: false, field: 'headerName', error: 'Enter a header name.' };
+  }
+  if (!rule.headerValue) {
+    return { ok: false, field: 'headerValue', error: 'Enter a header value.' };
   }
 
   if (rule.pathPrefix === null) {
-    return { ok: false, error: 'Enter a valid path prefix up to 512 characters, without a query or fragment.' };
+    return { ok: false, field: 'pathPrefix', error: 'Enter a valid path prefix up to 512 characters, without a query or fragment.' };
   }
 
   if (rule.resourceType === null) {
-    return { ok: false, error: 'Choose a supported request type.' };
+    return { ok: false, field: 'resourceType', error: 'Choose a supported request type.' };
   }
 
   if (!isValidHeaderName(rule.headerName)) {
-    return { ok: false, error: 'Enter a valid HTTP header name.' };
+    return { ok: false, field: 'headerName', error: 'Enter a valid HTTP header name.' };
   }
 
   if (!isValidHeaderValue(rule.headerValue)) {
-    return { ok: false, error: 'Header values cannot contain line breaks.' };
+    return { ok: false, field: 'headerValue', error: 'Header values cannot contain line breaks.' };
   }
 
   // A profile can set a header once per request scope for a host. The value
@@ -179,7 +185,7 @@ export function validateRuleDraft(draft, existingRules, {
   ));
 
   if (duplicateRule) {
-    return { ok: false, error: 'A rule for that header and request scope already exists for this host in this profile.' };
+    return { ok: false, field: 'headerName', error: 'A rule for that header and request scope already exists for this host in this profile.' };
   }
 
   const conflictingRule = findActiveRuleConflict(
@@ -190,6 +196,7 @@ export function validateRuleDraft(draft, existingRules, {
   if (conflictingRule) {
     return {
       ok: false,
+      field: 'headerValue',
       error: getRuleConflictMessage(conflictingRule),
       conflictId: conflictingRule.id
     };

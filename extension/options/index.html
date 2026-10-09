@@ -82,10 +82,10 @@
 
             <div id="headerComposer" class="header-composer rules-composer" hidden>
               <div class="header-composer-body">
-                <form id="headerComposerForm" class="header-composer-form">
+                <form id="headerComposerForm" class="header-composer-form" novalidate>
                   <div class="field">
                     <label for="domain">Exact HTTPS host</label>
-                    <input type="text" id="domain" placeholder="https://api.example.com" autocapitalize="off" autocorrect="off" spellcheck="false">
+                    <input type="text" id="domain" placeholder="https://api.example.com" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
                     <p class="helper-text">ReqKit applies this rule only to the exact HTTPS host you enter. Use optional request scoping below to narrow which requests receive the header.</p>
                   </div>
 
@@ -94,12 +94,12 @@
                     <div class="request-scope-fields">
                       <div class="field">
                         <label for="pathPrefix">Path prefix</label>
-                        <input type="text" id="pathPrefix" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false">
+                        <input type="text" id="pathPrefix" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
                         <p class="helper-text">Blank matches every path. A prefix also matches nested paths, not similar names.</p>
                       </div>
                       <div class="field">
                         <label for="resourceType">Request type</label>
-                        <select id="resourceType">
+                        <select id="resourceType" aria-describedby="ruleComposerError">
                           <option value="all">All requests</option>
                           <option value="xmlhttprequest">API calls (fetch/XHR)</option>
                         </select>
@@ -111,12 +111,12 @@
                   <div class="header-fields-row">
                     <div class="field">
                       <label for="headerName">Header name</label>
-                      <input type="text" id="headerName" placeholder="X-ReqKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false">
+                      <input type="text" id="headerName" placeholder="X-ReqKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
                     </div>
 
                     <div class="field">
                       <label for="headerValue">Header value</label>
-                      <input type="text" id="headerValue" placeholder="enabled" autocapitalize="off" autocorrect="off" spellcheck="false">
+                      <input type="text" id="headerValue" placeholder="enabled" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
                     </div>
                   </div>
 
@@ -130,6 +130,7 @@
                     </div>
                   </div>
 
+                  <p id="ruleComposerError" class="rule-form-error" role="alert" hidden></p>
                   <div class="action-row header-composer-actions">
                     <button id="addHeaderBtn" class="primary-btn" type="submit">Add rule</button>
                     <button id="cancelHeaderComposerBtn" class="secondary-btn" type="button">Cancel</button>

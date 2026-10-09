@@ -158,27 +158,27 @@ export function renderRuleEditForm(rule, profiles = null) {
 
   return `
     <div class="domain-rule-row">
-      <form class="rule-edit-form" data-id="${rule.id}">
+      <form class="rule-edit-form" data-id="${rule.id}" novalidate>
         <div class="rule-edit-grid">
           <div class="rule-edit-field rule-edit-field-host">
             <label for="editDomain-${rule.id}">Exact HTTPS host</label>
-            <input id="editDomain-${rule.id}" type="text" value="${escapeHtml(rule.domain)}" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <input id="editDomain-${rule.id}" type="text" value="${escapeHtml(rule.domain)}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
           </div>
           <div class="rule-edit-field rule-edit-field-name">
             <label for="editHeaderName-${rule.id}">Header name</label>
-            <input id="editHeaderName-${rule.id}" type="text" value="${escapeHtml(rule.headerName)}" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <input id="editHeaderName-${rule.id}" type="text" value="${escapeHtml(rule.headerName)}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
           </div>
           <div class="rule-edit-field rule-edit-field-value">
             <label for="editHeaderValue-${rule.id}">Header value</label>
-            <input id="editHeaderValue-${rule.id}" type="text" value="${escapeHtml(rule.headerValue)}" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <input id="editHeaderValue-${rule.id}" type="text" value="${escapeHtml(rule.headerValue)}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
           </div>
           <div class="rule-edit-field rule-edit-field-path">
             <label for="editPathPrefix-${rule.id}">Path prefix (optional)</label>
-            <input id="editPathPrefix-${rule.id}" type="text" value="${escapeHtml(rule.pathPrefix || '')}" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <input id="editPathPrefix-${rule.id}" type="text" value="${escapeHtml(rule.pathPrefix || '')}" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
           </div>
           <div class="rule-edit-field rule-edit-field-resource-type">
             <label for="editResourceType-${rule.id}">Request type</label>
-            <select id="editResourceType-${rule.id}">
+            <select id="editResourceType-${rule.id}" aria-describedby="ruleEditError-${rule.id}">
               <option value="all"${selectedResourceType === 'all' ? ' selected' : ''}>All requests</option>
               <option value="xmlhttprequest"${selectedResourceType === 'xmlhttprequest' ? ' selected' : ''}>API calls (fetch/XHR)</option>
             </select>
@@ -186,7 +186,7 @@ export function renderRuleEditForm(rule, profiles = null) {
           ${showProfileField ? renderProfileField(rule, profiles) : ''}
         </div>
         <p class="helper-text disclosure-text rule-edit-disclosure">Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only authorized systems.</p>
-        <div id="ruleEditStatus-${rule.id}" class="status-msg rule-edit-status" aria-live="polite"></div>
+        <p id="ruleEditError-${rule.id}" class="rule-form-error" role="alert" hidden></p>
         <div class="action-row rule-edit-actions">
           <button class="primary-btn save-edit-rule-btn" type="submit">Save changes</button>
           <button class="secondary-btn" type="button" data-rule-action="cancel-edit" data-id="${rule.id}">Cancel</button>

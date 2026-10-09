@@ -8,6 +8,9 @@ export function confirmDestructiveAction({
   confirmLabel = 'Delete'
 }) {
   const dialog = document.getElementById('confirmationDialog');
+  if (dialog.open) {
+    return Promise.resolve(false);
+  }
   const confirmButton = document.getElementById('confirmationConfirmBtn');
   const cancelButton = document.getElementById('confirmationCancelBtn');
 

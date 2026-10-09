@@ -9,9 +9,9 @@ ReqKit is a lightweight Chrome extension for modifying request headers on exact 
 ### Request headers
 
 - Creates request-header rules for exact HTTPS hostnames, with optional path-prefix and API (fetch/XHR) scoping.
-- Requests optional site access only when a rule is created or resumed.
+- Reuses existing site access grants, asks Chrome for access only when the rule's host is not already covered.
 - Supports turning individual rules on or pausing them, as well as editing and deleting them.
-- Applies enabled rules through Chrome's `declarativeNetRequest` API. By default, a rule matches all request types for that host; optional scopes can limit it to a path and nested paths, and/or fetch/XHR requests.
+- Applies enabled rules through Chrome's `declarativeNetRequest` API. By default, a rule matches all request types for that host, optional scopes can limit it to a path and nested paths, and/or fetch/XHR requests.
 - Detects conflicting active rules for the same host and header when their request scopes overlap.
 - Masks sensitive-looking header values in the popup until explicitly revealed.
 - Removes a site's access grant after the final rule for a hostname is deleted.
@@ -32,7 +32,7 @@ a different value in each environment without the two ever colliding.
 - Duplicating a profile copies its rules paused, so nothing goes live by accident.
 - Deleting a profile also deletes every request-header rule assigned to it.
 - Switching to a profile asks for any site access it still needs in one prompt. If you
-  decline, the profile still switches; rules without site access stay saved and show a **Grant** button.
+  decline, the profile still switches, rules without site access stay saved and show a **Grant** button.
 
 ### Auto-off timer
 
@@ -63,6 +63,12 @@ host's rules, adds new ones, and shows the selected profile and activation lifet
 
 The rule manager is a full page, opened from the popup or from **Extension options** in
 `chrome://extensions`. It manages profiles, activation timing, and all request-header rules.
+
+Profile editing, rule validation, deletion confirmations, and site access revocation use
+ReqKit's own UI. Chrome controls approval for new site access. Editing or resuming a rule
+on an already approved host does not request access again, including when a broader grant
+covers that host. Deleting the last rule for a host releases its host-specific grant,
+using that host again can require approval.
 
 ### Keyboard shortcuts
 
@@ -132,7 +138,7 @@ store-assets/        Screenshots, icons, and promotional artwork
 
 Domain modules contain reusable data logic. Runtime modules bridge that logic to
 Chrome, and the service worker owns applied rules and activation commits. Page
-controllers wire events; composers, views, and actions handle their respective
+controllers wire events, composers, views, and actions handle their respective
 feature responsibilities. The manager workspace coordinates the independent
 features and refreshes their shared page state.
 

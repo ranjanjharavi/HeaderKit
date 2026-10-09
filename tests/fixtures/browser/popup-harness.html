@@ -84,6 +84,8 @@
           onChanged: { addListener() {} }
         },
         permissions: {
+          onAdded: { addListener() {} },
+          onRemoved: { addListener() {} },
           getAll(callback) {
             callback({ origins: grantedOrigins });
           },

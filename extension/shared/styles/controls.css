@@ -39,6 +39,23 @@ input::placeholder {
   color: #64748b;
 }
 
+input[aria-invalid='true'],
+select[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.rule-form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--type-support);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.rule-form-error[hidden] {
+  display: none;
+}
+
 input:hover,
 select:hover {
   border-color: var(--border-strong);

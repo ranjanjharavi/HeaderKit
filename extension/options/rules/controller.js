@@ -1,4 +1,5 @@
 import { state } from '../state.js';
+import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import {
   configureRuleActions,
   grantRuleAccess,
@@ -25,6 +26,12 @@ export function bindRuleEvents({ onRefresh, onRender }) {
   ruleList.addEventListener('click', handleRuleListClick);
   ruleList.addEventListener('submit', handleRuleFormSubmit);
   ruleList.addEventListener('keydown', handleRuleFormKeydown);
+  ruleList.addEventListener('input', (event) => {
+    const form = event.target.closest('.rule-edit-form');
+    if (form) {
+      clearRuleFormError(Number(form.dataset.id));
+    }
+  });
   document.getElementById('ruleSearchInput').addEventListener('input', handleRuleSearchInput);
 
 }
