@@ -1,0 +1,167 @@
+/* Manager tokens and page layout build on shared extension components. */
+
+:root {
+  --manager-surface: #ffffff;
+  --manager-surface-subtle: #fbfcfe;
+  --manager-surface-tint: #f6f9fe;
+  --manager-surface-hover: #f1f6fd;
+  --manager-border: var(--border);
+  --manager-divider: #edf0f5;
+  --manager-row-divider: #f3f5f9;
+  --manager-muted: #5a6474;
+  --manager-subtle: #5f6b7a;
+  --manager-active-header: #1e40af;
+  --manager-pill-surface: var(--surface-muted);
+  --manager-pill-border: var(--manager-divider);
+  --manager-pill-selected-surface: var(--secondary);
+  --manager-pill-selected-border: var(--focus-border);
+  --manager-pill-selected-text: var(--primary-hover);
+  --manager-inline-space: 18px;
+  --manager-section-space: 12px;
+  --manager-compact-gap: 8px;
+  --manager-success-surface: #f0fdf4;
+  --manager-success-border: #bbf7d0;
+  --manager-error-surface: #fef2f2;
+  --manager-error-border: #fecaca;
+}
+
+html,
+body {
+  width: auto;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+body {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 240px, #f7fbff 100%);
+}
+
+.privacy-gate {
+  height: auto;
+  max-width: 560px;
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
+.options-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+}
+
+.options-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.options-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.options-header-brand img {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.options-header-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.options-header-copy h1 {
+  margin: 0;
+  font-size: 21px;
+  letter-spacing: -0.015em;
+}
+
+.options-header-copy p,
+.workspace-section-copy p,
+.profile-dialog-head p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.options-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: none;
+}
+
+.options-header-link,
+.quiet-action {
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.options-header-link {
+  padding: 6px 2px;
+}
+
+.options-header-link:hover,
+.quiet-action:hover {
+  text-decoration: underline;
+}
+
+.options-main,
+.options-workspace {
+  display: grid;
+}
+
+.profile-dialog-head h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 17px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.quiet-action {
+  min-height: 36px;
+  padding: 0 4px;
+}
+
+.new-rule-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dialog-close-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rules-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--manager-section-space);
+}
+
+.options-shell .rule-search input {
+  min-height: 34px;
+}

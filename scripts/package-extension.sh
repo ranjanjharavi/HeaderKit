@@ -15,6 +15,7 @@ OUTPUT="${EXTENSION_NAME}-v${VERSION}.zip"
 RUNTIME_FILES=(
   "manifest.json"
   "background.js"
+  "background"
   "popup"
   "options"
   "privacy"

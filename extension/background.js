@@ -1,4 +1,4 @@
-import { commitRuleSet } from './shared/rule-commit.js';
+import { commitRuleSet } from './background/rule-commit.js';
 import {
   clearAlarm,
   createAlarm,
@@ -9,19 +9,19 @@ import {
   storageAreaRemove,
   storageAreaSet,
   updateDynamicRules
-} from './shared/chrome-api.js';
-import { filterGrantedRules } from './shared/site-access.js';
+} from './shared/runtime/chrome-api.js';
+import { filterGrantedRules } from './shared/domain/site-access.js';
 import {
   ACTIVATION_MESSAGE_GET,
   ACTIVATION_MESSAGE_SET,
   RULE_MESSAGE_COMMIT,
   RULE_MESSAGE_GET
-} from './shared/messages.js';
+} from './shared/runtime/messages.js';
 import {
   RULE_STORAGE_KEY,
   buildDynamicRule,
   normalizeRules
-} from './shared/rules.js';
+} from './shared/domain/rules.js';
 import {
   ACTIVATION_STORAGE_KEY,
   getLiveRules,
@@ -29,11 +29,11 @@ import {
   resolveActivation,
   setMasterEnabled,
   startBrowserSession
-} from './shared/activation.js';
-import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from './shared/profiles.js';
-import { MIGRATED_KEYS, ensureMigrated } from './shared/migrate.js';
-import { resolveBadge } from './shared/badge.js';
-import { createSerialQueue } from './shared/serial-queue.js';
+} from './shared/domain/activation.js';
+import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from './shared/domain/profiles.js';
+import { MIGRATED_KEYS, ensureMigrated } from './background/migrate.js';
+import { resolveBadge } from './background/badge.js';
+import { createSerialQueue } from './shared/runtime/serial-queue.js';
 
 const EXPIRY_ALARM = 'reqkit:activation-expiry';
 // Keep storage, DNR, alarm, and badge work ordered around the latest state.

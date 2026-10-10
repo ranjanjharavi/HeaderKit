@@ -104,6 +104,44 @@ Read the [privacy policy](privacy/policy.md).
 
 The project uses browser-native JavaScript modules and has no runtime package dependencies.
 
+The repository is organized by runtime responsibility:
+
+```text
+extension/
+  background.js       Service-worker entry point
+  background/        Rule commits, migrations, and badge calculation
+  options/           Manager features, workspace coordination, and styles
+  popup/             Popup features, page state, and layout
+  shared/
+    domain/          Pure rules, activation, profiles, site access, and URLs
+    runtime/         Chrome adapters, message clients, and permission workflows
+    ui/              Shared rendering, dialogs, consent, and DOM helpers
+    styles/          Shared tokens and components
+tests/
+  background/        Worker helper and event checks
+  domain/            Pure model tests
+  runtime/           Chrome adapters, module graph, and save ordering
+  ui/                Popup, manager, and shared UI tests
+  fixtures/browser/  Browser harnesses and sample data
+  helpers/           Test source loaders and UI stubs
+docs/                Published website, guides, and site assets
+privacy/             Canonical privacy policy Markdown
+scripts/             Privacy generation, packaging, and preview sources
+store-assets/        Screenshots, icons, and promotional artwork
+```
+
+Domain modules contain reusable data logic. Runtime modules bridge that logic to
+Chrome, and the service worker owns applied rules and activation commits. Page
+controllers wire events; composers, views, and actions handle their respective
+feature responsibilities. The manager workspace coordinates the independent
+features and refreshes their shared page state.
+
+Stylesheet entry points import focused fragments in an explicit order. Keep
+that order when editing shared components or responsive overrides.
+
+For browser harnesses and artwork capture, see the [local preview instructions](scripts/previews/README.md).
+For release image ownership, see the [store artwork notes](store-assets/README.md).
+
 Run the tests:
 
 ```bash
@@ -132,4 +170,4 @@ Report problems or request enhancements through [Report an issue](https://github
 
 ReqKit is available under the [MIT License](LICENSE). 
 
-> **Note:** This repository was originally hosted under another account belonging to the same author. 
+> **Note:** This repository was originally hosted under another account belonging to the same author.

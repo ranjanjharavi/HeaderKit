@@ -1,0 +1,250 @@
+.rule-list {
+  gap: var(--manager-compact-gap);
+  padding: var(--manager-section-space) var(--manager-inline-space) 16px;
+}
+
+.options-shell .rule-group {
+  overflow: hidden;
+  border-color: var(--manager-border);
+  border-radius: var(--radius-lg);
+  background: var(--manager-surface);
+  box-shadow: none;
+}
+
+.options-shell .rule-group-toggle {
+  position: relative;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 40px;
+  padding: 9px 12px 9px 36px;
+  border-radius: 0;
+  background: var(--manager-surface-tint);
+}
+
+.options-shell .rule-group-toggle[aria-expanded='false'] {
+  background: var(--manager-surface-subtle);
+}
+
+.options-shell .rule-group-toggle:hover {
+  background: var(--manager-surface-hover);
+}
+
+.options-shell .rule-group-heading {
+  flex: 0 1 auto;
+  max-width: 50%;
+}
+
+.options-shell .rule-group-meta {
+  flex: 0 1 auto;
+  gap: var(--manager-compact-gap);
+}
+
+.options-shell .rule-domain {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  color: var(--foreground);
+}
+
+.options-shell .rule-group-summary {
+  color: var(--manager-subtle);
+  font-size: 12px;
+}
+
+.options-shell .rule-group-chevron {
+  position: absolute;
+  left: 12px;
+  width: 14px;
+  height: 14px;
+  color: var(--manager-muted);
+}
+
+.options-shell .rule-group-toggle::after {
+  content: 'Collapse';
+  margin-left: auto;
+  color: var(--manager-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.options-shell .rule-group-toggle[aria-expanded='false']::after {
+  content: 'Expand';
+}
+
+.options-shell .domain-rule-list {
+  border-top-color: var(--manager-divider);
+}
+
+.options-shell .domain-rule-row {
+  padding: 0;
+  background: var(--manager-surface);
+}
+
+.options-shell .domain-rule-row + .domain-rule-row {
+  border-top-color: var(--manager-row-divider);
+}
+
+.options-shell .domain-rule-row.is-paused {
+  background: var(--manager-surface);
+}
+
+.options-shell .domain-rule-content {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.75fr) minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: var(--manager-section-space);
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.options-shell .rule-row-head {
+  display: contents;
+}
+
+.options-shell .rule-identification {
+  grid-column: 1;
+  min-height: auto;
+}
+
+.options-shell .rule-value-row {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.options-shell .rule-scope-summary {
+  grid-column: 1 / -1;
+  margin-top: -5px;
+  font-size: 12px;
+}
+
+.options-shell .rule-row-controls {
+  grid-column: 3;
+  grid-row: 1;
+  gap: var(--manager-compact-gap);
+}
+
+.options-shell .rule-header-name,
+.options-shell .rule-header-value {
+  font-size: 13px;
+}
+
+.options-shell .domain-rule-row:not(.is-paused) .rule-header-name {
+  color: var(--manager-active-header);
+}
+
+.options-shell .rule-header-value {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--manager-muted);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-line-clamp: initial;
+}
+
+.options-shell .rule-header-value.is-masked {
+  display: block;
+}
+
+.options-shell .domain-rule-row.is-paused .rule-header-name,
+.options-shell .domain-rule-row.is-paused .rule-header-value,
+.options-shell .domain-rule-row.is-paused .rule-enable-label {
+  color: var(--manager-subtle);
+}
+
+.options-shell .rule-enable-control {
+  gap: 6px;
+  min-height: 28px;
+  padding: 0;
+}
+
+.options-shell .rule-enable-control:hover {
+  background: transparent;
+}
+
+.options-shell .rule-enable-label {
+  order: -1;
+  min-width: 20px;
+  color: var(--foreground);
+  font-size: 12px;
+}
+
+.options-shell .rule-switch-track {
+  width: 34px;
+  height: 20px;
+}
+
+.options-shell .rule-switch-thumb {
+  width: 16px;
+  height: 16px;
+}
+
+.options-shell .rule-enable-control[aria-checked='true'] .rule-switch-thumb {
+  transform: translateX(14px);
+}
+
+.options-shell .rule-action-btn {
+  width: auto;
+  min-height: 28px;
+  padding: 0;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.options-shell .rule-action-btn:hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--primary-hover);
+}
+
+.options-shell .rule-action-btn svg {
+  display: none;
+}
+
+.options-shell .rule-action-btn::after {
+  content: 'Edit';
+}
+
+.options-shell .rule-action-btn.danger {
+  color: var(--manager-subtle);
+}
+
+.options-shell .rule-action-btn.danger::after {
+  content: 'Delete';
+}
+
+.options-shell .rule-action-btn.danger:hover {
+  color: var(--danger);
+}
+
+.options-shell .rule-access-notice,
+.options-shell .rule-conflict-notice {
+  grid-column: 1 / -1;
+}
+
+.options-shell .rule-edit-form {
+  gap: 10px;
+  padding: 12px;
+}
+
+.options-shell .rule-edit-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.options-shell .rule-edit-field-host,
+.options-shell .rule-edit-field-profile {
+  grid-column: 1 / -1;
+}
+
+.options-shell .rule-edit-disclosure {
+  margin: 0;
+}

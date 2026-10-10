@@ -1,0 +1,55 @@
+.privacy-gate {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100%;
+  padding: 34px 38px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 14px;
+}
+
+.privacy-gate[hidden],
+.shell[hidden] {
+  display: none;
+}
+
+.privacy-gate-icon {
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.privacy-gate h1 {
+  max-width: 390px;
+  font-size: 23px;
+}
+
+.privacy-gate p {
+  color: var(--muted-foreground);
+  font-size: var(--type-body);
+  line-height: 1.55;
+}
+
+.privacy-policy-link {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.privacy-consent-btn {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.privacy-consent-status {
+  min-height: 18px;
+}
+
+.disclosure-text {
+  padding: 9px 10px;
+  border-left: 3px solid #60a5fa;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: #eff6ff;
+  color: #334155;
+}

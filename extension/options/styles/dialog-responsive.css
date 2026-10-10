@@ -1,0 +1,57 @@
+@media (max-width: 640px) {
+  .options-shell {
+    gap: 18px;
+    padding: 20px 14px 48px;
+  }
+
+  .options-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .options-header-actions {
+    justify-content: space-between;
+  }
+
+  .profile-dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+  }
+
+  .profile-dialog-shell {
+    padding: 16px;
+  }
+
+  .site-access-dialog {
+    width: calc(100vw - 20px);
+  }
+
+  .site-access-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .site-access-revoke-btn {
+    justify-self: start;
+  }
+
+  .site-access-row-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .site-access-kind {
+    max-width: 100%;
+  }
+
+  .profile-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-row-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}

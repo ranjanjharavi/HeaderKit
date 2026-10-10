@@ -1,0 +1,135 @@
+:root {
+  color-scheme: light;
+  --ink: #0b1220;
+  --ink-soft: #334155;
+  --muted: #64748b;
+  --blue: #2563eb;
+  --blue-deep: #1d4ed8;
+  --blue-soft: #eff6ff;
+  --sky-soft: #ecfeff;
+  --border: #dbe7f5;
+  --border-strong: #bfdbfe;
+  --surface: #ffffff;
+  --surface-soft: #f8fbff;
+  --shadow-sm: 0 14px 40px rgba(30, 64, 175, 0.09);
+  --shadow-lg: 0 32px 90px rgba(30, 64, 175, 0.16);
+  --radius-lg: 26px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: #f8fbff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(96, 165, 250, 0.16), transparent 28rem),
+    radial-gradient(circle at 92% 24%, rgba(125, 211, 252, 0.16), transparent 25rem),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 34%, #eef6ff 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid rgba(219, 231, 245, 0.8);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px);
+}
+
+.nav-shell,
+.section-shell,
+.footer-shell {
+  width: min(1120px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.nav-shell {
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.brand img {
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  border-radius: 11px;
+  box-shadow: 0 7px 20px rgba(37, 99, 235, 0.15);
+}
+
+.nav-links,
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.nav-links a,
+.footer-links a,
+.text-link {
+  transition: color 0.18s ease;
+}
+
+.nav-links a:hover,
+.footer-links a:hover,
+.text-link:hover {
+  color: var(--blue);
+}
+
+.nav-links a[aria-current="page"] {
+  color: var(--blue-deep);
+}
+
+.nav-github {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.8);
+}

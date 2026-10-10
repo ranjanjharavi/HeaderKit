@@ -1,0 +1,13 @@
+.footer-shell {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  min-height: 120px;
+  align-items: center;
+}
+
+.footer-shell p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}

@@ -1,13 +1,13 @@
-import { requirePrivacyConsent } from '../shared/privacy.js';
+import { requirePrivacyConsent } from '../shared/ui/privacy.js';
 import {
   bindRuleEvents,
-  initializeRules,
-  refreshFromStorage,
-  renderRules
+  initializeRules
 } from './rules/controller.js';
-import { bindProfileEvents } from './profiles/controller.js';
+import { bindProfileEvents, activateProfile } from './profiles/controller.js';
 import { bindSiteAccessEvents } from './site-access/controller.js';
-import { showStatus } from '../shared/ui.js';
+import { showStatus } from '../shared/ui/ui.js';
+import { bindActivationEvents } from './activation/controller.js';
+import { bindWorkspaceEvents, refreshFromStorage, renderWorkspace } from './workspace.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {
@@ -19,9 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function start() {
   await requirePrivacyConsent();
-  bindRuleEvents();
+  bindRuleEvents({ onRefresh: refreshFromStorage, onRender: renderWorkspace });
+  bindActivationEvents({ onChanged: renderWorkspace, onResumeProfile: activateProfile });
+  bindWorkspaceEvents();
   bindProfileEvents({ onChanged: refreshFromStorage });
-  bindSiteAccessEvents({ onRefreshState: refreshFromStorage, onRenderRules: renderRules });
+  bindSiteAccessEvents({ onRefreshState: refreshFromStorage, onRenderRules: renderWorkspace });
 
   await initializeRules({ editRuleId: readEditRuleId() }).catch((error) => {
     console.error('Could not load header rules.', error);
