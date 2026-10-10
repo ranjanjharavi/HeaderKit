@@ -120,7 +120,7 @@ for (const surface of ['options', 'popup']) {
     await harness.actions.toggleRule(1);
     await harness.actions.toggleRule(1);
     await harness.actions.toggleRule(1);
-    assert.deepEqual(harness.calls, ['request', 'commit', 'commit', 'commit']);
+    assert.deepEqual(harness.calls, ['commit', 'request', 'commit', 'commit']);
     assert.equal(harness.state.grantedOrigins.has('https://api.example.com/*'), true);
   });
 
@@ -177,15 +177,66 @@ for (const surface of ['options', 'popup']) {
     assert.equal(harness.state.rules[0].enabled, false);
   });
 
-  test(`${surface} denied site access leaves a resumed rule paused and uncommitted`, async (t) => {
+  test(`${surface} denied site access reports the rule state accurately`, async (t) => {
     const rule = {
       id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
       enabled: false, profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     await harness.actions.toggleRule(1);
-    assert.deepEqual(harness.calls, ['request']);
-    assert.equal(harness.state.rules[0].enabled, false);
-    assert.match(harness.element('headerStatus').textContent, /required to resume/);
+    assert.deepEqual(harness.calls, ['commit', 'request']);
+    assert.equal(harness.state.rules[0].enabled, true);
+    assert.match(harness.element('headerStatus').textContent, /Rule resumed.*needs site access/);
   });
+
+  test(`${surface} host edits require preflight and save before requesting new access`, async (t) => {
+    const rule = {
+      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
+      enabled: true, profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.state.editingId = 1;
+    harness.draft({ domain: 'qa.example.com', headerValue: 'new' }, surface === 'options' ? 1 : null);
+
+    await harness.actions.saveEditedRule(1);
+    const preflightId = surface === 'options' ? 'editSiteAccessPreflight-1' : 'siteAccessPreflight';
+    assert.equal(harness.element(preflightId).hidden, false);
+    assert.deepEqual(harness.calls, []);
+
+    await harness.actions.saveEditedRule(1);
+    assert.deepEqual(harness.calls, ['commit', 'request', 'remove']);
+    assert.equal(harness.state.rules[0].domain, 'qa.example.com');
+    assert.equal(harness.state.rules[0].headerValue, 'new');
+    assert.match(harness.element('headerStatus').textContent, /Rule saved.*needs site access/);
+  });
+
+  for (const action of ['edit', 'resume']) {
+    test(`${surface} ${action} starts saving synchronously even if the permission prompt never responds`, async (t) => {
+      const rule = {
+        id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
+        enabled: action === 'edit', profileId: 'default'
+      };
+      const harness = setup(t, surface, [rule]);
+      harness.state.editingId = action === 'edit' ? 1 : null;
+      harness.draft({ domain: 'qa.example.com', headerValue: 'new' }, surface === 'options' ? 1 : null);
+      if (action === 'edit') {
+        await harness.actions.saveEditedRule(1);
+      }
+      globalThis.chrome.runtime.sendMessage = (message, callback) => {
+        harness.calls.push('commit');
+        queueMicrotask(() => callback({ ok: true, rules: message.rules }));
+      };
+      globalThis.chrome.permissions.request = () => { harness.calls.push('request'); };
+
+      if (action === 'edit') {
+        harness.actions.saveEditedRule(1);
+      } else {
+        harness.actions.toggleRule(1);
+      }
+      assert.deepEqual(harness.calls, ['commit', 'request']);
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(harness.state.rules[0].enabled, true);
+      assert.equal(harness.state.rules[0].headerValue, action === 'edit' ? 'new' : 'old');
+    });
+  }
 }

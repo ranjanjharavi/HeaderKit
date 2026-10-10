@@ -14,6 +14,7 @@ import {
   normalizeDomain,
   normalizePathPrefix,
   normalizeRules,
+  parseHostInput,
   validateRuleDraft
 } from '../../extension/shared/domain/rules.js';
 
@@ -58,9 +59,59 @@ test('normalizeDomain rejects unsupported protocols and empty values', () => {
   assert.equal(normalizeDomain(''), '');
 });
 
+test('host inputs accept only exact DNS or IP hosts with an optional HTTPS prefix', () => {
+  const accepted = [
+    [' https://API.Example.com/ ', 'api.example.com'],
+    ['localhost', 'localhost'],
+    ['127.0.0.1', '127.0.0.1'],
+    ['https://[::1]/', '[::1]'],
+    ['[2001:db8::1]', '[2001:db8::1]'],
+    ['https://b\u00fccher.example/', 'xn--bcher-kva.example']
+  ];
+  for (const [input, host] of accepted) {
+    assert.deepEqual(parseHostInput(input), { host }, input);
+    assert.equal(validateRuleDraft({ ...sampleRules[0], domain: input }, []).rule.domain, host);
+  }
+});
+
+test('host inputs reject scope broadening and malformed hosts with field errors', () => {
+  const rejected = [
+    ['*.example.com', /Wildcards/],
+    ['https://%2a.example.com/', /valid HTTPS host/],
+    ['http://api.example.com', /Only HTTPS/],
+    ['api.example.com/v1', /Path prefix/],
+    ['api.example.com/.', /Path prefix/],
+    ['api.example.com//', /Path prefix/],
+    ['api.example.com:8443', /without a port/],
+    ['https://api.example.com:443/', /without a port/],
+    ['[::1]:443', /without a port/],
+    ['https://user:pass@api.example.com', /without credentials/],
+    ['api.example.com?x=1', /without a query/],
+    ['api.example.com#part', /without a fragment/],
+    ['https:///api.example.com', /Path prefix/],
+    ['https://api.example.com\\path', /valid HTTPS host/],
+    ['api\n.example.com', /valid HTTPS host/],
+    ['bad_host.example', /valid HTTPS host/],
+    ['-bad.example', /valid HTTPS host/],
+    ['bad-.example', /valid HTTPS host/],
+    ['bad..example', /valid HTTPS host/],
+    [`${'a'.repeat(64)}.example`, /valid HTTPS host/],
+    [Array(5).fill('a'.repeat(63)).join('.'), /valid HTTPS host/],
+    ['127.1', /valid HTTPS host/],
+    ['0x7f000001', /valid HTTPS host/]
+  ];
+  for (const [input, error] of rejected) {
+    const result = validateRuleDraft({ ...sampleRules[0], domain: input }, []);
+    assert.equal(result.ok, false, input);
+    assert.equal(result.field, 'domain', input);
+    assert.match(result.error, error, input);
+    assert.deepEqual(normalizeRules([{ ...sampleRules[0], domain: input }]), [], input);
+  }
+});
+
 test('normalizeRules repairs identifiers and normalizes fields', () => {
   const normalized = normalizeRules([
-    { ...sampleRules[0], domain: 'HTTPS://API.EXAMPLE.COM/path' },
+    { ...sampleRules[0], domain: 'HTTPS://API.EXAMPLE.COM/' },
     { ...sampleRules[1], id: 1 },
     { id: 3, domain: '', headerName: 'X-Missing', headerValue: 'value' },
     { id: 4, domain: 'example.com', headerName: 'Bad Header', headerValue: 'value' }
@@ -74,7 +125,7 @@ test('normalizeRules repairs identifiers and normalizes fields', () => {
 
 test('validateRuleDraft normalizes host and optional request scope', () => {
   const result = validateRuleDraft({
-    domain: 'https://API.example.com/path',
+    domain: 'https://API.example.com/',
     headerName: ' X-Test ',
     headerValue: ' value '
   }, []);
@@ -269,6 +320,7 @@ test('profile helpers filter rules', () => {
 
 test('buildDynamicRule preserves host-wide defaults and applies path/type scopes', () => {
   const defaultRule = buildDynamicRule(sampleRules[0]);
+  assert.equal(defaultRule.condition.isUrlFilterCaseSensitive, true);
   assert.deepEqual(defaultRule.condition.resourceTypes, [
     'main_frame', 'sub_frame', 'stylesheet', 'script', 'image', 'font', 'object',
     'xmlhttprequest', 'ping', 'csp_report', 'media', 'other'
@@ -289,4 +341,17 @@ test('buildDynamicRule preserves host-wide defaults and applies path/type scopes
   assert.doesNotMatch('https://api.example.com/api/v10/users', scopedPattern);
   assert.doesNotMatch('https://api.example.com/admin', scopedPattern);
   assert.equal(getRuleOriginPattern(sampleRules[0]), 'https://api.example.com/*');
+});
+
+test('DNR path case sensitivity agrees with conflict detection', () => {
+  const upperRule = { ...sampleRules[0], pathPrefix: '/API' };
+  const lowerRule = { ...sampleRules[0], id: 3, pathPrefix: '/api', headerValue: 'different' };
+
+  assert.equal(areRulesConflicting(upperRule, lowerRule), false);
+  assert.equal(validateRuleDraft(lowerRule, [upperRule]).ok, true);
+
+  const { condition } = buildDynamicRule(upperRule);
+  const pattern = new RegExp(condition.regexFilter, condition.isUrlFilterCaseSensitive ? '' : 'i');
+  assert.match('https://api.example.com/API/users', pattern);
+  assert.doesNotMatch('https://api.example.com/api/users', pattern);
 });

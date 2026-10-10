@@ -71,6 +71,35 @@ test('migration is idempotent', () => {
   assert.deepEqual(second.state, first);
 });
 
+test('version 2 advances to the latest schema without changing saved data', () => {
+  const stored = { ...migrateState(legacyState).state, [SCHEMA_VERSION_KEY]: 2 };
+  const { state, changed } = migrateState(stored);
+
+  assert.equal(changed, true);
+  assert.deepEqual(state, { ...stored, [SCHEMA_VERSION_KEY]: CURRENT_SCHEMA_VERSION });
+  assert.equal(migrateState(state).changed, false);
+});
+
+test('older schemas remove invalid hosts without changing valid rules or activation', () => {
+  for (const version of [0, 2, 3]) {
+    const validState = migrateState(legacyState).state;
+    const stored = {
+      ...validState,
+      [SCHEMA_VERSION_KEY]: version,
+      headerRules: [
+        ...validState.headerRules,
+        { ...validState.headerRules[0], id: 3, domain: '*.example.com' },
+        { ...validState.headerRules[0], id: 4, domain: 'api.example.com/v1' }
+      ]
+    };
+    const result = migrateState(stored);
+
+    assert.equal(result.changed, true);
+    assert.deepEqual(result.state, validState);
+    assert.equal(migrateState(result.state).changed, false);
+  }
+});
+
 test('an already-migrated profile is left untouched', () => {
   const migrated = {
     [SCHEMA_VERSION_KEY]: CURRENT_SCHEMA_VERSION,
