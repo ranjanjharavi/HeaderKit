@@ -39,7 +39,7 @@ function normalizeRule(
     return null;
   }
 
-  const domain = normalizeDomain(rule.domain || '');
+  const { host: domain } = parseHostInput(rule.domain);
   const headerName = String(rule.headerName || '').trim();
   const headerValue = String(rule.headerValue || '').trim();
   const pathPrefix = normalizePathPrefix(rule.pathPrefix ?? '');
@@ -113,6 +113,55 @@ function normalizeResourceType(value) {
   return SUPPORTED_RESOURCE_TYPES.has(resourceType) ? resourceType : null;
 }
 
+export function parseHostInput(value) {
+  const input = String(value || '').trim();
+  const invalidHost = { error: 'Enter a valid HTTPS host, such as api.example.com.' };
+  if (!input) {
+    return invalidHost;
+  }
+  if (input.includes('*')) {
+    return { error: 'Wildcards are not supported. Enter one exact HTTPS host.' };
+  }
+  if (/^[a-z][a-z\d+.-]*:\/\//i.test(input) && !/^https:\/\//i.test(input)) {
+    return { error: 'Only HTTPS hosts are supported.' };
+  }
+
+  const authority = input.replace(/^https:\/\//i, '').replace(/\/$/, '');
+  if (authority.includes('@')) {
+    return { error: 'Enter only the host, without credentials.' };
+  }
+  if (authority.includes('?')) {
+    return { error: 'Enter only the host, without a query string.' };
+  }
+  if (authority.includes('#')) {
+    return { error: 'Enter only the host, without a fragment.' };
+  }
+  if (authority.includes('/')) {
+    return { error: 'Enter only the host. Put paths in Path prefix.' };
+  }
+  if (authority.replace(/^\[[^\]]+\]/, '').includes(':')) {
+    return { error: 'Enter only the host, without a port. Rules apply to all HTTPS ports.' };
+  }
+  if (authority.includes('\\') || /\s/.test(authority)
+    || /[\u0000-\u001f\u007f]/.test(authority) || !URL.canParse(`https://${authority}`)) {
+    return invalidHost;
+  }
+
+  const host = new URL(`https://${authority}`).hostname;
+  if (host.startsWith('[') && host.endsWith(']')) {
+    return { host };
+  }
+  if (host.length > 253 || !host.split('.').every((label) => (
+    /^[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?$/i.test(label)
+  ))) {
+    return invalidHost;
+  }
+  if (/^\d+(?:\.\d+){3}$/.test(host) && !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(authority)) {
+    return invalidHost;
+  }
+  return { host };
+}
+
 export function normalizeDomain(value) {
   const cleanedValue = String(value || '').trim();
   if (!cleanedValue) {
@@ -140,8 +189,9 @@ export function validateRuleDraft(draft, existingRules, {
   activation = createDefaultActivation(),
   profileId = undefined
 } = {}) {
+  const parsedHost = parseHostInput(draft?.domain);
   const rule = {
-    domain: normalizeDomain(draft?.domain),
+    domain: parsedHost.host,
     headerName: String(draft?.headerName || '').trim(),
     headerValue: String(draft?.headerValue || '').trim(),
     pathPrefix: normalizePathPrefix(draft?.pathPrefix ?? ''),
@@ -152,7 +202,7 @@ export function validateRuleDraft(draft, existingRules, {
   );
 
   if (!rule.domain) {
-    return { ok: false, field: 'domain', error: 'Enter a valid HTTPS host, such as api.example.com.' };
+    return { ok: false, field: 'domain', error: parsedHost.error };
   }
   if (!rule.headerName) {
     return { ok: false, field: 'headerName', error: 'Enter a header name.' };
@@ -357,6 +407,7 @@ export function buildDynamicRule(rule) {
     },
     condition: {
       resourceTypes: resourceType === 'all' ? REQUEST_RESOURCE_TYPES : [resourceType],
+      isUrlFilterCaseSensitive: true,
       regexFilter: String.raw`^https:\/\/${escapeRegex(rule.domain)}(?::\d+)?${pathRegex}`
     }
   };

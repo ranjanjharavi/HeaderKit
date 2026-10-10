@@ -186,6 +186,12 @@ export function renderRuleEditForm(rule, profiles = null) {
           ${showProfileField ? renderProfileField(rule, profiles) : ''}
         </div>
         <p class="helper-text disclosure-text rule-edit-disclosure">Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only authorized systems.</p>
+        <div id="editSiteAccessPreflight-${rule.id}" class="site-access-preflight" role="note" aria-live="polite" hidden>
+          <div>
+            <strong>Site access needed for <code id="editSiteAccessPreflightHost-${rule.id}"></code></strong>
+            <p>Save again to ask Chrome for site access to this exact HTTPS host. No other sites are included in the request.</p>
+          </div>
+        </div>
         <p id="ruleEditError-${rule.id}" class="rule-form-error" role="alert" hidden></p>
         <div class="action-row rule-edit-actions">
           <button class="primary-btn save-edit-rule-btn" type="submit">Save changes</button>

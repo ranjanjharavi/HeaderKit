@@ -3,7 +3,6 @@ import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from '../shared
 import { RULE_STORAGE_KEY, normalizeRules } from '../shared/domain/rules.js';
 
 export const SCHEMA_VERSION_KEY = 'schemaVersion';
-export const CURRENT_SCHEMA_VERSION = 3;
 
 export const MIGRATED_KEYS = [
   SCHEMA_VERSION_KEY,
@@ -30,8 +29,25 @@ const MIGRATION_STEPS = [
         [ACTIVATION_STORAGE_KEY]: normalizeActivation(state[ACTIVATION_STORAGE_KEY], { profileIds })
       };
     }
+  },
+  {
+    version: 3,
+    apply: (state) => state
+  },
+  {
+    version: 4,
+    apply(state) {
+      return {
+        ...state,
+        [RULE_STORAGE_KEY]: normalizeRules(state[RULE_STORAGE_KEY], {
+          profileIds: getProfileIds(state[PROFILE_STORAGE_KEY])
+        })
+      };
+    }
   }
 ];
+
+export const CURRENT_SCHEMA_VERSION = MIGRATION_STEPS.at(-1).version;
 
 /**
  * Pure migration. Every step is idempotent, so re-running over already-migrated
@@ -73,6 +89,12 @@ export async function ensureMigrated({ get, set }) {
       [ACTIVATION_STORAGE_KEY]: state[ACTIVATION_STORAGE_KEY]
     });
     await set({ [SCHEMA_VERSION_KEY]: state[SCHEMA_VERSION_KEY] });
+
+    const removedCount = (Array.isArray(stored[RULE_STORAGE_KEY]) ? stored[RULE_STORAGE_KEY].length : 0)
+      - state[RULE_STORAGE_KEY].length;
+    if (removedCount > 0) {
+      console.warn(`Removed ${removedCount} invalid saved header rule(s) during migration.`);
+    }
   }
 
   return state;

@@ -117,16 +117,39 @@ export async function saveEditedRule(id) {
     rule.id === id ? { ...rule, ...validation.rule, profileId } : rule
   ));
   const updatedRule = updatedRules.find((rule) => rule.id === id);
+  const needsAccess = updatedRule.enabled && !isRuleGranted(updatedRule, state.headers.grantedOrigins);
+  if (needsAccess && !siteAccessPreflight.isReadyFor(updatedRule)) {
+    siteAccessPreflight.show(updatedRule);
+    return false;
+  }
 
   try {
-    if (updatedRule.enabled) {
-      state.headers.grantedOrigins = await ensureRulePermission(updatedRule, state.headers.grantedOrigins);
+    let permissionResult = null;
+    if (needsAccess) {
+      permissionResult = await saveRuleBeforePermissionPrompt(updatedRule, updatedRules, {
+        persistRules,
+        requestPermission: requestOriginPermission
+      });
+      state.headers.grantedOrigins = await readGrantedOrigins();
+    } else {
+      await persistRules(updatedRules);
     }
-    await persistRules(updatedRules);
     if (currentRule.domain !== updatedRule.domain) {
       await releaseUnusedPermission(currentRule, updatedRules);
     }
     state.headers.revealedRuleIds.delete(id);
+    renderRules();
+    if (permissionResult && !permissionResult.granted) {
+      if (permissionResult.permissionError) {
+        console.error('Could not request site access.', permissionResult.permissionError);
+      }
+      showStatus(
+        'headerStatus',
+        `Rule saved, but ReqKit still needs site access to https://${updatedRule.domain} before it can be applied.`,
+        'error'
+      );
+      return true;
+    }
     showStatus('headerStatus', 'Header rule updated.', 'success');
     return true;
   } catch (error) {
@@ -152,22 +175,35 @@ export async function toggleRule(id) {
       showStatus('headerStatus', getRuleConflictMessage(conflictingRule), 'error');
       return;
     }
-
-    try {
-      state.headers.grantedOrigins = await ensureRulePermission(currentRule, state.headers.grantedOrigins);
-    } catch (error) {
-      console.error(error);
-      showStatus('headerStatus', error.message, 'error');
-      return;
-    }
   }
 
   const updatedRules = state.headers.rules.map((rule) => (
     rule.id === id ? { ...rule, enabled: !rule.enabled } : rule
   ));
+  const needsAccess = !currentRule.enabled && !isRuleGranted(currentRule, state.headers.grantedOrigins);
 
   try {
-    await persistRules(updatedRules);
+    if (needsAccess) {
+      const result = await saveRuleBeforePermissionPrompt(currentRule, updatedRules, {
+        persistRules,
+        requestPermission: requestOriginPermission
+      });
+      state.headers.grantedOrigins = await readGrantedOrigins();
+      renderRules();
+      if (!result.granted) {
+        if (result.permissionError) {
+          console.error('Could not request site access.', result.permissionError);
+        }
+        showStatus(
+          'headerStatus',
+          `Rule resumed, but ReqKit still needs site access to https://${currentRule.domain} before it can be applied.`,
+          'error'
+        );
+        return;
+      }
+    } else {
+      await persistRules(updatedRules);
+    }
     const toggledRule = state.headers.rules.find((rule) => rule.id === id);
     showStatus('headerStatus', toggledRule?.enabled ? 'Rule resumed.' : 'Rule paused.', 'success');
   } catch (error) {

@@ -30,6 +30,9 @@ export function bindRuleEvents({ onRefresh, onRender }) {
     const form = event.target.closest('.rule-edit-form');
     if (form) {
       clearRuleFormError(Number(form.dataset.id));
+      const preflight = document.getElementById(`editSiteAccessPreflight-${form.dataset.id}`);
+      preflight.hidden = true;
+      preflight.dataset.origin = '';
     }
   });
   document.getElementById('ruleSearchInput').addEventListener('input', handleRuleSearchInput);
