@@ -11,7 +11,7 @@ label {
 }
 
 .helper-text {
-  font-size: var(--type-support);
+  font-size: var(--type-support-secondary);
   line-height: 1.45;
   color: var(--muted-foreground);
 }
