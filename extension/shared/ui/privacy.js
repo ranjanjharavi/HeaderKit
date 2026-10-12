@@ -1,7 +1,7 @@
 import { storageLocalGet, storageLocalSet } from '../runtime/chrome-api.js';
 
 const PRIVACY_CONSENT_KEY = 'privacyConsentVersion';
-const PRIVACY_CONSENT_VERSION = 1;
+const PRIVACY_CONSENT_VERSION = 2;
 
 export async function requirePrivacyConsent() {
   const gate = document.getElementById('privacyGate');

@@ -6,7 +6,7 @@
     (async () => {
       const previewParameters = new URLSearchParams(location.search);
       const storage = previewParameters.has('store')
-        ? { privacyConsentVersion: 1 }
+        ? { privacyConsentVersion: Number(previewParameters.get('consent') ?? 2) }
         : {};
 
       if (previewParameters.has('headers')) {

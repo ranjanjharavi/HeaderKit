@@ -6,7 +6,7 @@
     (async () => {
       const previewParameters = new URLSearchParams(location.search);
       const storage = {
-        privacyConsentVersion: 1,
+        privacyConsentVersion: Number(previewParameters.get('consent') ?? 2),
         profiles: [
           { id: 'default', name: 'Default', createdAt: 0, defaultDurationMs: null },
           { id: 'staging', name: 'Staging', createdAt: 1, defaultDurationMs: null },

@@ -2,7 +2,7 @@
 // This module is served by the local preview only; it is never packaged.
 export function createStoreData() {
   return {
-    privacyConsentVersion: 1,
+    privacyConsentVersion: 2,
     profiles: [
       { id: 'default', name: 'Staging', createdAt: 0, defaultDurationMs: null },
       { id: 'qa', name: 'QA', createdAt: 1, defaultDurationMs: null },

@@ -10,11 +10,12 @@
 <body>
   <section id="privacyGate" class="privacy-gate" aria-labelledby="privacyGateTitle">
     <img class="privacy-gate-icon" src="../icons/reqkit-128.png" width="72" height="72" alt="ReqKit">
-    <h1 id="privacyGateTitle">Choose when ReqKit handles your data</h1>
-    <p>ReqKit reads the active tab URL locally to identify the current host and stores profiles, activation settings, and header rules in this Chrome profile.</p>
-    <p>ReqKit has no analytics or developer server. Header values are sent only to each rule's exact HTTPS host, and only when a site access grant covers it. Destination or intermediary logs may include those values.</p>
+    <h1 id="privacyGateTitle">Review how ReqKit handles your data</h1>
+    <p>ReqKit reads tab URLs locally for the current host and toolbar badges, including in the background on sites you grant access to. URLs are not stored or sent to the developer.</p>
+    <p>Profiles, settings, and header values are stored unencrypted in this Chrome profile. Anyone with access to its files may be able to read them.</p>
+    <p>ReqKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site access; destination or intermediary logs may include them.</p>
     <a class="privacy-policy-link" href="../privacy/index.html">Read the privacy policy</a>
-    <p>You must accept this notice to use ReqKit. You can review the privacy policy before continuing.</p>
+    <p>Accept to open ReqKit. Existing rules and site access are unchanged.</p>
     <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
     <div id="privacyConsentStatus" class="status-msg privacy-consent-status" role="status" aria-live="polite"></div>
   </section>

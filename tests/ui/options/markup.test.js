@@ -12,7 +12,7 @@ const sharedRuleRenderSource = readSource('extension/shared/ui/rule-render.js');
 
 test('rule manager separates active setup, rules, and profile administration', () => {
   assert.match(optionsMarkup, /id="active-setup"/);
-  assert.match(optionsMarkup, /You must accept this notice to use ReqKit/);
+  assert.match(optionsMarkup, /Accept to open ReqKit\. Existing rules and site access are unchanged/);
   assert.match(optionsMarkup, /id="profileTabs"[^>]*role="tablist"/);
   assert.match(optionsMarkup, /id="profilePanel"[^>]*role="tabpanel"[^>]*aria-labelledby="profileTab-0"/);
   assert.doesNotMatch(optionsMarkup, /activeProfileSelect|profileFilterSelect/);

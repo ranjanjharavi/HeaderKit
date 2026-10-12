@@ -11,7 +11,7 @@ test('popup keeps profile context in the header and scopes rules with tabs', () 
   assert.doesNotMatch(popupMarkup, /class="product-kicker"/);
   assert.match(popupMarkup, /id="activeProfileName"/);
   assert.match(popupMarkup, /id="activeUntilLabel"/);
-  assert.match(popupMarkup, /You must accept this notice to use ReqKit/);
+  assert.match(popupMarkup, /Accept to open ReqKit\. Existing rules and site access are unchanged/);
   assert.match(popupMarkup, /id="changeActiveSetupBtn"/);
   assert.match(popupMarkup, /id="ruleScopeTabs"[^>]*role="tablist"/);
   assert.match(popupMarkup, /id="currentSiteTab"[^>]*role="tab"[^>]*aria-controls="ruleListContainer"/);
