@@ -27,11 +27,20 @@ function describeRule(rule) {
 
 export function renderRules() {
   const container = document.getElementById('ruleListContainer');
+  const previousForm = container.querySelector('.rule-edit-form');
+  const preservedForm = Number(previousForm?.dataset.id) === state.editingId ? previousForm : null;
+  const focusedInput = preservedForm?.contains(document.activeElement) ? document.activeElement : null;
+  const selectionStart = focusedInput?.selectionStart;
+  const selectionEnd = focusedInput?.selectionEnd;
   const conflictMap = createConflictMap(getActiveRuleConflicts(state.rules, getActivation()));
   const conflictingIds = new Set(conflictMap.keys());
   updateSummary();
 
   const visibleRules = filterRulesBySearch(getVisibleRules(), state.searchQuery);
+  const editingRule = state.rules.find((rule) => rule.id === state.editingId);
+  if (editingRule && !visibleRules.some((rule) => rule.id === editingRule.id)) {
+    visibleRules.push(editingRule);
+  }
   if (!visibleRules.length) {
     container.innerHTML = getEmptyRulesMessage();
     syncAddRuleActions();
@@ -53,6 +62,14 @@ export function renderRules() {
       describeRule
     }
   )).join('');
+  const replacement = container.querySelector('.rule-edit-form');
+  if (preservedForm && replacement) {
+    replacement.replaceWith(preservedForm);
+    focusedInput?.focus({ preventScroll: true });
+    if (typeof selectionStart === 'number' && typeof selectionEnd === 'number') {
+      focusedInput.setSelectionRange(selectionStart, selectionEnd);
+    }
+  }
   syncAddRuleActions();
 }
 
