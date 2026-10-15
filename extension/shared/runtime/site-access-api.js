@@ -1,4 +1,4 @@
-import { getGrantedOrigins, requestOriginPermission, removeOriginPermission } from './chrome-api.js';
+import { getGrantedOrigins, requestOriginPermission } from './chrome-api.js';
 import { getRuleOriginPattern } from '../domain/rules.js';
 import { isRuleGranted } from '../domain/site-access.js';
 
@@ -23,16 +23,4 @@ export async function ensureRulePermission(rule, grantedOrigins) {
     throw new Error(`Site access to https://${rule.domain} is required to resume this rule.`);
   }
   return readGrantedOrigins();
-}
-
-export async function releaseUnusedPermission(rule, remainingRules) {
-  if (remainingRules.some((candidate) => candidate.domain === rule.domain)) {
-    return;
-  }
-
-  try {
-    await removeOriginPermission(getRuleOriginPattern(rule));
-  } catch (error) {
-    console.error(`Could not release site access for ${rule.domain}.`, error);
-  }
 }

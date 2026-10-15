@@ -1,4 +1,12 @@
-export const RULE_MESSAGE_GET = 'reqkit:rules:get';
-export const RULE_MESSAGE_COMMIT = 'reqkit:rules:commit';
-export const ACTIVATION_MESSAGE_GET = 'reqkit:activation:get';
-export const ACTIVATION_MESSAGE_SET = 'reqkit:activation:set';
+export const RULE_MESSAGE_ADD = 'reqkit:rules:add';
+export const RULE_MESSAGE_UPDATE = 'reqkit:rules:update';
+export const RULE_MESSAGE_SET_ENABLED = 'reqkit:rules:set-enabled';
+export const RULE_MESSAGE_DELETE = 'reqkit:rules:delete';
+export const ACTIVATION_MESSAGE_SET_MASTER = 'reqkit:activation:set-master';
+export const ACTIVATION_MESSAGE_SET_PROFILE = 'reqkit:activation:set-profile';
+export const ACTIVATION_MESSAGE_SET_DURATION = 'reqkit:activation:set-duration';
+export const PROFILE_MESSAGE_CREATE = 'reqkit:profiles:create';
+export const PROFILE_MESSAGE_RENAME = 'reqkit:profiles:rename';
+export const PROFILE_MESSAGE_DUPLICATE = 'reqkit:profiles:duplicate';
+export const PROFILE_MESSAGE_DELETE = 'reqkit:profiles:delete';
+export const STATE_MESSAGE_GET = 'reqkit:state:get';

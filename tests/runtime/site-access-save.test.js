@@ -14,11 +14,10 @@ const rule = {
 
 test('durable rule save starts before the Chrome permission request', async () => {
   const calls = [];
-  const resultPromise = saveRuleBeforePermissionPrompt(rule, [rule], {
-    persistRules(rules) {
-      calls.push(['persist', rules]);
-      return Promise.resolve();
-    },
+  const resultPromise = saveRuleBeforePermissionPrompt(rule, () => {
+    calls.push(['persist', [rule]]);
+    return Promise.resolve();
+  }, {
     requestPermission(origin) {
       calls.push(['permission', origin]);
       return Promise.resolve(true);
@@ -35,10 +34,9 @@ test('durable rule save starts before the Chrome permission request', async () =
 test('a rejected permission prompt does not discard the durable rule save', async () => {
   let persisted = false;
   const permissionError = new Error('Permission surface closed');
-  const result = await saveRuleBeforePermissionPrompt(rule, [rule], {
-    persistRules() {
-      persisted = true;
-    },
+  const result = await saveRuleBeforePermissionPrompt(rule, () => {
+    persisted = true;
+  }, {
     requestPermission() {
       throw permissionError;
     }
@@ -52,10 +50,9 @@ test('a rejected permission prompt does not discard the durable rule save', asyn
 test('a failed durable save is still reported as an error', async () => {
   const storageError = new Error('Storage failed');
 
-  await assert.rejects(saveRuleBeforePermissionPrompt(rule, [rule], {
-    persistRules() {
-      throw storageError;
-    },
+  await assert.rejects(saveRuleBeforePermissionPrompt(rule, () => {
+    throw storageError;
+  }, {
     requestPermission() {
       return true;
     }

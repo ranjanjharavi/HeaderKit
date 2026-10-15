@@ -1,17 +1,25 @@
 import { sendRuntimeMessage } from './chrome-api.js';
-import { ACTIVATION_MESSAGE_GET, ACTIVATION_MESSAGE_SET } from './messages.js';
+import {
+  ACTIVATION_MESSAGE_SET_MASTER,
+  ACTIVATION_MESSAGE_SET_PROFILE,
+  ACTIVATION_MESSAGE_SET_DURATION
+} from './messages.js';
 
 /**
  * Activation changes go through the service worker rather than straight to
  * storage, because the worker owns the declarativeNetRequest rule set and the
  * badges. Writing storage directly would leave both stale.
  */
-export function getActivationState() {
-  return sendActivationMessage({ type: ACTIVATION_MESSAGE_GET });
+export function setMasterEnabled(enabled) {
+  return sendActivationMessage({ type: ACTIVATION_MESSAGE_SET_MASTER, enabled });
 }
 
-export function setActivationState(activation) {
-  return sendActivationMessage({ type: ACTIVATION_MESSAGE_SET, activation });
+export function setActiveProfile(profileId) {
+  return sendActivationMessage({ type: ACTIVATION_MESSAGE_SET_PROFILE, profileId });
+}
+
+export function setActivationDuration({ durationMs = null, untilBrowserClose = false }) {
+  return sendActivationMessage({ type: ACTIVATION_MESSAGE_SET_DURATION, durationMs, untilBrowserClose });
 }
 
 async function sendActivationMessage(message) {
