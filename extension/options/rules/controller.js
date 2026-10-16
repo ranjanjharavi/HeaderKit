@@ -19,7 +19,7 @@ let renderWorkspace;
 export function bindRuleEvents({ onRefresh, onRender }) {
   refreshWorkspace = onRefresh;
   renderWorkspace = onRender;
-  configureRuleActions({ onRender });
+  configureRuleActions({ onRender, onRefresh });
   bindComposerEvents({ onAddRule: addRule });
 
   const ruleList = document.getElementById('ruleListContainer');
@@ -103,6 +103,9 @@ async function handleRuleFormSubmit(event) {
   const id = Number(form.dataset.id);
   const buttons = form.querySelectorAll('button');
   const saveButton = form.querySelector('.save-edit-rule-btn');
+  if (saveButton.disabled) {
+    return;
+  }
 
   buttons.forEach((button) => {
     button.disabled = true;

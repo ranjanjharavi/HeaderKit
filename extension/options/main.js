@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function start() {
   await requirePrivacyConsent();
   bindRuleEvents({ onRefresh: refreshFromStorage, onRender: renderWorkspace });
-  bindActivationEvents({ onChanged: renderWorkspace, onResumeProfile: activateProfile });
+  bindActivationEvents({ onChanged: refreshFromStorage, onResumeProfile: activateProfile });
   bindWorkspaceEvents();
   bindProfileEvents({ onChanged: refreshFromStorage });
   bindSiteAccessEvents({ onRefreshState: refreshFromStorage, onRenderRules: renderWorkspace });

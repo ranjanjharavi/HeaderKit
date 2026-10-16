@@ -2,11 +2,9 @@ import {
   formatRemainingTime,
   getActivationStatus,
   getRemainingMs,
-  getTargetProfileId,
-  setActivationDuration,
-  setMasterEnabled
+  getTargetProfileId
 } from '../../shared/domain/activation.js';
-import { setActivationState } from '../../shared/runtime/activation-api.js';
+import { setActivationDuration, setMasterEnabled } from '../../shared/runtime/activation-api.js';
 import { getProfileName } from '../../shared/domain/profiles.js';
 
 import { showStatus } from '../../shared/ui/ui.js';
@@ -15,6 +13,7 @@ import { state, getActivation } from '../state.js';
 let onChanged;
 let onResumeProfile;
 const DURATION_OPTIONS = [3_600_000, 28_800_000];
+let durationPending = false;
 
 export function bindActivationEvents(callbacks) {
   onChanged = callbacks.onChanged;
@@ -38,10 +37,9 @@ async function toggleMaster(forceOn = false) {
     control.disabled = true;
   });
 
-  state.syncPaused = true;
   try {
-    state.activation = await setActivationState(setMasterEnabled(activation, nextEnabled));
-    onChanged();
+    await setMasterEnabled(nextEnabled);
+    await onChanged();
     showStatus(
       'headerStatus',
       nextEnabled ? 'Header rules resumed.' : 'All header rules paused.',
@@ -51,7 +49,6 @@ async function toggleMaster(forceOn = false) {
     console.error(error);
     showStatus('headerStatus', error.message || 'Could not change the ReqKit switch.', 'error');
   } finally {
-    state.syncPaused = false;
     controls.forEach((control) => {
       control.disabled = false;
     });
@@ -101,7 +98,7 @@ async function resumeFromBanner() {
 export function renderDurationField() {
   const activation = getActivation();
   const selectedValue = getDurationValue(activation);
-  const disabled = getActivationStatus(activation) !== 'live';
+  const disabled = durationPending || getActivationStatus(activation) !== 'live';
   const chip = document.getElementById('expiryChip');
   const remainingMs = getRemainingMs(activation);
 
@@ -163,22 +160,21 @@ function getDurationValue(activation) {
 }
 
 async function selectDuration(value) {
-  const activation = getActivation();
-  const next = value === 'session'
-    ? setActivationDuration(activation, { untilBrowserClose: true })
-    : setActivationDuration(activation, { durationMs: value === 'indefinite' ? null : Number(value) });
+  const options = value === 'session'
+    ? { untilBrowserClose: true }
+    : { durationMs: value === 'indefinite' ? null : Number(value) };
 
-  state.syncPaused = true;
+  durationPending = true;
   setDurationPillsDisabled(true);
   try {
-    state.activation = await setActivationState(next);
-    onChanged();
+    await setActivationDuration(options);
+    await onChanged();
     showStatus('activeSetupStatus', describeDuration(value), 'success');
   } catch (error) {
     console.error(error);
     showStatus('activeSetupStatus', error.message || 'Could not set the timer.', 'error');
   } finally {
-    state.syncPaused = false;
+    durationPending = false;
     renderDurationField();
   }
 }

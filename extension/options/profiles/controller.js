@@ -1,27 +1,20 @@
 import {
   DEFAULT_PROFILE_ID,
-  PROFILE_STORAGE_KEY,
-  cloneRulesIntoProfile,
   countRulesInProfile,
-  createProfile,
   getProfileName,
-  removeRulesFromProfile,
   validateProfileDraft
 } from '../../shared/domain/profiles.js';
 import {
-  removeOriginPermission,
-  requestOriginPermissions,
-  storageLocalSet
+  requestOriginPermissions
 } from '../../shared/runtime/chrome-api.js';
 import {
   createDefaultActivation,
-  getTargetProfileId,
-  setActiveProfile
+  getTargetProfileId
 } from '../../shared/domain/activation.js';
-import { setActivationState } from '../../shared/runtime/activation-api.js';
+import { setActiveProfile } from '../../shared/runtime/activation-api.js';
 import { getMissingProfileOrigins } from '../../shared/domain/site-access.js';
-import { getNextRuleId, getRuleOriginPattern } from '../../shared/domain/rules.js';
-import { commitRules } from '../../shared/runtime/rule-api.js';
+import { sendProfileIntent } from '../../shared/runtime/profile-api.js';
+import { PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICATE, PROFILE_MESSAGE_DELETE } from '../../shared/runtime/messages.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
 import { readGrantedOrigins } from '../../shared/runtime/site-access-api.js';
@@ -289,9 +282,9 @@ async function handleProfileEditorSubmit(event) {
 
   try {
     if (mode === 'create') {
-      const newProfile = createProfile(validation.profile.name);
-      await saveProfiles([...state.profiles, newProfile]);
-      showProfileList({ focusAction: 'rename', profileId: newProfile.id });
+      const result = await sendProfileIntent({ type: PROFILE_MESSAGE_CREATE, name: validation.profile.name });
+      await refreshAll();
+      showProfileList({ focusAction: 'rename', profileId: result.profile.id });
       showStatus('profileStatus', `Created ${validation.profile.name}.`, 'success');
       return;
     }
@@ -306,9 +299,8 @@ async function handleProfileEditorSubmit(event) {
         return;
       }
 
-      await saveProfiles(state.profiles.map((candidate) => (
-        candidate.id === id ? { ...candidate, name: validation.profile.name } : candidate
-      )));
+      await sendProfileIntent({ type: PROFILE_MESSAGE_RENAME, id, name: validation.profile.name });
+      await refreshAll();
       showProfileList({ focusAction: 'rename', profileId: id });
       showStatus('profileStatus', `Renamed to ${validation.profile.name}.`, 'success');
       return;
@@ -318,34 +310,17 @@ async function handleProfileEditorSubmit(event) {
     if (!source) {
       throw new Error('That profile no longer exists.');
     }
-    const newProfile = createProfile(validation.profile.name);
-    const clonedRules = cloneRulesIntoProfile(
-      state.rules,
-      id,
-      newProfile.id,
-      getNextRuleId(state.rules)
-    ).map((rule) => ({ ...rule, enabled: false }));
-
-    state.syncPaused = true;
-    try {
-      await storeProfiles([...state.profiles, newProfile]);
-      try {
-        await commitRules([...state.rules, ...clonedRules]);
-      } catch (error) {
-        await storeProfiles(state.profiles);
-        throw error;
-      }
-      await refreshAll();
-    } finally {
-      state.syncPaused = false;
-    }
+    const result = await sendProfileIntent({ type: PROFILE_MESSAGE_DUPLICATE, id, name: validation.profile.name });
+    await refreshAll();
 
     showProfileList({ focusAction: 'duplicate', profileId: id });
-    const copyMessage = clonedRules.length === 0
-      ? `Created an empty copy of ${source.name} as ${newProfile.name}.`
-      : clonedRules.length === 1
-        ? `Copied 1 rule into ${newProfile.name}. It remains paused and editable.`
-        : `Copied ${clonedRules.length} rules into ${newProfile.name}. They remain paused and editable.`;
+    const copiedCount = countRulesInProfile(result.rules, result.profile.id);
+    let copyMessage = `Created an empty copy of ${source.name} as ${result.profile.name}.`;
+    if (copiedCount === 1) {
+      copyMessage = `Copied 1 rule into ${result.profile.name}. It remains paused and editable.`;
+    } else if (copiedCount > 1) {
+      copyMessage = `Copied ${copiedCount} rules into ${result.profile.name}. They remain paused and editable.`;
+    }
     showStatus('profileStatus', copyMessage, 'success');
   } catch (error) {
     console.error(error);
@@ -376,46 +351,14 @@ async function deleteProfile(id) {
     return;
   }
 
-  const activation = getActivation();
-  const referencesDeletedProfile = activation.profileId === id || activation.lastProfileId === id;
-  const deletedRules = state.rules.filter((rule) => rule.profileId === id);
-  const remainingRules = removeRulesFromProfile(state.rules, id);
-
   try {
-    state.syncPaused = true;
-    await commitRules(remainingRules);
-
-    if (referencesDeletedProfile) {
-      await setActivationState(setActiveProfile(activation, DEFAULT_PROFILE_ID));
-    }
-
-    await storeProfiles(state.profiles.filter((candidate) => candidate.id !== id));
-    await releaseDeletedProfilePermissions(deletedRules, remainingRules);
+    await sendProfileIntent({ type: PROFILE_MESSAGE_DELETE, id });
     await refreshAll();
     showStatus('profileStatus', `Deleted ${profile.name}. ${consequence}`, 'success');
   } catch (error) {
     console.error(error);
     showStatus('profileStatus', error.message || 'Could not delete that profile.', 'error');
-  } finally {
-    state.syncPaused = false;
   }
-}
-
-async function releaseDeletedProfilePermissions(deletedRules, remainingRules) {
-  const remainingDomains = new Set(remainingRules.map((rule) => rule.domain));
-  const origins = new Set(
-    deletedRules
-      .filter((rule) => !remainingDomains.has(rule.domain))
-      .map(getRuleOriginPattern)
-  );
-
-  await Promise.all([...origins].map(async (origin) => {
-    try {
-      await removeOriginPermission(origin);
-    } catch (error) {
-      console.error(`Could not release site access for ${origin}.`, error);
-    }
-  }));
 }
 
 export async function activateProfile(id) {
@@ -440,8 +383,7 @@ export async function activateProfile(id) {
   }
 
   try {
-    state.syncPaused = true;
-    state.activation = await setActivationState(setActiveProfile(activation, id));
+    await setActiveProfile(id);
     await refreshAll();
 
     const name = getProfileName(state.profiles, id);
@@ -455,21 +397,5 @@ export async function activateProfile(id) {
   } catch (error) {
     console.error(error);
     showStatus('activeSetupStatus', error.message || 'Could not activate that profile.', 'error');
-  } finally {
-    state.syncPaused = false;
   }
-}
-
-async function saveProfiles(profiles) {
-  state.syncPaused = true;
-  try {
-    await storeProfiles(profiles);
-    await refreshAll();
-  } finally {
-    state.syncPaused = false;
-  }
-}
-
-function storeProfiles(profiles) {
-  return storageLocalSet({ [PROFILE_STORAGE_KEY]: profiles });
 }

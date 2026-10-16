@@ -1,6 +1,5 @@
 import {
   findActiveRuleConflict,
-  getNextRuleId,
   getRuleOriginPattern,
   getRuleConflictMessage,
   validateRuleDraft
@@ -10,22 +9,24 @@ import { getTargetProfileId } from '../../shared/domain/activation.js';
 import { resolveProfileId } from '../../shared/domain/profiles.js';
 import { isRuleGranted } from '../../shared/domain/site-access.js';
 import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
-import { commitRules } from '../../shared/runtime/rule-api.js';
+import { sendRuleIntent } from '../../shared/runtime/rule-api.js';
+import { RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE, RULE_MESSAGE_SET_ENABLED, RULE_MESSAGE_DELETE } from '../../shared/runtime/messages.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { clearRuleFormError, showRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getActivation } from '../state.js';
 import {
   readGrantedOrigins,
-  ensureRulePermission,
-  releaseUnusedPermission
+  ensureRulePermission
 } from '../../shared/runtime/site-access-api.js';
 import { showStatus } from '../../shared/ui/ui.js';
 import { siteAccessPreflight, readCreateDraft, readEditDraft } from './composer.js';
 
 let renderWorkspace;
+let refreshState;
 
-export function configureRuleActions({ onRender }) {
+export function configureRuleActions({ onRender, onRefresh }) {
   renderWorkspace = onRender;
+  refreshState = onRefresh;
 }
 
 export async function grantRuleAccess(id) {
@@ -36,7 +37,7 @@ export async function grantRuleAccess(id) {
 
   try {
     state.grantedOrigins = await ensureRulePermission(rule, state.grantedOrigins);
-    await persistRules(state.rules);
+    renderWorkspace();
     showStatus('headerStatus', `Site access granted for ${rule.domain}.`, 'success');
   } catch (error) {
     console.error(error);
@@ -57,7 +58,6 @@ export async function addRule() {
   }
 
   const newRule = {
-    id: getNextRuleId(state.rules),
     ...validation.rule,
     enabled: true,
     profileId
@@ -70,10 +70,9 @@ export async function addRule() {
   }
 
   try {
-    const updatedRules = [...state.rules, newRule];
+    const intent = { type: RULE_MESSAGE_ADD, draft: validation.rule, profileId };
     if (needsAccess) {
-      const result = await saveRuleBeforePermissionPrompt(newRule, updatedRules, {
-        persistRules,
+      const result = await saveRuleBeforePermissionPrompt(newRule, () => persistRule(intent), {
         requestPermission: requestOriginPermission
       });
       state.grantedOrigins = await readGrantedOrigins();
@@ -91,9 +90,8 @@ export async function addRule() {
         return true;
       }
 
-      await persistRules(state.rules);
     } else {
-      await persistRules(updatedRules);
+      await persistRule(intent);
     }
 
     showStatus(
@@ -104,7 +102,7 @@ export async function addRule() {
     return true;
   } catch (error) {
     console.error(error);
-    showRuleFormError({ error: error.message || 'Chrome rejected the new rule.' });
+    showRuleFormError({ field: error.field, error: error.message || 'Chrome rejected the new rule.' });
     return false;
   }
 }
@@ -127,15 +125,12 @@ export async function toggleRule(id) {
     }
   }
 
-  const updatedRules = state.rules.map((rule) => (
-    rule.id === id ? { ...rule, enabled: !rule.enabled } : rule
-  ));
+  const intent = { type: RULE_MESSAGE_SET_ENABLED, id, enabled: !currentRule.enabled };
   const needsAccess = !currentRule.enabled && !isRuleGranted(currentRule, state.grantedOrigins);
 
   try {
     if (needsAccess) {
-      const result = await saveRuleBeforePermissionPrompt(currentRule, updatedRules, {
-        persistRules,
+      const result = await saveRuleBeforePermissionPrompt(currentRule, () => persistRule(intent), {
         requestPermission: requestOriginPermission
       });
       state.grantedOrigins = await readGrantedOrigins();
@@ -152,7 +147,7 @@ export async function toggleRule(id) {
         return;
       }
     } else {
-      await persistRules(updatedRules);
+      await persistRule(intent);
     }
     const toggledRule = state.rules.find((rule) => rule.id === id);
     showStatus('headerStatus', toggledRule?.enabled ? 'Rule resumed.' : 'Rule paused.', 'success');
@@ -185,10 +180,8 @@ export async function saveEditedRule(id) {
     return;
   }
 
-  const updatedRules = state.rules.map((rule) => (
-    rule.id === id ? { ...rule, ...validation.rule, profileId: nextProfileId } : rule
-  ));
-  const updatedRule = updatedRules.find((rule) => rule.id === id);
+  const updatedRule = { ...currentRule, ...validation.rule, profileId: nextProfileId };
+  const intent = { type: RULE_MESSAGE_UPDATE, id, draft: validation.rule, profileId: nextProfileId };
   const needsAccess = updatedRule.enabled && !isRuleGranted(updatedRule, state.grantedOrigins);
   if (needsAccess) {
     const preflight = document.getElementById(`editSiteAccessPreflight-${id}`);
@@ -203,22 +196,19 @@ export async function saveEditedRule(id) {
   }
 
   try {
-    state.editingId = null;
-    state.revealedRuleIds.delete(id);
     let permissionResult = null;
     if (needsAccess) {
-      permissionResult = await saveRuleBeforePermissionPrompt(updatedRule, updatedRules, {
-        persistRules,
+      permissionResult = await saveRuleBeforePermissionPrompt(updatedRule, () => persistRule(intent), {
         requestPermission: requestOriginPermission
       });
       state.grantedOrigins = await readGrantedOrigins();
       renderWorkspace();
     } else {
-      await persistRules(updatedRules);
+      await persistRule(intent);
     }
-    if (currentRule.domain !== updatedRule.domain) {
-      await releaseUnusedPermission(currentRule, updatedRules);
-    }
+    state.editingId = null;
+    state.revealedRuleIds.delete(id);
+    renderWorkspace();
     if (permissionResult && !permissionResult.granted) {
       if (permissionResult.permissionError) {
         console.error('Could not request site access.', permissionResult.permissionError);
@@ -232,9 +222,12 @@ export async function saveEditedRule(id) {
     }
     showStatus('headerStatus', 'Header rule updated.', 'success');
   } catch (error) {
-    state.editingId = id;
     console.error(error);
-    showRuleFormError({ error: error.message || 'Could not update that rule.' }, id);
+    if (!state.rules.some((rule) => rule.id === id)) {
+      showStatus('headerStatus', error.message || 'That rule no longer exists.', 'error');
+      return;
+    }
+    showRuleFormError({ field: error.field, error: error.message || 'Could not update that rule.' }, id);
   }
 }
 
@@ -263,15 +256,12 @@ function getDeleteMessage(rule) {
 }
 
 async function deleteRule(id) {
-  const ruleToDelete = state.rules.find((rule) => rule.id === id);
-  if (!ruleToDelete) {
+  if (!state.rules.some((rule) => rule.id === id)) {
     return;
   }
 
   try {
-    const updatedRules = state.rules.filter((rule) => rule.id !== id);
-    await persistRules(updatedRules);
-    await releaseUnusedPermission(ruleToDelete, updatedRules);
+    await persistRule({ type: RULE_MESSAGE_DELETE, id });
     state.revealedRuleIds.delete(id);
     showStatus('headerStatus', 'Rule removed.', 'success');
   } catch (error) {
@@ -280,16 +270,7 @@ async function deleteRule(id) {
   }
 }
 
-/**
- * The storage listener would otherwise fire on this page's own write and close
- * an open edit form underneath the user.
- */
-async function persistRules(rules) {
-  state.syncPaused = true;
-  try {
-    state.rules = await commitRules(rules);
-    renderWorkspace();
-  } finally {
-    state.syncPaused = false;
-  }
+async function persistRule(intent) {
+  await sendRuleIntent(intent);
+  await refreshState();
 }

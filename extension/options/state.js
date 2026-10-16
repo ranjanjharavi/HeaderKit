@@ -9,8 +9,7 @@ export const state = {
   composerOpen: false,
   collapsedDomains: new Set(),
   revealedRuleIds: new Set(),
-  searchQuery: '',
-  syncPaused: false
+  searchQuery: ''
 };
 
 export function getActivation() {
