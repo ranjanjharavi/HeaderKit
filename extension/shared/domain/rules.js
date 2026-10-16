@@ -72,11 +72,7 @@ function normalizeRule(
   };
 }
 
-/**
- * An unrecognized profile is repaired rather than dropped. `commitRuleSet`
- * rejects a set whose normalized length shrank, so dropping here would turn one
- * stale reference into a permanent commit failure.
- */
+/** Repair legacy stored references on load. Write intents reject unknown profiles. */
 function normalizeRuleProfileId(value, profileIds) {
   const resolvedId = resolveProfileId(value);
   return !profileIds || profileIds.has(resolvedId) ? resolvedId : DEFAULT_PROFILE_ID;

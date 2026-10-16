@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { commitRuleSet } from '../../extension/background/rule-commit.js';
+import { applyRuleIntent, commitRuleSet } from '../../extension/background/rule-commit.js';
+import { createDefaultActivation } from '../../extension/shared/domain/activation.js';
+import { createSerialQueue } from '../../extension/shared/runtime/serial-queue.js';
+import {
+  RULE_MESSAGE_ADD,
+  RULE_MESSAGE_UPDATE,
+  RULE_MESSAGE_SET_ENABLED,
+  RULE_MESSAGE_DELETE
+} from '../../extension/shared/runtime/messages.js';
 
 const previousRules = [{
   id: 1,
@@ -109,16 +117,13 @@ test('commitRuleSet rejects duplicate rules with the same request scope', async 
   assert.equal(applied, false);
 });
 
-test('commitRuleSet repairs unknown profiles instead of dropping rules', async () => {
-  const result = await commitRuleSet([{ ...nextRules[0], profileId: 'deleted-profile' }], {
+test('commitRuleSet rejects unknown profiles instead of reviving rules in Default', async () => {
+  await assert.rejects(commitRuleSet([{ ...nextRules[0], profileId: 'deleted-profile' }], {
     profileIds: new Set(['default', 'staging']),
     getCurrentRules: async () => previousRules,
     applyRules: async () => {},
     storeRules: async () => {}
-  });
-
-  assert.equal(result.length, 1);
-  assert.equal(result[0].profileId, 'default');
+  }), /profile no longer exists/);
 });
 
 test('commitRuleSet rejects malformed rule collections before applying them', async () => {
@@ -146,6 +151,68 @@ test('commitRuleSet rejects malformed rule collections before applying them', as
   }), /invalid/);
 
   assert.equal(applied, false);
+});
+
+function intentState(rules = []) {
+  return {
+    rules,
+    activation: createDefaultActivation(),
+    profileIds: new Set(['default', 'staging'])
+  };
+}
+
+test('serialized add intents allocate distinct ids without losing either addition', async () => {
+  const enqueue = createSerialQueue();
+  let state = intentState();
+  const add = (draft) => enqueue(async () => {
+    const result = applyRuleIntent({ type: RULE_MESSAGE_ADD, draft, profileId: 'default' }, state);
+    const rules = await commitRuleSet(result.rules, {
+      profileIds: state.profileIds,
+      getCurrentRules: async () => state.rules,
+      applyRules: async () => {},
+      storeRules: async () => {}
+    });
+    state = { ...state, rules };
+    return result.rule;
+  });
+  const added = await Promise.all([add(previousRules[0]), add(nextRules[0])]);
+  assert.deepEqual(added.map((rule) => rule.id), [1, 2]);
+  assert.equal(state.rules.length, 2);
+});
+
+test('rule update, set-enabled and delete intents preserve unrelated current rules', () => {
+  let state = intentState([
+    { ...previousRules[0], profileId: 'default' },
+    { ...nextRules[0], profileId: 'default' }
+  ]);
+  const updated = applyRuleIntent({
+    type: RULE_MESSAGE_UPDATE,
+    id: 1,
+    draft: { ...previousRules[0], headerValue: 'updated' },
+    profileId: 'default'
+  }, state);
+  state = { ...state, rules: updated.rules };
+  const paused = applyRuleIntent({ type: RULE_MESSAGE_SET_ENABLED, id: 2, enabled: false, profileId: 'staging' }, state);
+  state = { ...state, rules: paused.rules };
+  const deleted = applyRuleIntent({ type: RULE_MESSAGE_DELETE, id: 1 }, state);
+  assert.equal(updated.rule.headerValue, 'updated');
+  assert.equal(updated.rules[1].headerValue, 'new');
+  assert.equal(paused.rule.enabled, false);
+  assert.equal(paused.rule.profileId, 'default');
+  assert.deepEqual(deleted.rules, [paused.rule]);
+  assert.throws(() => applyRuleIntent({ type: RULE_MESSAGE_UPDATE, id: 1 }, { ...state, rules: deleted.rules }), /rule no longer exists/);
+});
+
+test('rule intents reject duplicates, overlapping live values, and unknown profiles', () => {
+  const rule = { ...previousRules[0], profileId: 'default', pathPrefix: '', resourceType: 'all' };
+  const state = intentState([rule]);
+  assert.throws(() => applyRuleIntent({ type: RULE_MESSAGE_ADD, draft: rule, profileId: 'default' }, state), /already exists/);
+  assert.throws(() => applyRuleIntent({
+    type: RULE_MESSAGE_ADD,
+    draft: { ...rule, pathPrefix: '/api', headerValue: 'different' },
+    profileId: 'default'
+  }, state), (error) => error.field === 'headerValue' && error.conflictId === 1);
+  assert.throws(() => applyRuleIntent({ type: RULE_MESSAGE_ADD, draft: nextRules[0], profileId: 'deleted' }, state), /profile no longer exists/);
 });
 
 test('commitRuleSet rejects duplicate headers before applying them', async () => {

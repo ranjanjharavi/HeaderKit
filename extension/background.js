@@ -1,24 +1,35 @@
-import { commitRuleSet } from './background/rule-commit.js';
+import { applyRuleIntent, commitRuleSet } from './background/rule-commit.js';
+import { applyActivationIntent, applyProfileIntent, commitState } from './background/state-commit.js';
 import {
   clearAlarm,
   createAlarm,
   getDynamicRules,
   getGrantedOrigins,
   queryTabs,
+  removeOriginPermission,
   storageAreaGet,
   storageAreaSet,
   updateDynamicRules
 } from './shared/runtime/chrome-api.js';
 import { filterGrantedRules } from './shared/domain/site-access.js';
 import {
-  ACTIVATION_MESSAGE_GET,
-  ACTIVATION_MESSAGE_SET,
-  RULE_MESSAGE_COMMIT,
-  RULE_MESSAGE_GET
+  ACTIVATION_MESSAGE_SET_MASTER,
+  ACTIVATION_MESSAGE_SET_PROFILE,
+  ACTIVATION_MESSAGE_SET_DURATION,
+  PROFILE_MESSAGE_CREATE,
+  PROFILE_MESSAGE_RENAME,
+  PROFILE_MESSAGE_DUPLICATE,
+  PROFILE_MESSAGE_DELETE,
+  STATE_MESSAGE_GET,
+  RULE_MESSAGE_ADD,
+  RULE_MESSAGE_UPDATE,
+  RULE_MESSAGE_SET_ENABLED,
+  RULE_MESSAGE_DELETE
 } from './shared/runtime/messages.js';
 import {
   RULE_STORAGE_KEY,
   buildDynamicRule,
+  getRuleOriginPattern,
   normalizeRules
 } from './shared/domain/rules.js';
 import {
@@ -38,16 +49,25 @@ const EXPIRY_ALARM = 'reqkit:activation-expiry';
 // Keep storage, DNR, alarm, and badge work ordered around the latest state.
 const enqueueBackgroundTask = createSerialQueue();
 
-const RULE_MESSAGES = new Set([RULE_MESSAGE_GET, RULE_MESSAGE_COMMIT]);
-const ACTIVATION_MESSAGES = new Set([ACTIVATION_MESSAGE_GET, ACTIVATION_MESSAGE_SET]);
+const RULE_MESSAGES = new Set([
+  RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE,
+  RULE_MESSAGE_SET_ENABLED, RULE_MESSAGE_DELETE
+]);
+const ACTIVATION_MESSAGES = new Set([
+  ACTIVATION_MESSAGE_SET_MASTER,
+  ACTIVATION_MESSAGE_SET_PROFILE, ACTIVATION_MESSAGE_SET_DURATION
+]);
+const PROFILE_MESSAGES = new Set([
+  PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICATE, PROFILE_MESSAGE_DELETE
+]);
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (RULE_MESSAGES.has(message?.type)) {
     enqueueBackgroundTask(() => handleRuleMessage(message))
-      .then((rules) => sendResponse({ ok: true, rules }))
+      .then((result) => sendResponse({ ok: true, ...result }))
       .catch((error) => {
         console.error('Could not process the header rule request.', error);
-        sendResponse({ ok: false, error: error.message || 'Could not update header rules.' });
+        sendResponse({ ok: false, error: error.message || 'Could not update header rules.', field: error.field, conflictId: error.conflictId });
       });
     return true;
   }
@@ -59,6 +79,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         console.error('Could not process the activation request.', error);
         sendResponse({ ok: false, error: error.message || 'Could not update the ReqKit switch.' });
       });
+    return true;
+  }
+
+  if (PROFILE_MESSAGES.has(message?.type) || message?.type === STATE_MESSAGE_GET) {
+    enqueueBackgroundTask(async () => {
+      const state = await loadState();
+      if (message.type === STATE_MESSAGE_GET) {
+        return state;
+      }
+      const nextState = applyProfileIntent(message, state);
+      await persistState(nextState, state);
+      await releaseUnusedPermissions(state.rules, nextState.rules);
+      return nextState;
+    }).then(({ rules, profiles, activation, profile }) => {
+      sendResponse({ ok: true, rules, profiles, activation, profile });
+    }).catch((error) => {
+      console.error('Could not process the state request.', error);
+      sendResponse({ ok: false, error: error.message || 'Could not update profiles.' });
+    });
     return true;
   }
 
@@ -182,11 +221,8 @@ async function initialize({ newBrowserSession = false } = {}) {
 async function handleRuleMessage(message) {
   const state = await loadState();
 
-  if (message.type === RULE_MESSAGE_GET) {
-    return state.rules;
-  }
-
-  const rules = await commitRuleSet(message.rules, {
+  const result = applyRuleIntent(message, state);
+  const rules = await commitRuleSet(result.rules, {
     activation: state.activation,
     profileIds: state.profileIds,
     getCurrentRules: async () => state.rules,
@@ -194,18 +230,15 @@ async function handleRuleMessage(message) {
     storeRules
   });
 
+  await releaseUnusedPermissions(state.rules, rules);
   await refreshBadgesSafely({ ...state, rules });
-  return rules;
+  return { rules, rule: result.rule };
 }
 
 async function handleActivationMessage(message) {
   const state = await loadState();
 
-  if (message.type === ACTIVATION_MESSAGE_GET) {
-    return state.activation;
-  }
-
-  const nextActivation = normalizeActivation(message.activation, { profileIds: state.profileIds });
+  const nextActivation = applyActivationIntent(message, state);
   return commitActivation(nextActivation, state);
 }
 
@@ -214,11 +247,33 @@ async function handleActivationMessage(message) {
  * change lands here rather than being written to storage by a page.
  */
 async function commitActivation(activation, state) {
-  await storeActivation(activation);
-  await applyDynamicRules(state.rules, activation, state.grantedOrigins);
-  await refreshBadgesSafely({ ...state, activation });
-  await scheduleExpiryAlarm(activation);
+  await persistState({ ...state, activation }, state);
   return activation;
+}
+
+async function persistState(nextState, previousState) {
+  await commitState(nextState, previousState, {
+    applyState: (state) => applyDynamicRules(state.rules, state.activation, state.grantedOrigins),
+    storeState: (state) => storageAreaSet(chrome.storage.local, {
+      [PROFILE_STORAGE_KEY]: state.profiles,
+      [RULE_STORAGE_KEY]: state.rules,
+      [ACTIVATION_STORAGE_KEY]: state.activation
+    })
+  });
+  await refreshBadgesSafely(nextState);
+  await scheduleExpiryAlarm(nextState.activation);
+}
+
+async function releaseUnusedPermissions(previousRules, rules) {
+  const remainingDomains = new Set(rules.map((rule) => rule.domain));
+  const origins = new Set(previousRules.filter((rule) => !remainingDomains.has(rule.domain)).map(getRuleOriginPattern));
+  await Promise.all([...origins].map(async (origin) => {
+    try {
+      await removeOriginPermission(origin);
+    } catch (error) {
+      console.error(`Could not release site access for ${origin}.`, error);
+    }
+  }));
 }
 
 /**
