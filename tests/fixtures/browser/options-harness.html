@@ -35,8 +35,6 @@
         Object.assign(storage, createStoreData());
       }
 
-      let runtimeRules = storage.headerRules;
-      let runtimeActivation = storage.activation;
       const permissionEvents = { added: [], removed: [] };
       const grantedOrigins = previewParameters.has('noaccess') ? [] : previewParameters.has('campaign') ? [
         'https://api.example.com/*',
@@ -54,30 +52,7 @@
       window.__REQKIT_CHROME_STUB__ = {
         runtime: {
           lastError: null,
-          getURL(path) { return `/extension/${path}`; },
-          sendMessage(message, callback) {
-            if (message.type === 'reqkit:rules:get') {
-              callback({ ok: true, rules: runtimeRules });
-              return;
-            }
-            if (message.type === 'reqkit:rules:commit') {
-              runtimeRules = message.rules;
-              storage.headerRules = runtimeRules;
-              callback({ ok: true, rules: runtimeRules });
-              return;
-            }
-            if (message.type === 'reqkit:activation:get') {
-              callback({ ok: true, activation: runtimeActivation });
-              return;
-            }
-            if (message.type === 'reqkit:activation:set') {
-              runtimeActivation = message.activation;
-              storage.activation = runtimeActivation;
-              callback({ ok: true, activation: runtimeActivation });
-              return;
-            }
-            callback({ ok: true });
-          }
+          getURL(path) { return `/extension/${path}`; }
         },
         storage: {
           local: {
@@ -127,6 +102,8 @@
         }
       };
       window.chrome = window.__REQKIT_CHROME_STUB__;
+      const { installBackgroundHarness } = await import('../../helpers/background-harness.js');
+      await installBackgroundHarness(window.chrome);
 
       const cacheBust = Date.now();
       const markup = await fetch('/extension/options/index.html', { cache: 'no-store' }).then((response) => response.text());

@@ -8,6 +8,7 @@ import * as popupActions from '../../../extension/popup/headers/actions.js';
 import { bindComposerEvents as bindOptionsComposer } from '../../../extension/options/rules/composer.js';
 import { bindComposerEvents as bindPopupComposer } from '../../../extension/popup/headers/composer.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
+import { applyRuleIntent } from '../../../extension/background/rule-commit.js';
 
 function setup(t, surface, rules = []) {
   const harness = createUiHarness(t);
@@ -23,13 +24,15 @@ function setup(t, surface, rules = []) {
     revealedRuleIds: new Set(),
     searchQuery: '',
     scope: 'site',
-    currentHostname: 'api.example.com',
-    syncPaused: false
+    currentHostname: 'api.example.com'
   });
   const calls = [];
+  let storedRules = rules;
   globalThis.chrome.runtime.sendMessage = (message, callback) => {
     calls.push('commit');
-    callback({ ok: true, rules: message.rules });
+    const result = applyRuleIntent(message, { ...state, profileIds: new Set(['default']) });
+    storedRules = result.rules;
+    callback({ ok: true, ...result });
   };
   globalThis.chrome.permissions = {
     request(_details, callback) { calls.push('request'); callback(false); },
@@ -41,10 +44,12 @@ function setup(t, surface, rules = []) {
   t.after(() => { console.error = originalError; });
 
   const actions = surface === 'options' ? optionsActions : popupActions;
+  const refresh = async () => { state.rules = storedRules; };
   if (surface === 'options') {
-    optionsActions.configureRuleActions({ onRender() {} });
+    optionsActions.configureRuleActions({ onRender() {}, onRefresh: refresh });
     bindOptionsComposer({ onAddRule: actions.addRule });
   } else {
+    popupActions.configureRuleActions({ onRefresh: refresh });
     bindPopupComposer({ onAddRule: actions.addRule, onSaveRule: actions.saveEditedRule });
   }
   function draft(values, id = null) {
@@ -57,7 +62,7 @@ function setup(t, surface, rules = []) {
       harness.element(elementId).value = value;
     }
   }
-  return { ...harness, state, actions, calls, draft };
+  return { ...harness, state, actions, calls, draft, storeRules: (value) => { storedRules = value; } };
 }
 
 for (const surface of ['options', 'popup']) {
@@ -89,6 +94,24 @@ for (const surface of ['options', 'popup']) {
     await harness.actions.saveEditedRule(1);
     assert.deepEqual(harness.calls, ['commit']);
     assert.equal(harness.state.rules[0].headerValue, 'new');
+  });
+
+  test(`${surface} worker validation errors preserve the draft and target the rejected field`, async (t) => {
+    const rule = {
+      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
+      enabled: true, profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
+    harness.state.editingId = 1;
+    harness.draft({ headerValue: 'draft value' }, surface === 'options' ? 1 : null);
+    chrome.runtime.sendMessage = (_message, callback) => callback({ ok: false, error: 'Conflicts with a newer rule.', field: 'headerValue', conflictId: 2 });
+    await harness.actions.saveEditedRule(1);
+    const fieldId = surface === 'options' ? 'editHeaderValue-1' : 'headerValue';
+    assert.equal(harness.element(fieldId).value, 'draft value');
+    assert.equal(harness.element(fieldId).getAttribute('aria-invalid'), 'true');
+    assert.equal(harness.state.editingId, 1);
+    assert.equal(harness.state.rules[0].headerValue, 'old');
   });
 
   test(`${surface} broad and wildcard grants cover resume without another request`, async (t) => {
@@ -144,7 +167,7 @@ for (const surface of ['options', 'popup']) {
     await harness.element('confirmationConfirmBtn').dispatch('click');
     await confirmed;
     assert.equal(harness.state.rules.length, 0);
-    assert.deepEqual(harness.calls, ['commit', 'remove']);
+    assert.deepEqual(harness.calls, ['commit']);
   });
 
   test(`${surface} creation requires preflight and retains a saved rule when access is denied`, async (t) => {
@@ -159,7 +182,6 @@ for (const surface of ['options', 'popup']) {
     assert.equal(harness.state.rules.length, 1);
     assert.equal(harness.state.rules[0].domain, 'api.example.com');
     assert.match(harness.element('headerStatus').textContent, /Rule saved.*needs site access/);
-    assert.equal(harness.state.syncPaused, false);
   });
 
   test(`${surface} paused-rule edits save before releasing the unused old host grant`, async (t) => {
@@ -171,7 +193,7 @@ for (const surface of ['options', 'popup']) {
     harness.state.editingId = 1;
     harness.draft({ domain: 'qa.example.com', headerValue: 'new' }, surface === 'options' ? 1 : null);
     await harness.actions.saveEditedRule(1);
-    assert.deepEqual(harness.calls, ['commit', 'remove']);
+    assert.deepEqual(harness.calls, ['commit']);
     assert.equal(harness.state.rules[0].domain, 'qa.example.com');
     assert.equal(harness.state.rules[0].headerValue, 'new');
     assert.equal(harness.state.rules[0].enabled, false);
@@ -204,7 +226,7 @@ for (const surface of ['options', 'popup']) {
     assert.deepEqual(harness.calls, []);
 
     await harness.actions.saveEditedRule(1);
-    assert.deepEqual(harness.calls, ['commit', 'request', 'remove']);
+    assert.deepEqual(harness.calls, ['commit', 'request']);
     assert.equal(harness.state.rules[0].domain, 'qa.example.com');
     assert.equal(harness.state.rules[0].headerValue, 'new');
     assert.match(harness.element('headerStatus').textContent, /Rule saved.*needs site access/);
@@ -224,7 +246,9 @@ for (const surface of ['options', 'popup']) {
       }
       globalThis.chrome.runtime.sendMessage = (message, callback) => {
         harness.calls.push('commit');
-        queueMicrotask(() => callback({ ok: true, rules: message.rules }));
+        const result = applyRuleIntent(message, { ...harness.state, profileIds: new Set(['default']) });
+        harness.storeRules(result.rules);
+        queueMicrotask(() => callback({ ok: true, ...result }));
       };
       globalThis.chrome.permissions.request = () => { harness.calls.push('request'); };
 

@@ -18,10 +18,8 @@ function resetState() {
   optionsState.activation = createDefaultActivation();
   optionsState.profiles = [{ id: 'default', name: 'Default' }];
   optionsState.rules = [{ id: 1, enabled: true }];
-  optionsState.syncPaused = false;
   popupState.headers.activation = createDefaultActivation();
   popupState.headers.profiles = optionsState.profiles;
-  popupState.headers.syncPaused = false;
 }
 
 test('options pause commits activation and leaves saved rule flags intact', async (t) => {
@@ -29,22 +27,24 @@ test('options pause commits activation and leaves saved rule flags intact', asyn
   const harness = createUiHarness(t);
   let renders = 0;
   bindOptionsActivation({
-    onChanged() { renders++; renderOptionsSwitch(); },
+    onChanged() { optionsState.activation = harness.getActivation(); renders++; renderOptionsSwitch(); },
     onResumeProfile() {}
   });
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(optionsState.activation.masterEnabled, false);
   assert.equal(optionsState.rules[0].enabled, true);
-  assert.equal(harness.requests[0].type, 'reqkit:activation:set');
+  assert.deepEqual(harness.requests[0], { type: 'reqkit:activation:set-master', enabled: false });
   assert.equal(renders, 1);
   assert.equal(harness.element('masterPausedBanner').hidden, false);
-  assert.equal(optionsState.syncPaused, false);
 });
 
 test('options timer selection commits browser-session scope and refreshes radio state', async (t) => {
   resetState();
   const harness = createUiHarness(t);
-  bindOptionsActivation({ onChanged: renderDurationField, onResumeProfile() {} });
+  bindOptionsActivation({
+    onChanged() { optionsState.activation = harness.getActivation(); renderDurationField(); },
+    onResumeProfile() {}
+  });
   await harness.element('durationPills').dispatch('click', { target: harness.pills[3] });
   assert.equal(optionsState.activation.untilBrowserClose, true);
   assert.equal(optionsState.activation.expiresAt, null);
@@ -70,17 +70,17 @@ test('activation controls remain disabled until the worker commit finishes', asy
   bindOptionsActivation({ onChanged() {}, onResumeProfile() {} });
   const commit = harness.element('masterSwitch').dispatch('click');
   assert.equal(harness.element('masterSwitch').disabled, true);
-  assert.equal(optionsState.syncPaused, true);
+  assert.equal(harness.element('resumeMasterBtn').disabled, true);
   harness.releaseCommit();
   await commit;
   assert.equal(harness.element('masterSwitch').disabled, false);
-  assert.equal(optionsState.syncPaused, false);
+  assert.equal(harness.element('resumeMasterBtn').disabled, false);
 });
 
 test('popup pause refreshes the switch after a successful worker commit', async (t) => {
   resetState();
   const harness = createUiHarness(t);
-  bindPopupActivation({ onChanged: renderPopupSwitch });
+  bindPopupActivation({ onChanged() { popupState.headers.activation = harness.getActivation(); renderPopupSwitch(); } });
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(popupState.headers.activation.masterEnabled, false);
   assert.equal(harness.element('masterSwitch').getAttribute('aria-checked'), 'false');
@@ -97,7 +97,6 @@ test('a rejected popup commit preserves activation and restores usable controls'
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(popupState.headers.activation.masterEnabled, true);
   assert.equal(harness.element('masterSwitch').disabled, false);
-  assert.equal(popupState.headers.syncPaused, false);
   assert.equal(harness.element('headerStatus').textContent, 'Commit rejected');
   assert.equal(harness.element('headerStatus').classList.contains('error'), true);
 });
