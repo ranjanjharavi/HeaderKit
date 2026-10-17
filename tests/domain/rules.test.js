@@ -9,6 +9,7 @@ import {
   findActiveRuleConflict,
   getActiveRuleConflicts,
   getNextRuleId,
+  getDisplayPathPrefix,
   groupRulesByDomain,
   getRuleOriginPattern,
   normalizeDomain,
@@ -121,6 +122,41 @@ test('normalizeRules repairs identifiers and normalizes fields', () => {
   assert.deepEqual(normalized.map((rule) => rule.id), [1, 2]);
   assert.equal(normalized[0].domain, 'api.example.com');
   assert.equal(normalized[1].enabled, false);
+});
+
+test('normalizeRules reserves valid IDs before repairing invalid and duplicate entries', () => {
+  const rules = [
+    { ...sampleRules[0], id: null },
+    { ...sampleRules[0], id: 1 },
+    { ...sampleRules[0], id: 1 },
+    { ...sampleRules[0], id: 9 },
+    { ...sampleRules[0], id: -2 },
+    { ...sampleRules[0], id: '3' }
+  ];
+  const normalized = normalizeRules(rules);
+  assert.deepEqual(normalized.map((rule) => rule.id), [10, 1, 11, 9, 12, 3]);
+  assert.deepEqual(normalizeRules(normalized), normalized);
+  assert.deepEqual(rules.map((rule) => rule.id), [null, 1, 1, 9, -2, '3']);
+});
+
+test('Unicode paths canonicalize for matching, identity and safe display round trips', () => {
+  const pathPrefix = '/caf\u00e9';
+  const canonical = '/caf%C3%A9';
+  assert.equal(normalizePathPrefix(pathPrefix), canonical);
+  assert.equal(normalizePathPrefix(canonical), canonical);
+  assert.equal(getDisplayPathPrefix(canonical), pathPrefix);
+  for (const encoded of ['/a%2Fb', '/a%25b', '/bad%FF']) {
+    assert.equal(normalizePathPrefix(getDisplayPathPrefix(encoded)), encoded);
+  }
+  for (const path of ['/api/%2e%2e/admin', '/api/.%2E/admin', '/api/%2e/admin']) {
+    assert.equal(normalizePathPrefix(path), null);
+  }
+  const rule = { ...sampleRules[0], pathPrefix };
+  const expression = new RegExp(buildDynamicRule(rule).condition.regexFilter);
+  assert.equal(expression.test(new URL('https://api.example.com/caf\u00e9/users').href), true);
+  assert.equal(expression.test('https://api.example.com/caf%C3%A9x'), false);
+  assert.equal(validateRuleDraft({ ...rule, pathPrefix: canonical }, [rule]).ok, false);
+  assert.equal(normalizeRules([rule])[0].pathPrefix, canonical);
 });
 
 test('validateRuleDraft normalizes host and optional request scope', () => {

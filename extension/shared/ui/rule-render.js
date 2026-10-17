@@ -1,4 +1,5 @@
 import { escapeHtml } from './ui.js';
+import { getDisplayPathPrefix } from '../domain/rules.js';
 
 const ICON_EDIT = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m11.85 1.65 2.5 2.5a1.2 1.2 0 0 1 0 1.7l-7.8 7.8-4.05.85.85-4.05 7.8-7.8a1.2 1.2 0 0 1 1.7 0ZM4.7 11.2l-.35 1.45 1.45-.35 7.45-7.45-2.5-2.5L4.7 11.2Z"/></svg>';
 const ICON_DELETE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.25 2.5h3.5l.5 1H13a.75.75 0 0 1 0 1.5h-.6l-.55 7.14A1.5 1.5 0 0 1 10.35 13.5h-4.7a1.5 1.5 0 0 1-1.5-1.36L3.6 5H3a.75.75 0 0 1 0-1.5h2.75l.5-1Zm-.46 2.5.5 6.5h3.42l.5-6.5H5.79Z"/></svg>';
@@ -140,7 +141,7 @@ export function renderConflictNotice(conflictingRules) {
 function renderRuleScopeSummary(rule) {
   const parts = [];
   if (rule.pathPrefix) {
-    parts.push(`Path <code>${escapeHtml(rule.pathPrefix)}</code> and subpaths`);
+    parts.push(`Path <code>${escapeHtml(getDisplayPathPrefix(rule.pathPrefix))}</code> and subpaths`);
   }
   if (rule.resourceType === 'xmlhttprequest') {
     parts.push('Fetch/XHR only');
@@ -174,7 +175,7 @@ export function renderRuleEditForm(rule, profiles = null) {
           </div>
           <div class="rule-edit-field rule-edit-field-path">
             <label for="editPathPrefix-${rule.id}">Path prefix (optional)</label>
-            <input id="editPathPrefix-${rule.id}" type="text" value="${escapeHtml(rule.pathPrefix || '')}" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
+            <input id="editPathPrefix-${rule.id}" type="text" value="${escapeHtml(getDisplayPathPrefix(rule.pathPrefix))}" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
           </div>
           <div class="rule-edit-field rule-edit-field-resource-type">
             <label for="editResourceType-${rule.id}">Request type</label>

@@ -2,6 +2,7 @@ import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight
 import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getScopedRules } from '../state.js';
 import { showStatus } from '../../shared/ui/ui.js';
+import { getDisplayPathPrefix } from '../../shared/domain/rules.js';
 
 export let siteAccessPreflight;
 let addRule;
@@ -34,7 +35,7 @@ export function openRuleEditor(id) {
   document.getElementById('domain').value = rule.domain;
   document.getElementById('headerName').value = rule.headerName;
   document.getElementById('headerValue').value = rule.headerValue;
-  document.getElementById('pathPrefix').value = rule.pathPrefix || '';
+  document.getElementById('pathPrefix').value = getDisplayPathPrefix(rule.pathPrefix);
   document.getElementById('resourceType').value = rule.resourceType || 'all';
   document.getElementById('requestScopeDetails').open = Boolean(rule.pathPrefix) || rule.resourceType === 'xmlhttprequest';
   configureComposer();

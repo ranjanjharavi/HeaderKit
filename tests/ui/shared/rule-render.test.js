@@ -54,6 +54,17 @@ test('scoped rules expose their scope and editable controls', () => {
   assert.match(editor, /option value="xmlhttprequest" selected/);
 });
 
+test('Unicode path prefixes remain readable in lists and edit forms', () => {
+  const rule = {
+    id: 7, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'value',
+    pathPrefix: '/caf%C3%A9', enabled: true
+  };
+  assert.ok(renderRuleRow(rule).includes('/caf\u00e9'));
+  assert.ok(renderRuleEditForm(rule).includes('value="/caf\u00e9"'));
+  const encodedSlash = renderRuleEditForm({ ...rule, pathPrefix: '/a%2Fb' });
+  assert.match(encodedSlash, /value="\/a%2Fb"/);
+});
+
 test('paused rules are clearly marked while remaining editable and resumable', () => {
   const row = renderRuleRow({
     id: 9,

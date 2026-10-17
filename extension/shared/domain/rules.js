@@ -21,20 +21,22 @@ const SUPPORTED_RESOURCE_TYPES = new Set(['all', 'xmlhttprequest']);
 const MAX_PATH_PREFIX_LENGTH = 512;
 
 export function normalizeRules(rules, { profileIds = null } = {}) {
-  const usedIds = new Set();
-  let nextId = 1;
-
-  return (Array.isArray(rules) ? rules : [])
-    .map((rule) => normalizeRule(rule, usedIds, () => nextId++, profileIds))
+  const normalizedRules = (Array.isArray(rules) ? rules : [])
+    .map((rule) => normalizeRule(rule, profileIds))
     .filter(Boolean);
+  const usedIds = new Set();
+  let nextId = getNextRuleId(normalizedRules);
+
+  return normalizedRules.map((rule) => {
+    if (!Number.isInteger(rule.id) || rule.id < 1 || usedIds.has(rule.id)) {
+      rule.id = nextId++;
+    }
+    usedIds.add(rule.id);
+    return rule;
+  });
 }
 
-function normalizeRule(
-  rule,
-  usedIds = new Set(),
-  getNextId = createSequentialIdFactory(),
-  profileIds = null
-) {
+function normalizeRule(rule, profileIds) {
   if (!rule) {
     return null;
   }
@@ -50,18 +52,8 @@ function normalizeRule(
     return null;
   }
 
-  let id = Number(rule.id);
-  if (!Number.isInteger(id) || id < 1 || usedIds.has(id)) {
-    id = getNextId();
-  }
-
-  while (usedIds.has(id)) {
-    id = getNextId();
-  }
-  usedIds.add(id);
-
   return {
-    id,
+    id: Number(rule.id),
     domain,
     headerName,
     headerValue,
@@ -97,11 +89,22 @@ export function normalizePathPrefix(value) {
   }
 
   const segments = path.split('/');
-  if (segments.some((segment) => segment === '.' || segment === '..')) {
+  if (segments.some((segment) => /^(?:\.|%2e){1,2}$/i.test(segment))) {
     return null;
   }
 
-  return path.replace(/\/+$/, '') || '';
+  const canonicalPath = new URL(path, 'https://h.invalid').pathname.replace(/\/+$/, '');
+  return canonicalPath.length <= MAX_PATH_PREFIX_LENGTH ? canonicalPath : null;
+}
+
+export function getDisplayPathPrefix(value) {
+  const path = String(value ?? '');
+  try {
+    const decoded = decodeURI(path);
+    return normalizePathPrefix(decoded) === path ? decoded : path;
+  } catch {
+    return path;
+  }
 }
 
 function normalizeResourceType(value) {
@@ -415,9 +418,4 @@ export function getRuleOriginPattern(rule) {
 
 function escapeRegex(value) {
   return String(value).replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function createSequentialIdFactory() {
-  let nextId = 1;
-  return () => nextId++;
 }
