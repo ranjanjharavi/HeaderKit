@@ -12,8 +12,7 @@ export const state = {
     scope: 'site',
     collapsedDomains: new Set(),
     currentHostname: '',
-    revealedRuleIds: new Set(),
-    syncPaused: false
+    revealedRuleIds: new Set()
   }
 };
 

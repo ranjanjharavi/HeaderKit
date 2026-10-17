@@ -3,27 +3,16 @@ import {
   createTab,
   getExtensionUrl,
   onStorageChanged,
-  openOptionsPage,
-  storageLocalGet
+  openOptionsPage
 } from '../../shared/runtime/chrome-api.js';
-import {
-  ACTIVATION_STORAGE_KEY,
-  createDefaultActivation,
-  normalizeActivation
-} from '../../shared/domain/activation.js';
-import {
-  PROFILE_STORAGE_KEY,
-  createDefaultProfiles,
-  getProfileIds,
-  normalizeProfiles
-} from '../../shared/domain/profiles.js';
+import { ACTIVATION_STORAGE_KEY } from '../../shared/domain/activation.js';
+import { PROFILE_STORAGE_KEY } from '../../shared/domain/profiles.js';
 import { parseUserUrl } from '../../shared/domain/urls.js';
-import { getStoredRules } from '../../shared/runtime/rule-api.js';
-import { state, getScopedRules } from '../state.js';
+import { createStateRefresh } from '../../shared/runtime/state-api.js';
+import { state } from '../state.js';
 import { bindActivationEvents } from '../activation/controller.js';
-import { readGrantedOrigins } from '../../shared/runtime/site-access-api.js';
 import { getManagerPath } from '../view-model.js';
-import { addRule, saveEditedRule, toggleRule, confirmDeleteRule, grantRuleAccess } from './actions.js';
+import { configureRuleActions, addRule, saveEditedRule, toggleRule, confirmDeleteRule, grantRuleAccess } from './actions.js';
 import {
   bindComposerEvents,
   openRuleEditor,
@@ -33,7 +22,8 @@ import {
 import { renderRules, setRuleScope, toggleDomain, toggleRuleValueVisibility } from './view.js';
 
 export function bindHeaderEvents() {
-  bindActivationEvents({ onChanged: renderRules });
+  configureRuleActions({ onRefresh: refreshFromStorage });
+  bindActivationEvents({ onChanged: refreshFromStorage });
   bindComposerEvents({ onAddRule: addRule, onSaveRule: saveEditedRule });
 
   document.getElementById('manageRulesLink').addEventListener('click', (event) => {
@@ -46,24 +36,16 @@ export function bindHeaderEvents() {
 
   document.getElementById('ruleListContainer').addEventListener('click', handleRuleListClick);
 
-  const refreshSiteAccess = () => {
-    readGrantedOrigins().then((origins) => {
-      state.headers.grantedOrigins = origins;
-      renderRules();
-    });
-  };
-  chrome.permissions.onAdded.addListener(refreshSiteAccess);
-  chrome.permissions.onRemoved.addListener(refreshSiteAccess);
+  chrome.permissions.onAdded.addListener(scheduleRefresh);
+  chrome.permissions.onRemoved.addListener(scheduleRefresh);
 
   onStorageChanged((changes) => {
     const touchesRules = RULE_STORAGE_KEY in changes
       || ACTIVATION_STORAGE_KEY in changes
       || PROFILE_STORAGE_KEY in changes;
 
-    if (touchesRules && !state.headers.syncPaused) {
-      refreshFromStorage().catch((error) => {
-        console.error('Could not refresh header rules.', error);
-      });
+    if (touchesRules) {
+      scheduleRefresh();
     }
   });
 }
@@ -73,31 +55,13 @@ export async function initializeHeaders(activeTab) {
   await refreshFromStorage();
 }
 
-async function refreshFromStorage() {
-  await loadActivation();
-  state.headers.rules = await getStoredRules();
-  if (state.headers.editingId && !getScopedRules().some((rule) => rule.id === state.headers.editingId)) {
+export const { refresh: refreshFromStorage, schedule: scheduleRefresh } = createStateRefresh((snapshot) => {
+  Object.assign(state.headers, snapshot);
+  if (state.headers.editingId && !state.headers.rules.some((rule) => rule.id === state.headers.editingId)) {
     setHeaderComposerExpanded(false, { reset: true });
   }
   renderRules();
-}
-
-async function loadActivation() {
-  try {
-    const stored = await storageLocalGet([PROFILE_STORAGE_KEY, ACTIVATION_STORAGE_KEY]);
-    const profiles = normalizeProfiles(stored[PROFILE_STORAGE_KEY]);
-    state.headers.profiles = profiles;
-    state.headers.activation = normalizeActivation(stored[ACTIVATION_STORAGE_KEY], {
-      profileIds: getProfileIds(profiles)
-    });
-  } catch (error) {
-    console.error('Could not read the activation state.', error);
-    state.headers.profiles = createDefaultProfiles();
-    state.headers.activation = createDefaultActivation();
-  }
-
-  state.headers.grantedOrigins = await readGrantedOrigins();
-}
+});
 
 function openManager() {
   openOptionsPage().catch((error) => {

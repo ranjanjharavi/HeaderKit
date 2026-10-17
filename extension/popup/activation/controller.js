@@ -1,5 +1,5 @@
-import { getActivationStatus, getTargetProfileId, setMasterEnabled } from '../../shared/domain/activation.js';
-import { setActivationState } from '../../shared/runtime/activation-api.js';
+import { getActivationStatus, getTargetProfileId } from '../../shared/domain/activation.js';
+import { setMasterEnabled } from '../../shared/runtime/activation-api.js';
 import { getProfileName } from '../../shared/domain/profiles.js';
 import { state, getActivation } from '../state.js';
 import { showStatus } from '../../shared/ui/ui.js';
@@ -18,7 +18,7 @@ async function toggleMaster(forceOn = false) {
   const nextEnabled = forceOn || !activation.masterEnabled;
 
   await commitActivation(
-    setMasterEnabled(activation, nextEnabled),
+    nextEnabled,
     nextEnabled ? 'Header rules resumed.' : 'All header rules paused.'
   );
 }
@@ -27,7 +27,7 @@ async function resumeFromBanner() {
   await toggleMaster(true);
 }
 
-async function commitActivation(nextActivation, message) {
+async function commitActivation(enabled, message) {
   const controls = [
     document.getElementById('masterSwitch'),
     document.getElementById('resumeMasterBtn')
@@ -37,17 +37,15 @@ async function commitActivation(nextActivation, message) {
     control.disabled = true;
   });
 
-  state.headers.syncPaused = true;
   try {
-    state.headers.activation = await setActivationState(nextActivation);
-    onChanged();
+    await setMasterEnabled(enabled);
+    await onChanged();
     showStatus('headerStatus', message, 'success');
   } catch (error) {
     console.error(error);
-    onChanged();
+    renderMasterSwitch();
     showStatus('headerStatus', error.message || 'Could not change the ReqKit switch.', 'error');
   } finally {
-    state.headers.syncPaused = false;
     controls.forEach((control) => {
       control.disabled = false;
     });
