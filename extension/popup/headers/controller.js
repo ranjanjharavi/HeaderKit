@@ -1,4 +1,4 @@
-import { RULE_STORAGE_KEY } from '../../shared/domain/rules.js';
+import { RULE_STORAGE_KEY, normalizeDomain } from '../../shared/domain/rules.js';
 import {
   createTab,
   getExtensionUrl,
@@ -7,7 +7,6 @@ import {
 } from '../../shared/runtime/chrome-api.js';
 import { ACTIVATION_STORAGE_KEY } from '../../shared/domain/activation.js';
 import { PROFILE_STORAGE_KEY } from '../../shared/domain/profiles.js';
-import { parseUserUrl } from '../../shared/domain/urls.js';
 import { createStateRefresh } from '../../shared/runtime/state-api.js';
 import { state } from '../state.js';
 import { bindActivationEvents } from '../activation/controller.js';
@@ -113,13 +112,7 @@ function handleRuleListClick(event) {
 
 function initializeCurrentSite(activeTab) {
   const tabUrl = activeTab?.url || '';
-  if (!/^https:\/\//i.test(tabUrl)) {
-    state.headers.currentHostname = '';
-    return;
-  }
-
-  const parsed = parseUserUrl(tabUrl);
-  state.headers.currentHostname = parsed.url.hostname.toLowerCase();
+  state.headers.currentHostname = /^https:\/\//i.test(tabUrl) ? normalizeDomain(tabUrl) : '';
   document.getElementById('domain').value = state.headers.currentHostname;
 }
 
