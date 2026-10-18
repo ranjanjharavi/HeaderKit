@@ -10,25 +10,31 @@ function errorId(ruleId) {
 
 export function clearRuleFormError(ruleId = null) {
   const error = document.getElementById(errorId(ruleId));
-  error.textContent = '';
-  error.hidden = true;
+  if (error) {
+    error.textContent = '';
+    error.hidden = true;
+  }
   RULE_FIELDS.forEach((field) => {
-    document.getElementById(fieldId(field, ruleId)).removeAttribute('aria-invalid');
+    document.getElementById(fieldId(field, ruleId))?.removeAttribute('aria-invalid');
   });
 }
 
 export function showRuleFormError({ error: message, field }, ruleId = null) {
   clearRuleFormError(ruleId);
   const error = document.getElementById(errorId(ruleId));
+  if (!error) {
+    return false;
+  }
   error.hidden = false;
   error.textContent = message;
   if (field) {
     const input = document.getElementById(fieldId(field, ruleId));
-    const details = input.closest('details');
+    const details = input?.closest('details');
     if (details) {
       details.open = true;
     }
-    input.setAttribute('aria-invalid', 'true');
-    input.focus();
+    input?.setAttribute('aria-invalid', 'true');
+    input?.focus();
   }
+  return true;
 }

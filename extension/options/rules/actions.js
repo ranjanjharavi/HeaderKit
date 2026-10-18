@@ -102,7 +102,10 @@ export async function addRule() {
     return true;
   } catch (error) {
     console.error(error);
-    showRuleFormError({ field: error.field, error: error.message || 'Chrome rejected the new rule.' });
+    const message = error.message || 'Chrome rejected the new rule.';
+    if (!showRuleFormError({ field: error.field, error: message })) {
+      showStatus('headerStatus', message, 'error');
+    }
     return false;
   }
 }
@@ -227,7 +230,10 @@ export async function saveEditedRule(id) {
       showStatus('headerStatus', error.message || 'That rule no longer exists.', 'error');
       return;
     }
-    showRuleFormError({ field: error.field, error: error.message || 'Could not update that rule.' }, id);
+    const message = error.message || 'Could not update that rule.';
+    if (!showRuleFormError({ field: error.field, error: message }, id)) {
+      showStatus('headerStatus', message, 'error');
+    }
   }
 }
 

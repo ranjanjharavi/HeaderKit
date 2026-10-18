@@ -9,6 +9,7 @@ import { bindComposerEvents as bindOptionsComposer } from '../../../extension/op
 import { bindComposerEvents as bindPopupComposer } from '../../../extension/popup/headers/composer.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
 import { applyRuleIntent } from '../../../extension/background/rule-commit.js';
+import { clearRuleFormError, showRuleFormError } from '../../../extension/shared/ui/rule-form-errors.js';
 
 function setup(t, surface, rules = []) {
   const harness = createUiHarness(t);
@@ -65,6 +66,17 @@ function setup(t, surface, rules = []) {
   return { ...harness, state, actions, calls, draft, storeRules: (value) => { storedRules = value; } };
 }
 
+test('rule form errors tolerate missing forms and missing individual fields', (t) => {
+  const harness = createUiHarness(t);
+  document.getElementById = () => null;
+  assert.doesNotThrow(() => clearRuleFormError(1));
+  assert.equal(showRuleFormError({ error: 'Rejected', field: 'headerValue' }, 1), false);
+  const error = harness.element('ruleEditError-1');
+  document.getElementById = (id) => id === 'ruleEditError-1' ? error : null;
+  assert.equal(showRuleFormError({ error: 'Rejected', field: 'headerValue' }, 1), true);
+  assert.equal(error.textContent, 'Rejected');
+});
+
 for (const surface of ['options', 'popup']) {
   test(`${surface} invalid drafts stay in the form without saving or requesting access`, async (t) => {
     const harness = setup(t, surface);
@@ -111,6 +123,25 @@ for (const surface of ['options', 'popup']) {
     assert.equal(harness.element(fieldId).value, 'draft value');
     assert.equal(harness.element(fieldId).getAttribute('aria-invalid'), 'true');
     assert.equal(harness.state.editingId, 1);
+    assert.equal(harness.state.rules[0].headerValue, 'old');
+  });
+
+  test(`${surface} worker errors fall back to status after a form disappears`, async (t) => {
+    const rule = {
+      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
+      enabled: true, profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
+    harness.state.editingId = 1;
+    harness.draft({ headerValue: 'draft value' }, surface === 'options' ? 1 : null);
+    const getElement = document.getElementById.bind(document);
+    chrome.runtime.sendMessage = (_message, callback) => {
+      document.getElementById = (id) => id === 'headerStatus' ? getElement(id) : null;
+      callback({ ok: false, error: 'Rule changed elsewhere.', field: 'headerValue' });
+    };
+    await harness.actions.saveEditedRule(1);
+    assert.equal(harness.element('headerStatus').textContent, 'Rule changed elsewhere.');
     assert.equal(harness.state.rules[0].headerValue, 'old');
   });
 
