@@ -44,12 +44,14 @@ test('a page ReqKit can never touch shows nothing', () => {
   });
 });
 
-test('an unreadable tab falls back to the profile-wide count', () => {
+test('an unreadable tab shows neutral profile activation instead of a count', () => {
   assert.deepEqual(resolveBadge(rules, on, { url: undefined }), {
-    text: '3',
+    text: 'on',
     color: BADGE_ACTIVE_COLOR
   });
-  assert.deepEqual(resolveBadge(rules, on), { text: '3', color: BADGE_ACTIVE_COLOR });
+  assert.deepEqual(resolveBadge(rules, on), { text: 'on', color: BADGE_ACTIVE_COLOR });
+  assert.deepEqual(resolveBadge(rules, on, { url: null }), { text: 'on', color: BADGE_ACTIVE_COLOR });
+  assert.deepEqual(resolveBadge([], on), { text: '', color: null });
 });
 
 test('rules in another profile are not counted', () => {

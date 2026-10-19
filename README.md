@@ -44,6 +44,10 @@ The timer belongs to the activation rather than to a profile. Switching profiles
 and choosing a duration arms a fresh one. The remaining time is rounded, and a Chrome alarm
 stops the rules even when no ReqKit page is open.
 
+Until Chrome closes uses session rules, cleared by Chrome on shutdown. Timed
+activations survive restarts. If a timer expires while Chrome is closed, restored
+tabs may briefly receive headers until the background worker handles startup.
+
 ### Pausing everything
 
 A single switch pauses every header rule without deleting anything or changing any rule's
@@ -53,8 +57,9 @@ saved and editable.
 While rules are paused the toolbar badge reads `off`, and both the popup and the rule
 manager show a banner. The badge stays blank when there was nothing to apply anyway.
 
-The badge otherwise counts the rules active on the site you are looking at, falling back to
-the profile-wide count on pages whose URL ReqKit cannot read.
+Readable tabs show the enabled rule count for that exact destination host. Unreadable
+tabs show `on` for an active profile with enabled rules. Counts describe configured
+scope, not observed requests or cross-origin Fetch/XHR traffic.
 
 ### Popup and rule manager
 
@@ -119,7 +124,7 @@ extension/
   options/           Manager features, workspace coordination, and styles
   popup/             Popup features, page state, and layout
   shared/
-    domain/          Pure rules, activation, profiles, site access, and URLs
+    domain/          Pure rules, activation, profiles, and site access
     runtime/         Chrome adapters, message clients, and permission workflows
     ui/              Shared rendering, dialogs, consent, and DOM helpers
     styles/          Shared tokens and components
