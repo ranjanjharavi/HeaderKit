@@ -128,6 +128,32 @@ export function updateDynamicRules(details, chromeApi = globalThis.chrome) {
   });
 }
 
+export function getSessionRules(chromeApi = globalThis.chrome) {
+  return new Promise((resolve, reject) => {
+    chromeApi.declarativeNetRequest.getSessionRules((rules) => {
+      const error = getRuntimeError(chromeApi);
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(rules || []);
+    });
+  });
+}
+
+export function updateSessionRules(details, chromeApi = globalThis.chrome) {
+  return new Promise((resolve, reject) => {
+    chromeApi.declarativeNetRequest.updateSessionRules(details, () => {
+      const error = getRuntimeError(chromeApi);
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 export function sendRuntimeMessage(message, chromeApi = globalThis.chrome) {
   return new Promise((resolve, reject) => {
     chromeApi.runtime.sendMessage(message, (response) => {

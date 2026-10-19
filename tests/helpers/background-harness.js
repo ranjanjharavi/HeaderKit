@@ -12,6 +12,8 @@ export async function installBackgroundHarness(chromeApi) {
   const messages = [];
   const writes = [];
   let dynamicRules = [];
+  let sessionRules = [];
+  let failedRuleUpdate = null;
   const storageChanges = createEvent();
   const set = chromeApi.storage.local.set.bind(chromeApi.storage.local);
   chromeApi.storage.local.set = (value, callback) => {
@@ -63,13 +65,41 @@ export async function installBackgroundHarness(chromeApi) {
   chromeApi.tabs.onUpdated = createEvent();
   chromeApi.tabs.onActivated = createEvent();
   chromeApi.declarativeNetRequest = {
+    MAX_NUMBER_OF_REGEX_RULES: 1000,
     getDynamicRules: (callback) => callback(structuredClone(dynamicRules)),
+    getSessionRules: (callback) => callback(structuredClone(sessionRules)),
     updateDynamicRules: ({ removeRuleIds, addRules }, callback) => {
+      if (rejectRuleUpdate('dynamic', callback)) {
+        return;
+      }
       dynamicRules = [...dynamicRules.filter((rule) => !removeRuleIds.includes(rule.id)), ...structuredClone(addRules)];
+      callback();
+    },
+    updateSessionRules: ({ removeRuleIds, addRules }, callback) => {
+      if (rejectRuleUpdate('session', callback)) {
+        return;
+      }
+      sessionRules = [...sessionRules.filter((rule) => !removeRuleIds.includes(rule.id)), ...structuredClone(addRules)];
       callback();
     }
   };
+  function rejectRuleUpdate(kind, callback) {
+    if (failedRuleUpdate !== kind) {
+      return false;
+    }
+    failedRuleUpdate = null;
+    chromeApi.runtime.lastError = { message: 'Rule update failed' };
+    callback();
+    chromeApi.runtime.lastError = null;
+    return true;
+  }
   globalThis.chrome = chromeApi;
   await import(`../../extension/background.js?worker-test=${nextWorkerId++}`);
-  return { writes, getDynamicRules: () => structuredClone(dynamicRules) };
+  return {
+    writes,
+    getDynamicRules: () => structuredClone(dynamicRules),
+    getSessionRules: () => structuredClone(sessionRules),
+    clearSessionRules: () => { sessionRules = []; },
+    failNextRuleUpdate: (kind) => { failedRuleUpdate = kind; }
+  };
 }

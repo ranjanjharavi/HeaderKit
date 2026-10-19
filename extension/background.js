@@ -5,11 +5,13 @@ import {
   createAlarm,
   getDynamicRules,
   getGrantedOrigins,
+  getSessionRules,
   queryTabs,
   removeOriginPermission,
   storageAreaGet,
   storageAreaSet,
-  updateDynamicRules
+  updateDynamicRules,
+  updateSessionRules
 } from './shared/runtime/chrome-api.js';
 import { filterGrantedRules } from './shared/domain/site-access.js';
 import {
@@ -243,7 +245,7 @@ async function handleActivationMessage(message) {
 }
 
 /**
- * The worker owns the dynamic rule set and the badges, so every activation
+ * The worker owns the applied rule sets and the badges, so every activation
  * change lands here rather than being written to storage by a page.
  */
 async function commitActivation(activation, state) {
@@ -318,14 +320,39 @@ async function getGrantedOriginsSafely() {
 }
 
 async function applyDynamicRules(rules, activation, grantedOrigins) {
-  const currentRules = await getDynamicRules();
+  const [dynamicRules, sessionRules] = await Promise.all([getDynamicRules(), getSessionRules()]);
   const applicableRules = filterGrantedRules(rules, grantedOrigins);
   const addRules = getLiveRules(applicableRules, activation).map(buildDynamicRule);
+  const regexLimit = chrome.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES;
+  if (addRules.length > regexLimit) {
+    throw new Error(`Chrome supports at most ${regexLimit} active header rules. Pause or remove some rules first.`);
+  }
 
-  await updateDynamicRules({
-    removeRuleIds: currentRules.map((rule) => rule.id),
-    addRules
-  });
+  let activeRules = dynamicRules;
+  let inactiveRules = sessionRules;
+  let updateActive = updateDynamicRules;
+  let updateInactive = updateSessionRules;
+  if (activation.untilBrowserClose) {
+    activeRules = sessionRules;
+    inactiveRules = dynamicRules;
+    updateActive = updateSessionRules;
+    updateInactive = updateDynamicRules;
+  }
+  if (inactiveRules.length) {
+    await updateInactive({ removeRuleIds: inactiveRules.map((rule) => rule.id), addRules: [] });
+  }
+  try {
+    await updateActive({ removeRuleIds: activeRules.map((rule) => rule.id), addRules });
+  } catch (error) {
+    if (inactiveRules.length) {
+      try {
+        await updateInactive({ removeRuleIds: [], addRules: inactiveRules });
+      } catch (rollbackError) {
+        console.error('Could not restore the previous applied rules.', rollbackError);
+      }
+    }
+    throw error;
+  }
 }
 
 async function refreshBadgesSafely(state) {

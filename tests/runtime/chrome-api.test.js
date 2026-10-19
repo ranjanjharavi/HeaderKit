@@ -4,12 +4,14 @@ import test from 'node:test';
 import {
   createTab,
   getCurrentTab,
+  getSessionRules,
   removeOriginPermission,
   requestOriginPermission,
   sendRuntimeMessage,
   storageAreaRemove,
   storageLocalGet,
-  storageLocalSet
+  storageLocalSet,
+  updateSessionRules
 } from '../../extension/shared/runtime/chrome-api.js';
 
 function createChromeApi() {
@@ -90,4 +92,19 @@ test('Chrome API wrappers reject runtime.lastError', async () => {
   };
 
   await assert.rejects(storageLocalGet(['key'], chromeApi), /Storage unavailable/);
+});
+
+test('session rule adapters resolve results and propagate Chrome errors', async () => {
+  const chromeApi = createChromeApi();
+  let rules = [{ id: 1 }];
+  chromeApi.declarativeNetRequest = {
+    getSessionRules: (callback) => callback(rules),
+    updateSessionRules: (details, callback) => { rules = details.addRules; callback(); }
+  };
+  assert.deepEqual(await getSessionRules(chromeApi), [{ id: 1 }]);
+  await updateSessionRules({ removeRuleIds: [1], addRules: [{ id: 2 }] }, chromeApi);
+  assert.deepEqual(await getSessionRules(chromeApi), [{ id: 2 }]);
+  chromeApi.runtime.lastError = { message: 'Session rules unavailable' };
+  await assert.rejects(getSessionRules(chromeApi), /Session rules unavailable/);
+  await assert.rejects(updateSessionRules({ addRules: [] }, chromeApi), /Session rules unavailable/);
 });

@@ -27,7 +27,6 @@ async function worker(t, stored = {}) {
   const originalChrome = globalThis.chrome;
   const originalError = console.error;
   console.error = () => {};
-  t.after(() => { globalThis.chrome = originalChrome; console.error = originalError; });
   const storage = {
     profiles: [{ id: 'default', name: 'Default' }, { id: 'staging', name: 'Staging' }],
     headerRules: [],
@@ -62,6 +61,11 @@ async function worker(t, stored = {}) {
     }
   };
   const harness = await installBackgroundHarness(chromeApi);
+  t.after(async () => {
+    await new Promise((resolve) => chromeApi.runtime.sendMessage({ type: 'reqkit:state:get' }, resolve));
+    globalThis.chrome = originalChrome;
+    console.error = originalError;
+  });
   return {
     ...harness,
     storage,
@@ -152,4 +156,68 @@ test('actual worker resolves expired snapshots and applies activation intents to
   const failed = await harness.send({ type: 'reqkit:activation:set-master', enabled: true });
   assert.equal(failed.ok, false);
   assert.deepEqual(harness.storage, before);
+});
+
+test('until-browser-close activation uses only session rules and Chrome clears them before startup', async (t) => {
+  const harness = await worker(t);
+  await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
+  assert.equal(harness.getDynamicRules().length, 1);
+  await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+  assert.equal(harness.getDynamicRules().length, 0);
+  assert.equal(harness.getSessionRules().length, 1);
+  harness.clearSessionRules();
+  assert.equal(harness.getDynamicRules().length + harness.getSessionRules().length, 0);
+  chrome.runtime.onStartup.emit();
+  const snapshot = await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(snapshot.activation.profileId, null);
+  assert.equal(snapshot.rules.length, 1);
+  assert.equal(harness.getSessionRules().length, 0);
+});
+
+test('switching between session and dynamic rules restores the prior set on API or storage failure', async (t) => {
+  const harness = await worker(t);
+  await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
+  const dynamicBefore = harness.getDynamicRules();
+  for (const failure of ['api', 'storage']) {
+    if (failure === 'api') {
+      harness.failNextRuleUpdate('session');
+    } else {
+      harness.failNextWrite();
+    }
+    const result = await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+    assert.equal(result.ok, false);
+    assert.equal(harness.storage.activation.untilBrowserClose, false);
+    assert.deepEqual(harness.getDynamicRules(), dynamicBefore);
+    assert.deepEqual(harness.getSessionRules(), []);
+  }
+  await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+  const sessionBefore = harness.getSessionRules();
+  harness.failNextRuleUpdate('dynamic');
+  const rejected = await harness.send({ type: 'reqkit:activation:set-duration', durationMs: 60_000 });
+  assert.equal(rejected.ok, false);
+  assert.deepEqual(harness.getSessionRules(), sessionBefore);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  const timed = await harness.send({ type: 'reqkit:activation:set-duration', durationMs: 60_000 });
+  assert.equal(timed.ok, true);
+  assert.equal(harness.getDynamicRules().length, 1);
+  assert.equal(harness.getSessionRules().length, 0);
+  const expiry = timed.activation.expiresAt;
+  chrome.runtime.onStartup.emit();
+  const snapshot = await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(snapshot.activation.expiresAt, expiry);
+  assert.equal(snapshot.activation.profileId, 'default');
+});
+
+test('regex quota is checked before changing either applied ruleset', async (t) => {
+  const harness = await worker(t);
+  chrome.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES = 1;
+  await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+  const before = harness.getSessionRules();
+  const rejected = await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Two', headerValue: 'two' }, profileId: 'default' });
+  assert.equal(rejected.ok, false);
+  assert.match(rejected.error, /at most 1 active header rules/);
+  assert.deepEqual(harness.getSessionRules(), before);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  assert.equal(harness.storage.headerRules.length, 1);
 });
