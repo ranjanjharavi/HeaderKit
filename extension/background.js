@@ -63,7 +63,12 @@ const PROFILE_MESSAGES = new Set([
   PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICATE, PROFILE_MESSAGE_DELETE
 ]);
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (sender?.id !== chrome.runtime.id || typeof sender?.url !== 'string'
+    || !sender.url.startsWith(chrome.runtime.getURL(''))) {
+    return false;
+  }
+
   if (RULE_MESSAGES.has(message?.type)) {
     enqueueBackgroundTask(() => handleRuleMessage(message))
       .then((result) => sendResponse({ ok: true, ...result }))

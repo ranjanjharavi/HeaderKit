@@ -29,15 +29,23 @@ export async function installBackgroundHarness(chromeApi) {
     });
   };
   chromeApi.storage.onChanged = storageChanges;
+  chromeApi.runtime.id ??= 'reqkit-test';
+  chromeApi.runtime.getURL ??= (path) => `chrome-extension://${chromeApi.runtime.id}/${path}`;
   chromeApi.runtime.onMessage = { addListener: (listener) => messages.push(listener) };
   chromeApi.runtime.onInstalled = createEvent();
   chromeApi.runtime.onStartup = createEvent();
   chromeApi.runtime.sendMessage = (message, callback) => {
-    const handled = messages.some((listener) => listener(message, { id: 'reqkit-test' }, callback));
+    sendMessageFrom(message, {
+      id: chromeApi.runtime.id,
+      url: chromeApi.runtime.getURL('popup/index.html')
+    }, callback);
+  };
+  function sendMessageFrom(message, sender, callback) {
+    const handled = messages.some((listener) => listener(message, sender, callback));
     if (!handled) {
       callback(undefined);
     }
-  };
+  }
   chromeApi.permissions.onAdded = createEvent();
   chromeApi.permissions.onRemoved = createEvent();
   for (const [method, event] of [['request', 'onAdded'], ['remove', 'onRemoved']]) {
@@ -97,6 +105,7 @@ export async function installBackgroundHarness(chromeApi) {
   await import(`../../extension/background.js?worker-test=${nextWorkerId++}`);
   return {
     writes,
+    sendFrom: (message, sender) => new Promise((resolve) => sendMessageFrom(message, sender, resolve)),
     getDynamicRules: () => structuredClone(dynamicRules),
     getSessionRules: () => structuredClone(sessionRules),
     clearSessionRules: () => { sessionRules = []; },

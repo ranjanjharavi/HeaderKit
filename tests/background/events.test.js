@@ -75,6 +75,50 @@ async function worker(t, stored = {}) {
   };
 }
 
+test('actual worker rejects untrusted senders before reading or mutating state', async (context) => {
+  const harness = await worker(context);
+  const id = chrome.runtime.id;
+  const url = chrome.runtime.getURL('popup/index.html');
+  let reads = 0;
+  const get = chrome.storage.local.get.bind(chrome.storage.local);
+  chrome.storage.local.get = (keys, callback) => {
+    reads++;
+    get(keys, callback);
+  };
+  const before = structuredClone(harness.storage);
+  const senders = [
+    undefined, null, {},
+    { id }, { url },
+    { id: 'another-extension', url },
+    { id, url: 'https://example.com/' },
+    { id, url: `https://example.com/${url}` },
+    { id, url: `chrome-extension://${id}.example/popup/index.html` },
+    { id, url: `chrome-extension://${id}` },
+    { id, url: 42 },
+    { id, url: { startsWith: () => true } }
+  ];
+  const messages = [
+    { type: 'reqkit:state:get' },
+    { type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' } },
+    { type: 'reqkit:activation:set-master', enabled: false },
+    { type: 'reqkit:profiles:create', name: 'Untrusted' }
+  ];
+  for (const sender of senders) {
+    for (const message of messages) {
+      assert.equal(await harness.sendFrom(message, sender), undefined);
+    }
+  }
+  assert.equal(reads, 0);
+  assert.deepEqual(harness.writes, []);
+  assert.deepEqual(harness.storage, before);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  assert.deepEqual(harness.getSessionRules(), []);
+  for (const page of ['popup/index.html', 'options/index.html']) {
+    const result = await harness.sendFrom({ type: 'reqkit:state:get' }, { id, url: chrome.runtime.getURL(page) });
+    assert.equal(result.ok, true);
+  }
+});
+
 test('actual worker merges concurrent rule intents and rejects conflicts and stale references', async (t) => {
   const harness = await worker(t);
   const draft = { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' };
