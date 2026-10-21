@@ -204,7 +204,7 @@ test('validateRuleDraft rejects invalid and duplicate rules', () => {
     domain: 'example.com',
     headerName: 'X-Test',
     headerValue: 'bad\nvalue'
-  }, []).error, 'Header values cannot contain line breaks.');
+  }, []).error, 'Header values cannot contain control characters other than tabs.');
   assert.match(validateRuleDraft({
     domain: 'example.com',
     headerName: 'X-Test',
@@ -228,6 +228,30 @@ test('validateRuleDraft rejects invalid and duplicate rules', () => {
     enabled: false
   }, sampleRules, { enabled: false }).ok, false);
   assert.equal(validateRuleDraft(sampleRules[0], sampleRules, { excludeId: 1 }).ok, true);
+});
+
+test('raw header values reject C0 controls and DEL before trimming on save and load', () => {
+  for (const codePoint of [...Array(32).keys(), 0x7f]) {
+    if (codePoint === 9) {
+      continue;
+    }
+    const control = String.fromCodePoint(codePoint);
+    for (const headerValue of [`${control}value`, `va${control}lue`, `value${control}`]) {
+      const rule = { ...sampleRules[0], headerValue };
+      const result = validateRuleDraft(rule, []);
+      assert.equal(result.ok, false, `control ${codePoint}`);
+      assert.equal(result.field, 'headerValue');
+      assert.match(result.error, /control characters/);
+      assert.deepEqual(normalizeRules([rule]), []);
+    }
+  }
+});
+
+test('header values retain horizontal tabs and Unicode with normal outer whitespace trimming', () => {
+  const rule = { ...sampleRules[0], headerValue: ' \talpha\tb\u00e9ta\t ' };
+  assert.equal(validateRuleDraft(rule, []).rule.headerValue, 'alpha\tb\u00e9ta');
+  assert.equal(normalizeRules([rule])[0].headerValue, 'alpha\tb\u00e9ta');
+  assert.deepEqual(normalizeRules([{ ...rule, headerValue: ' \t ' }]), []);
 });
 
 test('conflict detection finds different active values for the same header and host', () => {

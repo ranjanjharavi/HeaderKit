@@ -43,7 +43,7 @@ function normalizeRule(rule, profileIds) {
 
   const { host: domain } = parseHostInput(rule.domain);
   const headerName = String(rule.headerName || '').trim();
-  const headerValue = String(rule.headerValue || '').trim();
+  const headerValue = String(rule.headerValue || '');
   const pathPrefix = normalizePathPrefix(rule.pathPrefix ?? '');
   const resourceType = normalizeResourceType(rule.resourceType ?? 'all');
 
@@ -56,7 +56,7 @@ function normalizeRule(rule, profileIds) {
     id: Number(rule.id),
     domain,
     headerName,
-    headerValue,
+    headerValue: headerValue.trim(),
     pathPrefix,
     resourceType,
     enabled: rule.enabled !== false,
@@ -189,10 +189,11 @@ export function validateRuleDraft(draft, existingRules, {
   profileId = undefined
 } = {}) {
   const parsedHost = parseHostInput(draft?.domain);
+  const headerValue = String(draft?.headerValue || '');
   const rule = {
     domain: parsedHost.host,
     headerName: String(draft?.headerName || '').trim(),
-    headerValue: String(draft?.headerValue || '').trim(),
+    headerValue: headerValue.trim(),
     pathPrefix: normalizePathPrefix(draft?.pathPrefix ?? ''),
     resourceType: normalizeResourceType(draft?.resourceType ?? 'all')
   };
@@ -222,8 +223,8 @@ export function validateRuleDraft(draft, existingRules, {
     return { ok: false, field: 'headerName', error: 'Enter a valid HTTP header name.' };
   }
 
-  if (!isValidHeaderValue(rule.headerValue)) {
-    return { ok: false, field: 'headerValue', error: 'Header values cannot contain line breaks.' };
+  if (!isValidHeaderValue(headerValue)) {
+    return { ok: false, field: 'headerValue', error: 'Header values cannot contain control characters other than tabs.' };
   }
 
   // A profile can set a header once per request scope for a host. The value
@@ -270,7 +271,7 @@ function isValidHeaderName(value) {
 
 function isValidHeaderValue(value) {
   const normalizedValue = String(value || '');
-  return Boolean(normalizedValue) && !/[\r\n]/.test(normalizedValue);
+  return Boolean(normalizedValue.trim()) && !/[\u0000-\u0008\u000a-\u001f\u007f]/.test(normalizedValue);
 }
 
 export function getNextRuleId(rules) {
