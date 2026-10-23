@@ -73,12 +73,15 @@
 
                 <div class="field">
                   <label for="headerName">Header name</label>
-                  <input type="text" id="headerName" placeholder="X-ReqKit-Debug" aria-describedby="ruleComposerError">
+                  <input type="text" id="headerName" data-header-name placeholder="X-ReqKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
                 </div>
 
                 <div class="field">
                   <label for="headerValue">Header value</label>
-                  <input type="text" id="headerValue" placeholder="enabled" aria-describedby="ruleComposerError">
+                  <div class="header-value-field">
+                    <input type="text" id="headerValue" data-header-value placeholder="enabled" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
+                    <button class="rule-value-btn" type="button" data-header-value-toggle aria-label="Reveal value" title="Reveal value" aria-pressed="false" hidden></button>
+                  </div>
                   <p class="helper-text disclosure-text">Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only authorized systems.</p>
                 </div>
 

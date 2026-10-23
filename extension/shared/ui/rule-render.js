@@ -11,7 +11,7 @@ const ICON_EYE_CLOSED = '<path fill="currentColor" d="m2.3 1.25 12.45 12.46-1.06
 const MASKED_VALUE = '••••••••••••••••';
 
 export function isSensitiveHeaderName(headerName) {
-  return /(authorization|cookie|token|secret|api[-_]?key)/i.test(String(headerName || ''));
+  return /(auth|session|passw(or)?d|secret|signature|csrf|xsrf|bearer|jwt|credential|private|api[-_]?key|token|cookie)/i.test(String(headerName || ''));
 }
 
 export function sortRulesForDisplay(rules, conflictingIds = new Set()) {
@@ -71,7 +71,7 @@ export function renderRuleRow(rule, {
     return renderRuleEditForm(rule, editProfiles);
   }
 
-  const toggleTitle = `${rule.enabled ? 'Pause' : 'Resume'} ${rule.headerName} rule`;
+  const toggleTitle = escapeHtml(`${rule.enabled ? 'Pause' : 'Resume'} ${rule.headerName} rule`);
   const isSensitive = isSensitiveHeaderName(rule.headerName);
   const displayValue = isSensitive && !revealed ? MASKED_VALUE : rule.headerValue;
   const hasConflict = conflictingRules.length > 0;
@@ -122,7 +122,11 @@ function renderAccessNotice(rule) {
 
 function renderRevealButton(rule, revealed) {
   const label = `${revealed ? 'Hide' : 'Reveal'} ${escapeHtml(rule.headerName)} value`;
-  return `<button class="rule-value-btn" type="button" data-rule-action="reveal" data-id="${rule.id}" aria-label="${label}" title="${revealed ? 'Hide value' : 'Reveal value'}"><svg viewBox="0 0 16 16" aria-hidden="true">${revealed ? ICON_EYE_CLOSED : ICON_EYE_OPEN}</svg></button>`;
+  return `<button class="rule-value-btn" type="button" data-rule-action="reveal" data-id="${rule.id}" aria-label="${label}" title="${revealed ? 'Hide value' : 'Reveal value'}">${renderValueVisibilityIcon(revealed)}</button>`;
+}
+
+export function renderValueVisibilityIcon(revealed) {
+  return `<svg viewBox="0 0 16 16" aria-hidden="true">${revealed ? ICON_EYE_CLOSED : ICON_EYE_OPEN}</svg>`;
 }
 
 export function renderConflictNotice(conflictingRules) {
@@ -156,6 +160,7 @@ function renderRuleScopeSummary(rule) {
 export function renderRuleEditForm(rule, profiles = null) {
   const showProfileField = Array.isArray(profiles) && profiles.length > 1;
   const selectedResourceType = rule.resourceType === 'xmlhttprequest' ? 'xmlhttprequest' : 'all';
+  const isSensitive = isSensitiveHeaderName(rule.headerName);
 
   return `
     <div class="domain-rule-row">
@@ -167,11 +172,14 @@ export function renderRuleEditForm(rule, profiles = null) {
           </div>
           <div class="rule-edit-field rule-edit-field-name">
             <label for="editHeaderName-${rule.id}">Header name</label>
-            <input id="editHeaderName-${rule.id}" type="text" value="${escapeHtml(rule.headerName)}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
+            <input id="editHeaderName-${rule.id}" data-header-name type="text" value="${escapeHtml(rule.headerName)}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
           </div>
           <div class="rule-edit-field rule-edit-field-value">
             <label for="editHeaderValue-${rule.id}">Header value</label>
-            <input id="editHeaderValue-${rule.id}" type="text" value="${escapeHtml(rule.headerValue)}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
+            <div class="header-value-field">
+              <input id="editHeaderValue-${rule.id}" data-header-value type="${isSensitive ? 'password' : 'text'}" value="${escapeHtml(rule.headerValue)}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleEditError-${rule.id}">
+              <button class="rule-value-btn" type="button" data-header-value-toggle aria-label="Reveal value" title="Reveal value" aria-pressed="false"${isSensitive ? '' : ' hidden'}>${renderValueVisibilityIcon(false)}</button>
+            </div>
           </div>
           <div class="rule-edit-field rule-edit-field-path">
             <label for="editPathPrefix-${rule.id}">Path prefix (optional)</label>

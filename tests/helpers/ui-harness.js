@@ -40,6 +40,7 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
       getAttribute: (name) => attributes.get(name),
       removeAttribute: (name) => attributes.delete(name),
       querySelector: () => null,
+      matches: () => false,
       addEventListener(name, handler, options = {}) {
         if (!handlers.has(name)) handlers.set(name, new Map());
         handlers.get(name).set(handler, options);

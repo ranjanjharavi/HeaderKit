@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
+import { bindHeaderValueFields } from '../../shared/ui/header-value.js';
 import {
   configureRuleActions,
   grantRuleAccess,
@@ -23,6 +24,7 @@ export function bindRuleEvents({ onRefresh, onRender }) {
   bindComposerEvents({ onAddRule: addRule });
 
   const ruleList = document.getElementById('ruleListContainer');
+  bindHeaderValueFields(ruleList);
   ruleList.addEventListener('click', handleRuleListClick);
   ruleList.addEventListener('submit', handleRuleFormSubmit);
   ruleList.addEventListener('keydown', handleRuleFormKeydown);

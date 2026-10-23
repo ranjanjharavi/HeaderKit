@@ -39,6 +39,22 @@ input::placeholder {
   color: #64748b;
 }
 
+.header-value-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.header-value-field input {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-value-field [hidden] {
+  display: none;
+}
+
 input[aria-invalid='true'],
 select[aria-invalid='true'] {
   border-color: var(--danger);

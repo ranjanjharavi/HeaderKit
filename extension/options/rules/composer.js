@@ -1,5 +1,6 @@
 import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
 import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
+import { bindHeaderValueFields, syncHeaderValueField } from '../../shared/ui/header-value.js';
 import { state } from '../state.js';
 import { syncAddRuleActions } from './view.js';
 
@@ -12,6 +13,7 @@ export function bindComposerEvents({ onAddRule }) {
   document.getElementById('headerComposerToggle').addEventListener('click', toggleHeaderComposer);
   document.getElementById('cancelHeaderComposerBtn').addEventListener('click', cancelHeaderComposer);
   const form = document.getElementById('headerComposerForm');
+  bindHeaderValueFields(form);
   form.addEventListener('submit', handleComposerSubmit);
   form.addEventListener('keydown', handleComposerKeydown);
   form.addEventListener('input', () => clearRuleFormError());
@@ -111,4 +113,5 @@ function clearHeaderForm() {
   document.getElementById('pathPrefix').value = '';
   document.getElementById('resourceType').value = 'all';
   document.getElementById('requestScopeDetails').open = false;
+  syncHeaderValueField(document.getElementById('headerComposerForm'));
 }
