@@ -1,6 +1,6 @@
 # ReqKit Privacy Policy
 
-Last updated: October 10, 2026
+Last updated: October 27, 2026
 
 ReqKit is a Chrome extension for creating, organizing, and temporarily applying user-created request-header rules to exact HTTPS hosts. It is built for API and web-environment testing. ReqKit has no analytics, advertising, telemetry, remote code, developer-operated API, or account system.
 
@@ -36,7 +36,7 @@ Chrome uses technical permission names. In ReqKit, **site access** means permiss
 
 ## Security and responsible use
 
-ReqKit limits rules to exact HTTPS hosts, supports optional path and fetch/XHR request scoping, and detects conflicting active rules whose scopes overlap. Values of headers whose names look sensitive, such as Authorization, Cookie, tokens, and API keys, are hidden in rule lists in both the popup and rule manager until you reveal them. Header values are visible while you edit a rule. Masking is visual only; it does not encrypt stored values.
+ReqKit limits rules to exact HTTPS hosts, supports optional path and fetch/XHR request scoping, and detects conflicting active rules whose scopes overlap. Values of headers whose names suggest authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys, tokens, secrets, or cookies are hidden by default in lists and in creation and edit forms in both the popup and rule manager. Reveal controls show or hide them. Detection uses header names and may miss sensitive values under other names. Masking is visual only and does not encrypt stored values.
 
 ReqKit does not encrypt header values stored in `chrome.storage.local`. Anyone with access to this Chrome profile's files may be able to read them. The same unencrypted local storage holds profiles, activation settings, and your privacy choice.
 

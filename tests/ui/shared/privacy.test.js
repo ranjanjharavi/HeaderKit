@@ -108,7 +108,9 @@ test('generated policy pages retain the source date and material disclosures', (
     assert.match(source, /URLs are not stored or sent to the developer/);
     assert.match(source, /unencrypted local storage/);
     assert.match(source, /popup and rule manager/);
-    assert.match(source, /Header values are visible while you edit/);
+    assert.match(source, /hidden by default in lists and in creation and edit forms/);
+    assert.match(source, /may miss sensitive values under other names/);
+    assert.doesNotMatch(source, /Header values are visible while you edit/);
     assert.match(source, /edit its last rule to use another host/);
     assert.match(source, /Alt\+Shift\+X/);
     assert.doesNotMatch(source, /only after you open ReqKit|These protections do not prevent/);

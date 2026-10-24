@@ -65,7 +65,7 @@
         </nav>
       </aside>
       <article class="privacy-prose">
-        <p>Last updated: October 10, 2026</p>
+        <p>Last updated: October 27, 2026</p>
     <p>ReqKit is a Chrome extension for creating, organizing, and temporarily applying user-created request-header rules to exact HTTPS hosts. It is built for API and web-environment testing. ReqKit has no analytics, advertising, telemetry, remote code, developer-operated API, or account system.</p>
     <h2 id="data-reqkit-handles">Data ReqKit handles</h2>
     <ul>
@@ -82,7 +82,7 @@
     <p>Profiles, activation settings, header rules, and the privacy choice remain in this Chrome profile until you change or delete them, clear extension data, or uninstall ReqKit. Deleting a profile also deletes the header rules assigned to it.</p>
     <p>ReqKit attempts to remove unused host-specific site access grants when you delete the last rule for a host, edit its last rule to use another host, or delete a profile whose rules were the last ones for that host. Removing a host-specific grant does not remove broader grants that may still cover that host. You can review and revoke remaining grants from the rule manager; revoking a grant keeps affected rules saved but stops them from applying unless another grant still covers the host.</p>
     <h2 id="permissions">Permissions</h2>
-    <p>Chrome uses technical permission names. In ReqKit, <strong>site access</strong> means permission for rules to run on HTTPS hosts you choose. ReqKit requests it when you save or resume a rule, grant it access, or select a profile that needs access.</p>
+    <p>Chrome uses technical permission names. In ReqKit, <strong>site access</strong> means permission for rules to run on HTTPS hosts you choose. ReqKit requests it on saving and resuming a rule, grant it access, or select a profile that needs access.</p>
     <ul>
     <li><code>activeTab</code> gives ReqKit temporary access to the active tab URL when you invoke the extension. The popup uses it to identify the current hostname and show matching rules. The background worker also uses available tab URLs for toolbar badges as described above. ReqKit does not read page content or retain browsing history.</li>
     <li><code>alarms</code> runs the user-selected automatic expiry so active request-header rules stop applying even when no ReqKit page is open.</li>
@@ -91,7 +91,7 @@
     <li>Chrome&#039;s optional <code>https://*/*</code> host permission lets ReqKit request site access for the exact HTTPS hosts in your rules when you save or resume a rule, grant it access, or select a profile that needs access. Granted site access also makes matching tab URLs available to the background worker for toolbar badges. It enables on-demand prompts; it does not give ReqKit access to every website by default. The <strong>Site access</strong> overview shows active site access grants and lets you revoke them.</li>
     </ul>
     <h2 id="security-and-responsible-use">Security and responsible use</h2>
-    <p>ReqKit limits rules to exact HTTPS hosts, supports optional path and fetch/XHR request scoping, and detects conflicting active rules whose scopes overlap. Values of headers whose names look sensitive, such as Authorization, Cookie, tokens, and API keys, are hidden in rule lists in both the popup and rule manager until you reveal them. Header values are visible while you edit a rule. Masking is visual only; it does not encrypt stored values.</p>
+    <p>ReqKit limits rules to exact HTTPS hosts, supports optional path and fetch/XHR request scoping, and detects conflicting active rules whose scopes overlap. Values of headers whose names suggest authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys, tokens, secrets, or cookies are hidden by default in lists and in creation and edit forms in both the popup and rule manager. Reveal controls show or hide them. Detection uses header names and may miss sensitive values under other names. Masking is visual only and does not encrypt stored values.</p>
     <p>ReqKit does not encrypt header values stored in <code>chrome.storage.local</code>. Anyone with access to this Chrome profile&#039;s files may be able to read them. The same unencrypted local storage holds profiles, activation settings, and your privacy choice.</p>
     <p>These safeguards do not authorize access to systems or data. Use ReqKit only with systems and data you are authorized to access. Avoid using long-lived production credentials as test header values.</p>
     <h2 id="data-sharing-and-sale">Data sharing and sale</h2>
