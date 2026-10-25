@@ -92,7 +92,7 @@ function handleRuleListClick(event) {
 
 function handleRuleSearchInput(event) {
   state.searchQuery = event.target.value;
-  renderWorkspace();
+  renderRules();
 }
 
 async function handleRuleFormSubmit(event) {
@@ -177,6 +177,6 @@ function clearRuleSearch() {
   state.searchQuery = '';
   const searchInput = document.getElementById('ruleSearchInput');
   searchInput.value = '';
-  renderWorkspace();
+  renderRules();
   searchInput.focus();
 }
