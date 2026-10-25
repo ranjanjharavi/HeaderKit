@@ -13,7 +13,15 @@ export function getProfileOrigins(rules, profileId) {
 
 export function isOriginGranted(origin, grantedOrigins) {
   const granted = grantedOrigins instanceof Set ? grantedOrigins : new Set(grantedOrigins || []);
-  return [...granted].some((pattern) => originPatternCovers(pattern, origin));
+  if (granted.has(origin)) {
+    return true;
+  }
+  for (const pattern of granted) {
+    if (originPatternCovers(pattern, origin)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function getRulesForOriginGrant(rules, origin) {

@@ -254,6 +254,19 @@ test('header values retain horizontal tabs and Unicode with normal outer whitesp
   assert.deepEqual(normalizeRules([{ ...rule, headerValue: ' \t ' }]), []);
 });
 
+test('conflict scans exclude non-live rules before comparing pairs', () => {
+  let checks = 0;
+  const parkedRules = Array.from({ length: 40 }, () => ({
+    ...sampleRules[0],
+    profileId: 'other',
+    get enabled() { checks++; return true; }
+  }));
+  const liveRules = [sampleRules[0], { ...sampleRules[0], id: 3, headerValue: 'different' }];
+  const conflicts = getActiveRuleConflicts([...parkedRules, ...liveRules]);
+  assert.deepEqual(conflicts, [{ leftRule: liveRules[0], rightRule: liveRules[1] }]);
+  assert.equal(checks, parkedRules.length);
+});
+
 test('conflict detection finds different active values for the same header and host', () => {
   const conflictingRule = {
     id: 3,

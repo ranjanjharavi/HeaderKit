@@ -40,6 +40,13 @@ test('nothing is requested when everything is already granted', () => {
   assert.deepEqual(getMissingProfileOrigins(rules, 'default', granted), []);
 });
 
+test('exact grant checks use the Set lookup without copying or iteration', () => {
+  const origin = 'https://api.example.com/*';
+  const granted = new Set([origin]);
+  granted[Symbol.iterator] = () => { throw new Error('Unexpected grant iteration'); };
+  assert.equal(isOriginGranted(origin, granted), true);
+});
+
 test('a broad grant covers every host', () => {
   assert.equal(isOriginGranted('https://anything.example.com/*', new Set(['https://*/*'])), true);
   assert.equal(isOriginGranted('https://anything.example.com/*', new Set(['<all_urls>'])), true);

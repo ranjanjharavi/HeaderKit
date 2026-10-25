@@ -296,13 +296,13 @@ export function findActiveRuleConflict(candidate, rules, {
 }
 
 export function getActiveRuleConflicts(rules, activation = createDefaultActivation()) {
-  const normalizedRules = Array.isArray(rules) ? rules : [];
+  const liveRules = (Array.isArray(rules) ? rules : []).filter((rule) => isRuleLive(rule, activation));
   const conflicts = [];
 
-  for (let leftIndex = 0; leftIndex < normalizedRules.length; leftIndex += 1) {
-    for (let rightIndex = leftIndex + 1; rightIndex < normalizedRules.length; rightIndex += 1) {
-      const leftRule = normalizedRules[leftIndex];
-      const rightRule = normalizedRules[rightIndex];
+  for (let leftIndex = 0; leftIndex < liveRules.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < liveRules.length; rightIndex += 1) {
+      const leftRule = liveRules[leftIndex];
+      const rightRule = liveRules[rightIndex];
       if (areRulesConflicting(leftRule, rightRule, activation)) {
         conflicts.push({ leftRule, rightRule });
       }
