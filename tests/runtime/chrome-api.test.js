@@ -5,6 +5,7 @@ import {
   createTab,
   getCurrentTab,
   getSessionRules,
+  getTab,
   removeOriginPermission,
   requestOriginPermission,
   sendRuntimeMessage,
@@ -48,6 +49,9 @@ function createChromeApi() {
       }
     },
     tabs: {
+      get(tabId, callback) {
+        callback({ id: tabId, url: 'https://example.com' });
+      },
       query(query, callback) {
         callback([{ id: 7, url: 'https://example.com' }]);
       },
@@ -72,6 +76,7 @@ test('Chrome API wrappers resolve callback results', async () => {
   assert.equal(await removeOriginPermission('https://example.com/*', chromeApi), true);
   assert.deepEqual(chromeApi.permissions.removed, { origins: ['https://example.com/*'] });
   assert.deepEqual(await getCurrentTab(chromeApi), { id: 7, url: 'https://example.com' });
+  assert.deepEqual(await getTab(12, chromeApi), { id: 12, url: 'https://example.com' });
   assert.deepEqual(await createTab({ url: 'https://example.com', active: true }, chromeApi), {
     id: 8,
     url: 'https://example.com',
@@ -92,6 +97,12 @@ test('Chrome API wrappers reject runtime.lastError', async () => {
   };
 
   await assert.rejects(storageLocalGet(['key'], chromeApi), /Storage unavailable/);
+  chromeApi.tabs.get = (_tabId, callback) => {
+    chromeApi.runtime.lastError = { message: 'Tab closed' };
+    callback();
+    chromeApi.runtime.lastError = null;
+  };
+  await assert.rejects(getTab(12, chromeApi), /Tab closed/);
 });
 
 test('session rule adapters resolve results and propagate Chrome errors', async () => {

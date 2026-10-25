@@ -70,8 +70,10 @@ export async function installBackgroundHarness(chromeApi) {
   };
   chromeApi.commands = { onCommand: createEvent() };
   chromeApi.tabs ??= { query: (_query, callback) => callback([]) };
+  chromeApi.tabs.get ??= (tabId, callback) => callback({ id: tabId });
   chromeApi.tabs.onUpdated = createEvent();
   chromeApi.tabs.onActivated = createEvent();
+  chromeApi.tabs.onRemoved = createEvent();
   chromeApi.declarativeNetRequest = {
     MAX_NUMBER_OF_REGEX_RULES: 1000,
     getDynamicRules: (callback) => callback(structuredClone(dynamicRules)),

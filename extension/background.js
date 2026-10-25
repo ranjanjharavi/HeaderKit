@@ -6,6 +6,7 @@ import {
   getDynamicRules,
   getGrantedOrigins,
   getSessionRules,
+  getTab,
   queryTabs,
   removeOriginPermission,
   storageAreaGet,
@@ -37,6 +38,7 @@ import {
 import {
   ACTIVATION_STORAGE_KEY,
   getLiveRules,
+  isActivationExpired,
   normalizeActivation,
   resolveActivation,
   setMasterEnabled,
@@ -44,12 +46,35 @@ import {
 } from './shared/domain/activation.js';
 import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from './shared/domain/profiles.js';
 import { MIGRATED_KEYS, ensureMigrated } from './background/migrate.js';
-import { resolveBadge } from './background/badge.js';
+import { createBadgeController } from './background/badge.js';
 import { createSerialQueue } from './shared/runtime/serial-queue.js';
 
 const EXPIRY_ALARM = 'reqkit:activation-expiry';
-// Keep storage, DNR, alarm, and badge work ordered around the latest state.
+// Keep storage, DNR, and alarm work ordered around the latest state.
 const enqueueBackgroundTask = createSerialQueue();
+let cachedState = null;
+let stateVersion = 0;
+const pendingStorageWrites = new Set();
+let badgeStateRead = null;
+const badges = createBadgeController({
+  getState: getBadgeState,
+  queryTabs,
+  getTab,
+  action: chrome.action,
+  onError: (error) => console.error('Could not update the extension badge.', error)
+});
+
+function getBadgeState() {
+  if (cachedState && !isActivationExpired(cachedState.activation)) {
+    return Promise.resolve(cachedState);
+  }
+  if (!badgeStateRead) {
+    badgeStateRead = enqueueBackgroundTask(() => loadState()).finally(() => {
+      badgeStateRead = null;
+    });
+  }
+  return badgeStateRead;
+}
 
 const RULE_MESSAGES = new Set([
   RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE,
@@ -62,6 +87,54 @@ const ACTIVATION_MESSAGES = new Set([
 const PROFILE_MESSAGES = new Set([
   PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICATE, PROFILE_MESSAGE_DELETE
 ]);
+
+function invalidateState() {
+  cachedState = null;
+  stateVersion++;
+}
+
+function getStoredValues(state) {
+  return {
+    [PROFILE_STORAGE_KEY]: state.profiles,
+    [RULE_STORAGE_KEY]: state.rules,
+    [ACTIVATION_STORAGE_KEY]: state.activation
+  };
+}
+
+function areStoredValuesEqual(left, right) {
+  if (left === right) {
+    return true;
+  }
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object'
+    || Array.isArray(left) !== Array.isArray(right)) {
+    return false;
+  }
+  const keys = Object.keys(left);
+  return keys.length === Object.keys(right).length && keys.every((key) => (
+    Object.hasOwn(right, key) && areStoredValuesEqual(left[key], right[key])
+  ));
+}
+
+function matchesStoredChanges(changes, values) {
+  return Object.entries(changes).every(([key, change]) => (
+    Object.hasOwn(values, key) && areStoredValuesEqual(change.newValue, values[key])
+  ));
+}
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') {
+    return;
+  }
+  if (cachedState && matchesStoredChanges(changes, getStoredValues(cachedState))) {
+    return;
+  }
+  for (const values of pendingStorageWrites) {
+    if (matchesStoredChanges(changes, values)) {
+      return;
+    }
+  }
+  invalidateState();
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender?.id !== chrome.runtime.id || typeof sender?.url !== 'string'
@@ -124,12 +197,14 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.permissions.onAdded.addListener(() => {
+  invalidateState();
   enqueueBackgroundTask(() => refreshAfterPermissionChange()).catch((error) => {
     console.error('Could not apply rules after site access was granted.', error);
   });
 });
 
 chrome.permissions.onRemoved.addListener(() => {
+  invalidateState();
   enqueueBackgroundTask(() => refreshAfterPermissionChange()).catch((error) => {
     console.error('Could not update rules after site access was removed.', error);
   });
@@ -156,14 +231,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 async function applyExpiry() {
   const state = await loadState();
   await applyDynamicRules(state.rules, state.activation, state.grantedOrigins);
-  await refreshBadgesSafely(state);
+  badges.refresh();
   await scheduleExpiryAlarm(state.activation);
 }
 
 async function refreshAfterPermissionChange() {
   const state = await loadState();
   await applyDynamicRules(state.rules, state.activation, state.grantedOrigins);
-  await refreshBadgesSafely(state);
+  badges.refresh();
 }
 
 async function scheduleExpiryAlarm(activation) {
@@ -189,19 +264,15 @@ chrome.commands.onCommand.addListener((command) => {
 
 // A navigation changes which rules apply to the tab, so its badge is recomputed.
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (!changeInfo.url && changeInfo.status !== 'complete') {
+  if (!changeInfo.url) {
     return;
   }
 
-  enqueueBackgroundTask(() => refreshTabBadge(tabId, tab)).catch((error) => {
-    console.error('Could not update the badge for that tab.', error);
-  });
+  badges.refreshTab(tabId, { ...tab, url: changeInfo.url });
 });
 
-chrome.tabs.onActivated.addListener(({ tabId }) => {
-  enqueueBackgroundTask(() => refreshTabBadge(tabId)).catch((error) => {
-    console.error('Could not update the badge for the active tab.', error);
-  });
+chrome.tabs.onRemoved.addListener((tabId) => {
+  badges.removeTab(tabId);
 });
 
 /**
@@ -219,9 +290,10 @@ async function initialize({ newBrowserSession = false } = {}) {
     set: (value) => storageAreaSet(chrome.storage.local, value)
   });
 
+  invalidateState();
   const state = await loadState({ newBrowserSession });
   await applyDynamicRules(state.rules, state.activation, state.grantedOrigins);
-  await refreshBadgesSafely(state);
+  badges.refresh();
   await scheduleExpiryAlarm(state.activation);
 }
 
@@ -238,7 +310,7 @@ async function handleRuleMessage(message) {
   });
 
   await releaseUnusedPermissions(state.rules, rules);
-  await refreshBadgesSafely({ ...state, rules });
+  badges.refresh();
   return { rules, rule: result.rule };
 }
 
@@ -261,13 +333,9 @@ async function commitActivation(activation, state) {
 async function persistState(nextState, previousState) {
   await commitState(nextState, previousState, {
     applyState: (state) => applyDynamicRules(state.rules, state.activation, state.grantedOrigins),
-    storeState: (state) => storageAreaSet(chrome.storage.local, {
-      [PROFILE_STORAGE_KEY]: state.profiles,
-      [RULE_STORAGE_KEY]: state.rules,
-      [ACTIVATION_STORAGE_KEY]: state.activation
-    })
+    storeState: (state) => storeStateValues(getStoredValues(state), state)
   });
-  await refreshBadgesSafely(nextState);
+  badges.refresh();
   await scheduleExpiryAlarm(nextState.activation);
 }
 
@@ -289,30 +357,36 @@ async function releaseUnusedPermissions(previousRules, rules) {
  * wake, and the resolved activation is written back before it is used.
  */
 async function loadState({ newBrowserSession = false } = {}) {
-  const stored = await storageAreaGet(chrome.storage.local, MIGRATED_KEYS);
-  const profiles = normalizeProfiles(stored[PROFILE_STORAGE_KEY]);
-  const profileIds = getProfileIds(profiles);
-  const rules = normalizeRules(stored[RULE_STORAGE_KEY] || [], { profileIds });
+  const version = stateVersion;
+  let state = cachedState;
+  if (!state || newBrowserSession) {
+    const stored = await storageAreaGet(chrome.storage.local, MIGRATED_KEYS);
+    const profiles = normalizeProfiles(stored[PROFILE_STORAGE_KEY]);
+    const profileIds = getProfileIds(profiles);
+    state = {
+      profiles,
+      profileIds,
+      rules: normalizeRules(stored[RULE_STORAGE_KEY] || [], { profileIds }),
+      activation: normalizeActivation(stored[ACTIVATION_STORAGE_KEY], { profileIds }),
+      grantedOrigins: await getGrantedOriginsSafely()
+    };
+  }
 
-  const storedActivation = normalizeActivation(stored[ACTIVATION_STORAGE_KEY], { profileIds });
   const sessionResult = newBrowserSession
-    ? startBrowserSession(storedActivation)
-    : { activation: storedActivation, changed: false };
+    ? startBrowserSession(state.activation)
+    : { activation: state.activation, changed: false };
   const expiryResult = resolveActivation(sessionResult.activation);
 
   if (sessionResult.changed || expiryResult.changed) {
     await storeActivation(expiryResult.activation);
   }
 
-  const grantedOrigins = await getGrantedOriginsSafely();
-
-  return {
-    profiles,
-    profileIds,
-    rules,
-    grantedOrigins,
-    activation: expiryResult.activation
-  };
+  if (version !== stateVersion) {
+    return loadState({ newBrowserSession });
+  }
+  const resolvedState = { ...state, activation: expiryResult.activation };
+  cachedState = state.grantedOrigins === null ? null : resolvedState;
+  return resolvedState;
 }
 
 async function getGrantedOriginsSafely() {
@@ -360,59 +434,25 @@ async function applyDynamicRules(rules, activation, grantedOrigins) {
   }
 }
 
-async function refreshBadgesSafely(state) {
-  try {
-    await refreshBadges(state);
-  } catch (error) {
-    console.error('Could not update the extension badge.', error);
-  }
-}
-
-/**
- * The default badge covers tabs whose address ReqKit cannot read; every tab it
- * can read gets an exact per-host count on top.
- */
-async function refreshBadges({ rules, activation, grantedOrigins }) {
-  const applicableRules = filterGrantedRules(rules, grantedOrigins);
-  await paintBadge(resolveBadge(applicableRules, activation));
-
-  const tabs = await queryTabs({});
-  await Promise.all(tabs.map((tab) => (
-    paintBadge(resolveBadge(applicableRules, activation, { url: tab.url }), tab.id)
-  )));
-}
-
-async function refreshTabBadge(tabId, knownTab = null) {
-  const { rules, activation, grantedOrigins } = await loadState();
-  const tab = knownTab || await getTabSafely(tabId);
-  const applicableRules = filterGrantedRules(rules, grantedOrigins);
-
-  await paintBadge(resolveBadge(applicableRules, activation, { url: tab?.url }), tabId);
-}
-
-async function getTabSafely(tabId) {
-  try {
-    const tabs = await queryTabs({});
-    return tabs.find((tab) => tab.id === tabId) || null;
-  } catch (error) {
-    console.error('Could not read that tab.', error);
-    return null;
-  }
-}
-
-async function paintBadge({ text, color }, tabId = null) {
-  const target = tabId === null ? {} : { tabId };
-
-  if (color) {
-    await chrome.action.setBadgeBackgroundColor({ ...target, color });
-  }
-  await chrome.action.setBadgeText({ ...target, text });
-}
-
 function storeRules(rules) {
-  return storageAreaSet(chrome.storage.local, { [RULE_STORAGE_KEY]: rules });
+  const nextState = cachedState ? { ...cachedState, rules } : null;
+  return storeStateValues({ [RULE_STORAGE_KEY]: rules }, nextState);
 }
 
 function storeActivation(activation) {
-  return storageAreaSet(chrome.storage.local, { [ACTIVATION_STORAGE_KEY]: activation });
+  const nextState = cachedState ? { ...cachedState, activation } : null;
+  return storeStateValues({ [ACTIVATION_STORAGE_KEY]: activation }, nextState);
+}
+
+async function storeStateValues(values, nextState) {
+  const version = stateVersion;
+  pendingStorageWrites.add(values);
+  try {
+    await storageAreaSet(chrome.storage.local, values);
+    if (version === stateVersion && nextState && nextState.grantedOrigins !== null) {
+      cachedState = { ...nextState, profileIds: getProfileIds(nextState.profiles) };
+    }
+  } finally {
+    pendingStorageWrites.delete(values);
+  }
 }

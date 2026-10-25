@@ -20,7 +20,8 @@ test('background state changes and reads share a serial queue', () => {
   assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => applyExpiry\(\)\)/);
   assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => toggleMasterSwitch\(\)\)/);
   assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshAfterPermissionChange\(\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshTabBadge\(tabId/);
+  assert.doesNotMatch(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshTabBadge/);
+  assert.doesNotMatch(backgroundSource, /chrome\.tabs\.onActivated\.addListener/);
 });
 
 async function worker(t, stored = {}) {
@@ -74,6 +75,142 @@ async function worker(t, stored = {}) {
     send: (message) => new Promise((resolve) => chromeApi.runtime.sendMessage(message, resolve))
   };
 }
+
+test('stalled badge queries do not block commits and navigation bursts avoid broad queries', async (context) => {
+  const harness = await worker(context);
+  let releaseQuery;
+  let markQueryStarted;
+  let queries = 0;
+  const queryStarted = new Promise((resolve) => { markQueryStarted = resolve; });
+  const texts = [];
+  chrome.action.setBadgeText = async (details) => { texts.push(details); };
+  chrome.tabs.query = (_query, callback) => {
+    queries++;
+    const tabs = [{ id: 7, url: 'https://example.com/' }];
+    if (queries === 1) {
+      releaseQuery = () => callback(tabs);
+      markQueryStarted();
+      return;
+    }
+    callback(tabs);
+  };
+  const draft = { domain: 'example.com', headerName: 'X-One', headerValue: 'one' };
+  assert.equal((await harness.send({ type: 'reqkit:rules:add', draft, profileId: 'default' })).ok, true);
+  await queryStarted;
+  const second = await harness.send({ type: 'reqkit:rules:add', draft: { ...draft, headerName: 'X-Two' }, profileId: 'default' });
+  assert.equal(second.ok, true);
+  releaseQuery();
+  await new Promise(setImmediate);
+  const before = queries;
+  texts.length = 0;
+  chrome.tabs.onUpdated.emit(7, { status: 'complete' }, { id: 7, url: 'https://example.com/' });
+  chrome.tabs.onActivated.emit({ tabId: 7 });
+  await new Promise(setImmediate);
+  assert.deepEqual(texts, []);
+  for (let index = 0; index < 100; index++) {
+    chrome.tabs.onUpdated.emit(7, { url: `https://unrelated.example.net/${index}` }, { id: 7 });
+  }
+  await new Promise(setImmediate);
+  assert.equal(queries, before);
+  assert.deepEqual(texts, [{ tabId: 7, text: '' }]);
+});
+
+test('worker cache avoids repeated reads and tracks committed writes and external changes', async (context) => {
+  const harness = await worker(context);
+  let reads = 0;
+  let grantReads = 0;
+  const get = chrome.storage.local.get.bind(chrome.storage.local);
+  const getAll = chrome.permissions.getAll.bind(chrome.permissions);
+  chrome.storage.local.get = (keys, callback) => { reads++; get(keys, callback); };
+  chrome.permissions.getAll = (callback) => { grantReads++; getAll(callback); };
+  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(reads, 1);
+  assert.equal(grantReads, 1);
+  const created = await harness.send({ type: 'reqkit:profiles:create', name: 'Cached' });
+  const added = await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: created.profile.id });
+  assert.equal(added.ok, true);
+  const reorderedRules = harness.storage.headerRules.map((rule) => Object.fromEntries(Object.entries(rule).reverse()));
+  chrome.storage.onChanged.emit({ headerRules: { newValue: reorderedRules } }, 'local');
+  await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(reads, 1);
+  assert.equal(grantReads, 1);
+  harness.failNextWrite();
+  const failed = await harness.send({ type: 'reqkit:rules:update', id: added.rule.id, draft: { ...added.rule, headerValue: 'failed' }, profileId: created.profile.id });
+  assert.equal(failed.ok, false);
+  assert.equal((await harness.send({ type: 'reqkit:state:get' })).rules[0].headerValue, 'one');
+  assert.equal(reads, 1);
+  chrome.storage.onChanged.emit({ activation: { newValue: {} } }, 'sync');
+  await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(reads, 1);
+  harness.storage.headerRules[0].headerValue = 'external';
+  chrome.storage.onChanged.emit({ headerRules: { newValue: harness.storage.headerRules } }, 'local');
+  assert.equal((await harness.send({ type: 'reqkit:state:get' })).rules[0].headerValue, 'external');
+  assert.equal(reads, 2);
+  chrome.permissions.onRemoved.emit({ origins: ['https://example.com/*'] });
+  await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(reads, 3);
+  assert.equal(grantReads, 3);
+});
+
+test('worker cache retries failed permission reads instead of retaining unavailable grants', async (context) => {
+  const harness = await worker(context);
+  let reads = 0;
+  const getAll = chrome.permissions.getAll.bind(chrome.permissions);
+  chrome.permissions.getAll = (callback) => {
+    reads++;
+    if (reads === 1) {
+      chrome.runtime.lastError = { message: 'Unavailable' };
+      callback({});
+      chrome.runtime.lastError = null;
+      return;
+    }
+    getAll(callback);
+  };
+  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(reads, 2);
+});
+
+test('a storage change during a cold read cannot publish a stale cache', async (context) => {
+  const harness = await worker(context);
+  let releaseRead;
+  let markReadStarted;
+  const readStarted = new Promise((resolve) => { markReadStarted = resolve; });
+  const get = chrome.storage.local.get.bind(chrome.storage.local);
+  let firstRead = true;
+  chrome.storage.local.get = (keys, callback) => get(keys, (value) => {
+    if (firstRead) {
+      firstRead = false;
+      releaseRead = () => callback(value);
+      markReadStarted();
+      return;
+    }
+    callback(value);
+  });
+  const pending = harness.send({ type: 'reqkit:state:get' });
+  await readStarted;
+  harness.storage.activation.masterEnabled = false;
+  chrome.storage.onChanged.emit({ activation: { newValue: harness.storage.activation } }, 'local');
+  releaseRead();
+  assert.equal((await pending).activation.masterEnabled, false);
+  assert.equal((await harness.send({ type: 'reqkit:state:get' })).activation.masterEnabled, false);
+});
+
+test('cached state rechecks timer expiry against the current clock', async (context) => {
+  let now = 10_000;
+  context.mock.method(Date, 'now', () => now);
+  const harness = await worker(context, {
+    activation: { ...createDefaultActivation(), expiresAt: 20_000, durationMs: 10_000 }
+  });
+  assert.equal((await harness.send({ type: 'reqkit:state:get' })).activation.profileId, 'default');
+  now = 21_000;
+  const expired = await harness.send({ type: 'reqkit:state:get' });
+  assert.equal(expired.activation.profileId, null);
+  assert.equal(harness.storage.activation.expiresAt, null);
+  assert.equal((await harness.send({ type: 'reqkit:state:get' })).activation.profileId, null);
+});
 
 test('actual worker rejects untrusted senders before reading or mutating state', async (context) => {
   const harness = await worker(context);

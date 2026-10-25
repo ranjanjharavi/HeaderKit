@@ -219,6 +219,19 @@ export function queryTabs(query, chromeApi = globalThis.chrome) {
   });
 }
 
+export function getTab(tabId, chromeApi = globalThis.chrome) {
+  return new Promise((resolve, reject) => {
+    chromeApi.tabs.get(tabId, (tab) => {
+      const error = getRuntimeError(chromeApi);
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(tab || null);
+    });
+  });
+}
+
 export function createTab(details, chromeApi = globalThis.chrome) {
   return new Promise((resolve, reject) => {
     chromeApi.tabs.create(details, (tab) => {
