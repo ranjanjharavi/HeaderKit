@@ -12,7 +12,7 @@ import {
 import { bindComposerEvents, setHeaderComposerExpanded } from './composer.js';
 import { renderRules } from './view.js';
 
-export { renderRules };
+export { renderRules } from './view.js';
 
 let refreshWorkspace;
 let renderWorkspace;
@@ -70,16 +70,16 @@ function handleRuleListClick(event) {
       startEditingRule(Number(button.dataset.id));
       break;
     case 'toggle':
-      toggleRule(Number(button.dataset.id));
+      void toggleRule(Number(button.dataset.id));
       break;
     case 'reveal':
       toggleRuleValueVisibility(Number(button.dataset.id));
       break;
     case 'grant':
-      grantRuleAccess(Number(button.dataset.id));
+      void grantRuleAccess(Number(button.dataset.id));
       break;
     case 'delete':
-      confirmDeleteRule(Number(button.dataset.id));
+      void confirmDeleteRule(Number(button.dataset.id));
       break;
     case 'cancel-edit':
       state.editingId = null;

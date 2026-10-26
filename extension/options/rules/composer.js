@@ -4,12 +4,12 @@ import { bindHeaderValueFields, syncHeaderValueField } from '../../shared/ui/hea
 import { state } from '../state.js';
 import { syncAddRuleActions } from './view.js';
 
-export let siteAccessPreflight;
+export const siteAccessPreflight = {};
 let addRule;
 
 export function bindComposerEvents({ onAddRule }) {
   addRule = onAddRule;
-  siteAccessPreflight = createSiteAccessPreflight();
+  Object.assign(siteAccessPreflight, createSiteAccessPreflight());
   document.getElementById('headerComposerToggle').addEventListener('click', toggleHeaderComposer);
   document.getElementById('cancelHeaderComposerBtn').addEventListener('click', cancelHeaderComposer);
   const form = document.getElementById('headerComposerForm');

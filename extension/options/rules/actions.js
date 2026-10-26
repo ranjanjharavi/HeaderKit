@@ -160,6 +160,19 @@ export async function toggleRule(id) {
   }
 }
 
+function reviewEditSiteAccess(id, rule) {
+  const preflight = document.getElementById(`editSiteAccessPreflight-${id}`);
+  const origin = getRuleOriginPattern(rule);
+  if (!preflight.hidden && preflight.dataset.origin === origin) {
+    return true;
+  }
+  preflight.dataset.origin = origin;
+  document.getElementById(`editSiteAccessPreflightHost-${id}`).textContent = rule.domain;
+  preflight.hidden = false;
+  preflight.scrollIntoView({ block: 'nearest' });
+  return false;
+}
+
 export async function saveEditedRule(id) {
   const currentRule = state.rules.find((rule) => rule.id === id);
   if (!currentRule) {
@@ -186,16 +199,8 @@ export async function saveEditedRule(id) {
   const updatedRule = { ...currentRule, ...validation.rule, profileId: nextProfileId };
   const intent = { type: RULE_MESSAGE_UPDATE, id, draft: validation.rule, profileId: nextProfileId };
   const needsAccess = updatedRule.enabled && !isRuleGranted(updatedRule, state.grantedOrigins);
-  if (needsAccess) {
-    const preflight = document.getElementById(`editSiteAccessPreflight-${id}`);
-    const origin = getRuleOriginPattern(updatedRule);
-    if (preflight.hidden || preflight.dataset.origin !== origin) {
-      preflight.dataset.origin = origin;
-      document.getElementById(`editSiteAccessPreflightHost-${id}`).textContent = updatedRule.domain;
-      preflight.hidden = false;
-      preflight.scrollIntoView({ block: 'nearest' });
-      return;
-    }
+  if (needsAccess && !reviewEditSiteAccess(id, updatedRule)) {
+    return;
   }
 
   try {
@@ -212,10 +217,10 @@ export async function saveEditedRule(id) {
     state.editingId = null;
     state.revealedRuleIds.delete(id);
     renderWorkspace();
+    if (permissionResult?.permissionError) {
+      console.error('Could not request site access.', permissionResult.permissionError);
+    }
     if (permissionResult && !permissionResult.granted) {
-      if (permissionResult.permissionError) {
-        console.error('Could not request site access.', permissionResult.permissionError);
-      }
       showStatus(
         'headerStatus',
         `Rule saved, but ReqKit still needs site access to https://${updatedRule.domain} before it can be applied.`,

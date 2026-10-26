@@ -154,7 +154,8 @@ function renderRuleScopeSummary(rule) {
     return '';
   }
 
-  return `<div class="rule-scope-summary" aria-label="Request scope">${parts.map((part) => `<span>${part}</span>`).join('<span aria-hidden="true">·</span>')}</div>`;
+  const scopeMarkup = parts.map((part) => `<span>${part}</span>`).join('<span aria-hidden="true">·</span>');
+  return `<div class="rule-scope-summary" aria-label="Request scope">${scopeMarkup}</div>`;
 }
 
 export function renderRuleEditForm(rule, profiles = null) {
@@ -246,8 +247,13 @@ export function renderDomainGroup(domain, domainRules, {
     count + (conflictMap.get(rule.id)?.length || 0)
   ), 0) / 2;
   const groupId = `domainRuleGroup-${index}`;
+  const ruleLabel = domainRules.length === 1 ? 'rule' : 'rules';
+  const conflictLabel = conflictCount === 1 ? 'conflict' : 'conflicts';
+  const conflictMarkup = conflictCount
+    ? `<span class="rule-group-conflict">${conflictCount} ${conflictLabel}</span>`
+    : '';
   const summary = managerView
-    ? `${domainRules.length} ${domainRules.length === 1 ? 'rule' : 'rules'} · ${activeCount} on`
+    ? `${domainRules.length} ${ruleLabel} · ${activeCount} on`
     : [
       activeCount ? `${activeCount} active` : '',
       pausedCount ? `${pausedCount} paused` : ''
@@ -262,7 +268,7 @@ export function renderDomainGroup(domain, domainRules, {
         </span>
         <span class="rule-group-meta">
           <span class="rule-group-summary">${summary}</span>
-          ${conflictCount ? `<span class="rule-group-conflict">${conflictCount} ${conflictCount === 1 ? 'conflict' : 'conflicts'}</span>` : ''}
+          ${conflictMarkup}
           ${ICON_CHEVRON}
         </span>
       </button>

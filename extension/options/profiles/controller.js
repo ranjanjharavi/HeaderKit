@@ -18,7 +18,7 @@ import { PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICA
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
 import { readGrantedOrigins } from '../../shared/runtime/site-access-api.js';
-import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
+import { escapeHtml, getNextTabIndex, showStatus } from '../../shared/ui/ui.js';
 
 let refreshAll = async () => {};
 let profileEditor = null;
@@ -74,11 +74,7 @@ function handleProfileTabKeydown(event) {
   }
 
   event.preventDefault();
-  const nextIndex = event.key === 'Home'
-    ? 0
-    : event.key === 'End'
-      ? tabs.length - 1
-      : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  const nextIndex = getNextTabIndex(event.key, currentIndex, tabs.length);
   tabs[nextIndex].focus();
 }
 
@@ -338,8 +334,9 @@ async function deleteProfile(id) {
   }
 
   const ruleCount = countRulesInProfile(state.rules, id);
+  const ruleLabel = ruleCount === 1 ? 'rule' : 'rules';
   const consequence = ruleCount
-    ? `Its ${ruleCount} ${ruleCount === 1 ? 'rule' : 'rules'} and related data will also be deleted.`
+    ? `Its ${ruleCount} ${ruleLabel} and related data will also be deleted.`
     : 'It has no rules.';
 
   const confirmed = await confirmDestructiveAction({

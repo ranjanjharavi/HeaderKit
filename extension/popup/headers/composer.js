@@ -5,16 +5,16 @@ import { state, getScopedRules } from '../state.js';
 import { showStatus } from '../../shared/ui/ui.js';
 import { getDisplayPathPrefix } from '../../shared/domain/rules.js';
 
-export let siteAccessPreflight;
+export const siteAccessPreflight = {};
 let addRule;
 let saveEditedRule;
 
 export function bindComposerEvents({ onAddRule, onSaveRule }) {
   addRule = onAddRule;
   saveEditedRule = onSaveRule;
-  siteAccessPreflight = createSiteAccessPreflight({
+  Object.assign(siteAccessPreflight, createSiteAccessPreflight({
     getDefaultSubmitLabel: () => state.headers.editingId ? 'Update rule' : 'Add rule'
-  });
+  }));
   document.getElementById('headerComposerToggle').addEventListener('click', toggleHeaderComposer);
   document.getElementById('cancelHeaderComposerBtn').addEventListener('click', cancelHeaderComposer);
   const form = document.getElementById('headerComposerForm');

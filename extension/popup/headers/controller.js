@@ -9,6 +9,7 @@ import { ACTIVATION_STORAGE_KEY } from '../../shared/domain/activation.js';
 import { PROFILE_STORAGE_KEY } from '../../shared/domain/profiles.js';
 import { createStateRefresh } from '../../shared/runtime/state-api.js';
 import { state } from '../state.js';
+import { getNextTabIndex } from '../../shared/ui/ui.js';
 import { bindActivationEvents } from '../activation/controller.js';
 import { getManagerPath } from '../view-model.js';
 import { configureRuleActions, addRule, saveEditedRule, toggleRule, confirmDeleteRule, grantRuleAccess } from './actions.js';
@@ -94,16 +95,16 @@ function handleRuleListClick(event) {
       toggleDomain(button.dataset.domain);
       break;
     case 'toggle':
-      toggleRule(Number(button.dataset.id));
+      void toggleRule(Number(button.dataset.id));
       break;
     case 'reveal':
       toggleRuleValueVisibility(Number(button.dataset.id));
       break;
     case 'grant':
-      grantRuleAccess(Number(button.dataset.id));
+      void grantRuleAccess(Number(button.dataset.id));
       break;
     case 'delete':
-      confirmDeleteRule(Number(button.dataset.id));
+      void confirmDeleteRule(Number(button.dataset.id));
       break;
     default:
       break;
@@ -137,11 +138,7 @@ function handleScopeTabKeydown(event) {
   }
 
   event.preventDefault();
-  const nextIndex = event.key === 'Home'
-    ? 0
-    : event.key === 'End'
-      ? tabs.length - 1
-      : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  const nextIndex = getNextTabIndex(event.key, currentIndex, tabs.length);
   setRuleScope(tabs[nextIndex].dataset.ruleScope);
   tabs[nextIndex].focus();
 }
