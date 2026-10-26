@@ -1,6 +1,19 @@
 import { applyActivationIntent } from '../../extension/background/state-commit.js';
 import { createDefaultActivation } from '../../extension/shared/domain/activation.js';
 
+async function dispatchHandlers(snapshot, listeners, event) {
+  const entry = snapshot.next();
+  if (entry.done) {
+    return;
+  }
+  const [handler, options] = entry.value;
+  if (options.once) {
+    listeners.delete(handler);
+  }
+  await handler({ ...event });
+  return dispatchHandlers(snapshot, listeners, event);
+}
+
 export function createUiHarness(t, { failCommit = false, holdCommit = false } = {}) {
   const originals = {
     document: globalThis.document,
@@ -52,16 +65,14 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
       close(value = '') {
         node.open = false;
         node.returnValue = value;
-        node.dispatch('close');
+        void node.dispatch('close');
       },
       select() {},
       scrollIntoView() {},
       async dispatch(name, event = {}) {
-        for (const [handler, options] of [...(handlers.get(name) || [])]) {
-          if (options.once) handlers.get(name).delete(handler);
-          await handler({ target: node, ...event });
-        }
-        // Duration handlers start a commit without returning its promise.
+        const listeners = handlers.get(name) || new Map();
+        const snapshot = new Map(listeners);
+        await dispatchHandlers(snapshot.entries(), listeners, { target: node, ...event });
         await Promise.resolve();
       }
     };

@@ -18,6 +18,8 @@ test('rule manager separates active setup, rules, and profile administration', (
   assert.doesNotMatch(optionsMarkup, /activeProfileSelect|profileFilterSelect/);
   assert.match(optionsMarkup, /id="durationPills"[^>]*role="radiogroup"/);
   assert.equal((optionsMarkup.match(/class="duration-pill"/g) || []).length, 4);
+  assert.equal((optionsMarkup.match(/type="radio" name="duration"/g) || []).length, 4);
+  assert.doesNotMatch(optionsMarkup, /role="radio"/);
   assert.doesNotMatch(optionsMarkup, /id="durationSelect"/);
   assert.match(optionsMarkup, /id="headerComposerToggle"[^>]*>\s*<svg[\s\S]*?New rule/);
   assert.match(optionsMarkup, /class="header-fields-row"[\s\S]*?for="headerName"[\s\S]*?for="headerValue"/);

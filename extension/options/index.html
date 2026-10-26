@@ -17,7 +17,7 @@
     <a class="privacy-policy-link" href="../privacy/index.html">Read the privacy policy</a>
     <p>Accept to open ReqKit. Existing rules and site access are unchanged.</p>
     <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
-    <div id="privacyConsentStatus" class="status-msg privacy-consent-status" role="status" aria-live="polite"></div>
+    <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
   </section>
 
   <div id="appShell" class="shell options-shell" hidden>
@@ -41,14 +41,14 @@
 
     <main class="options-main">
       <div class="options-workspace">
-        <div id="masterPausedBanner" class="master-paused-banner" role="status" hidden>
+        <output id="masterPausedBanner" class="master-paused-banner" hidden>
           <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1Zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM6.5 5.5h1.25v5H6.5v-5Zm1.75 0h1.25v5H8.25v-5Z"/></svg>
-          <div class="master-paused-copy">
+          <span class="master-paused-copy">
             <strong id="masterPausedTitle">All header rules are paused</strong>
             <span id="masterPausedDetail">No headers are being applied. Your rules stay saved and editable, with their own On or Paused settings.</span>
-          </div>
+          </span>
           <button id="resumeMasterBtn" class="master-resume-btn" type="button">Resume</button>
-        </div>
+        </output>
 
         <section class="manager-workspace" aria-label="Request-header rules">
           <div class="profile-tabs-bar">
@@ -62,10 +62,10 @@
                 <span id="activeProfileRunLabel" class="active-profile-run-label">Default runs until</span>
                 <span class="setup-duration-control">
                   <span id="durationPills" class="duration-pills" role="radiogroup" aria-label="Run this profile until">
-                    <button class="duration-pill" type="button" role="radio" aria-checked="true" data-duration="indefinite">I turn it off</button>
-                    <button class="duration-pill" type="button" role="radio" aria-checked="false" data-duration="3600000">1 hour</button>
-                    <button class="duration-pill" type="button" role="radio" aria-checked="false" data-duration="28800000">8 hours</button>
-                    <button class="duration-pill" type="button" role="radio" aria-checked="false" data-duration="session">Chrome closes</button>
+                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="indefinite" checked>I turn it off</label>
+                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="3600000">1 hour</label>
+                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="28800000">8 hours</label>
+                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="session">Chrome closes</label>
                   </span>
                   <span id="expiryChip" class="session-count is-timer" hidden></span>
                 </span>
@@ -79,7 +79,7 @@
               </button>
             </section>
 
-            <div id="activeSetupStatus" class="status-msg workspace-status" role="status" aria-live="polite"></div>
+            <output id="activeSetupStatus" class="status-msg workspace-status" aria-live="polite"></output>
 
             <div id="headerComposer" class="header-composer rules-composer" hidden>
               <div class="header-composer-body">
@@ -151,7 +151,7 @@
               </div>
             </div>
 
-            <div id="headerStatus" class="status-msg workspace-status" role="status" aria-live="polite"></div>
+            <output id="headerStatus" class="status-msg workspace-status" aria-live="polite"></output>
             <div id="ruleListContainer" class="rule-list"></div>
           </div>
         </section>
@@ -182,7 +182,7 @@
             <button id="saveProfileEditorBtn" class="primary-btn" type="submit">Create profile</button>
           </footer>
         </form>
-        <div id="profileStatus" class="status-msg" role="status" aria-live="polite"></div>
+        <output id="profileStatus" class="status-msg" aria-live="polite"></output>
         <footer id="profileManagerActions" class="profile-dialog-actions">
           <button id="newProfileBtn" class="secondary-btn" type="button">New profile</button>
           <button id="doneProfileManagerBtn" class="primary-btn" type="button">Done</button>
@@ -206,8 +206,8 @@
           <input id="siteAccessSearch" type="search" placeholder="example.com or *.example.com" autocomplete="off" aria-controls="siteAccessList" disabled>
         </label>
         <p id="siteAccessSummary" class="site-access-summary" aria-live="polite">Checking site access…</p>
-        <div id="siteAccessStatus" class="status-msg site-access-status" role="status" aria-live="polite"></div>
-        <div id="siteAccessList" class="site-access-list" role="region" aria-label="Site access grants" aria-busy="false"></div>
+        <output id="siteAccessStatus" class="status-msg site-access-status" aria-live="polite"></output>
+        <section id="siteAccessList" class="site-access-list" aria-label="Site access grants" aria-busy="false"></section>
         <footer class="profile-dialog-actions site-access-dialog-actions">
           <button id="doneSiteAccessBtn" class="primary-btn" type="button">Done</button>
         </footer>

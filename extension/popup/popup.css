@@ -186,11 +186,14 @@ body {
 .manage-rules-link {
   justify-self: center;
   padding: 4px 2px;
+  border: 0;
   border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--primary);
   font-size: 12px;
   font-weight: 650;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .manage-rules-link:hover {

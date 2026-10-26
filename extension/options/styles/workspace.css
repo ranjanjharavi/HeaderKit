@@ -143,6 +143,8 @@
 }
 
 .duration-pill {
+  display: inline-flex;
+  align-items: center;
   min-height: 28px;
   padding: 0 9px;
   border: 1px solid var(--manager-pill-border);
@@ -156,15 +158,29 @@
   cursor: pointer;
 }
 
-.duration-pill[aria-checked='false']:hover:not(:disabled) {
+.duration-pill:not(:has(input:checked)):hover:not(:has(input:disabled)) {
   border-color: var(--border-strong);
   color: var(--manager-muted);
 }
 
-.duration-pill[aria-checked='true'] {
+.duration-pill:has(input:checked) {
   border-color: var(--manager-pill-selected-border);
   background: var(--manager-pill-selected-surface);
   color: var(--manager-pill-selected-text);
+}
+
+.duration-pill input {
+  min-height: 0;
+}
+
+.duration-pill:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.duration-pill:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .new-rule-btn {

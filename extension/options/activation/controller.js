@@ -12,7 +12,7 @@ import { state, getActivation } from '../state.js';
 
 let onChanged;
 let onResumeProfile;
-const DURATION_OPTIONS = [3_600_000, 28_800_000];
+const DURATION_OPTIONS = new Set([3_600_000, 28_800_000]);
 let durationPending = false;
 
 export function bindActivationEvents(callbacks) {
@@ -21,8 +21,7 @@ export function bindActivationEvents(callbacks) {
   document.getElementById('masterSwitch').addEventListener('click', () => toggleMaster());
   document.getElementById('resumeMasterBtn').addEventListener('click', resumeFromBanner);
   const durationPills = document.getElementById('durationPills');
-  durationPills.addEventListener('click', handleDurationClick);
-  durationPills.addEventListener('keydown', handleDurationKeydown);
+  durationPills.addEventListener('change', handleDurationChange);
 }
 
 async function toggleMaster(forceOn = false) {
@@ -103,9 +102,7 @@ export function renderDurationField() {
   const remainingMs = getRemainingMs(activation);
 
   document.querySelectorAll('[data-duration]').forEach((pill) => {
-    const selected = pill.dataset.duration === selectedValue;
-    pill.setAttribute('aria-checked', String(selected));
-    pill.tabIndex = selected ? 0 : -1;
+    pill.checked = pill.dataset.duration === selectedValue;
     pill.disabled = disabled;
   });
 
@@ -116,34 +113,16 @@ export function renderDurationField() {
   }
 }
 
-function handleDurationClick(event) {
+async function handleDurationChange(event) {
   const pill = event.target.closest('[data-duration]');
-  if (!pill || pill.disabled || pill.getAttribute('aria-checked') === 'true') {
+  if (!pill || pill.disabled || !pill.checked) {
     return;
   }
-
-  selectDuration(pill.dataset.duration);
-}
-
-function handleDurationKeydown(event) {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-    return;
+  const wasFocused = document.activeElement === pill;
+  await selectDuration(pill.dataset.duration);
+  if (wasFocused && document.activeElement === document.body && !pill.disabled) {
+    pill.focus();
   }
-
-  const pills = [...event.currentTarget.querySelectorAll('[data-duration]:not(:disabled)')];
-  const currentIndex = pills.indexOf(event.target.closest('[data-duration]'));
-  if (currentIndex < 0 || !pills.length) {
-    return;
-  }
-
-  event.preventDefault();
-  const nextIndex = event.key === 'Home'
-    ? 0
-    : event.key === 'End'
-      ? pills.length - 1
-      : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + pills.length) % pills.length;
-  pills[nextIndex].focus();
-  selectDuration(pills[nextIndex].dataset.duration);
 }
 
 function getDurationValue(activation) {
@@ -154,15 +133,18 @@ function getDurationValue(activation) {
     return 'indefinite';
   }
 
-  return DURATION_OPTIONS.includes(activation.durationMs)
+  return DURATION_OPTIONS.has(activation.durationMs)
     ? String(activation.durationMs)
     : 'indefinite';
 }
 
 async function selectDuration(value) {
-  const options = value === 'session'
-    ? { untilBrowserClose: true }
-    : { durationMs: value === 'indefinite' ? null : Number(value) };
+  let options = { durationMs: null };
+  if (value === 'session') {
+    options = { untilBrowserClose: true };
+  } else if (value !== 'indefinite') {
+    options = { durationMs: Number(value) };
+  }
 
   durationPending = true;
   setDurationPillsDisabled(true);

@@ -17,7 +17,8 @@ test('popup keeps profile context in the header and scopes rules with tabs', () 
   assert.match(popupMarkup, /id="currentSiteTab"[^>]*role="tab"[^>]*aria-controls="ruleListContainer"/);
   assert.match(popupMarkup, /id="allRulesTab"[^>]*role="tab"[^>]*aria-controls="ruleListContainer"/);
   assert.match(popupMarkup, /id="ruleListContainer"[^>]*role="tabpanel"[^>]*aria-labelledby="currentSiteTab"[^>]*tabindex="0"/);
-  assert.match(popupMarkup, /id="headerStatus"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
+  assert.match(popupMarkup, /<output id="headerStatus"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
+  assert.match(popupMarkup, /<button id="manageRulesLink"[^>]*type="button"/);
   assert.match(popupMarkup, /id="headerComposerToggle"[\s\S]*?Add rule for this site/);
   assert.doesNotMatch(popupMarkup, /id="profileSelect"/);
   assert.doesNotMatch(popupMarkup, /id="durationSelect"/);

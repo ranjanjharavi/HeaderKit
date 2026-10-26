@@ -17,7 +17,7 @@
     <a class="privacy-policy-link" href="../privacy/index.html" target="_blank" rel="noreferrer">Read the privacy policy</a>
     <p>Accept to open ReqKit. Existing rules and site access are unchanged.</p>
     <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
-    <div id="privacyConsentStatus" class="status-msg privacy-consent-status" role="status" aria-live="polite"></div>
+    <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
   </section>
 
   <div id="appShell" class="shell" hidden>
@@ -42,14 +42,14 @@
         </div>
 
         <div class="content-stack">
-          <div id="masterPausedBanner" class="master-paused-banner" role="status" hidden>
+          <output id="masterPausedBanner" class="master-paused-banner" hidden>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1Zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM6.5 5.5h1.25v5H6.5v-5Zm1.75 0h1.25v5H8.25v-5Z"/></svg>
-            <div class="master-paused-copy">
+            <span class="master-paused-copy">
               <strong id="masterPausedTitle">All header rules are paused</strong>
               <span id="masterPausedDetail">No headers are being applied. Your rules stay saved and editable, with their own On or Paused settings.</span>
-            </div>
+            </span>
             <button id="resumeMasterBtn" class="master-resume-btn" type="button">Resume</button>
-          </div>
+          </output>
 
           <div id="ruleScopeTabs" class="rule-scope-tabs" role="tablist" aria-label="Rule scope">
             <button id="currentSiteTab" class="rule-scope-tab" type="button" role="tab" aria-selected="true" aria-controls="ruleListContainer" tabindex="0" data-rule-scope="site">
@@ -119,14 +119,14 @@
             </div>
           </div>
 
-          <div id="headerStatus" class="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
+          <output id="headerStatus" class="status-msg" aria-live="polite" aria-atomic="true"></output>
           <div id="ruleListContainer" class="rule-list" role="tabpanel" aria-labelledby="currentSiteTab" tabindex="0"></div>
           <footer class="panel-footer">
             <button id="headerComposerToggle" class="primary-btn footer-add-rule-btn" type="button" aria-expanded="false" aria-controls="headerComposer">
               <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M7.25 2.5h1.5v4.75h4.75v1.5H8.75v4.75h-1.5V8.75H2.5v-1.5h4.75V2.5Z"/></svg>
               Add rule for this site
             </button>
-            <a id="manageRulesLink" class="manage-rules-link" href="#" role="button">Manage profiles and rules →</a>
+            <button id="manageRulesLink" class="manage-rules-link" type="button">Manage profiles and rules →</button>
           </footer>
         </div>
       </article>

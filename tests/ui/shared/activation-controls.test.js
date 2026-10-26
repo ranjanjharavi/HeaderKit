@@ -13,6 +13,16 @@ import {
 import { state as optionsState } from '../../../extension/options/state.js';
 import { state as popupState } from '../../../extension/popup/state.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
+import { getNextTabIndex } from '../../../extension/shared/ui/ui.js';
+
+test('tab navigation wraps and supports Home and End without changing unknown keys', () => {
+  assert.equal(getNextTabIndex('ArrowLeft', 0, 4), 3);
+  assert.equal(getNextTabIndex('ArrowRight', 3, 4), 0);
+  assert.equal(getNextTabIndex('ArrowRight', 0, 4), 1);
+  assert.equal(getNextTabIndex('Home', 2, 4), 0);
+  assert.equal(getNextTabIndex('End', 1, 4), 3);
+  assert.equal(getNextTabIndex('Enter', 2, 4), 2);
+});
 
 function resetState() {
   optionsState.activation = createDefaultActivation();
@@ -21,6 +31,26 @@ function resetState() {
   popupState.headers.activation = createDefaultActivation();
   popupState.headers.profiles = optionsState.profiles;
 }
+
+test('UI dispatch snapshots listeners and removes one-time handlers before calling them', async (t) => {
+  const harness = createUiHarness(t);
+  const node = harness.element('event-target');
+  const calls = [];
+  const second = () => calls.push('second');
+  const added = () => calls.push('added');
+  node.addEventListener('change', async () => {
+    calls.push('first');
+    node.removeEventListener('change', second);
+    node.addEventListener('change', added);
+    await Promise.resolve();
+    calls.push('first-finished');
+  }, { once: true });
+  node.addEventListener('change', second);
+  await node.dispatch('change');
+  assert.deepEqual(calls, ['first', 'first-finished', 'second']);
+  await node.dispatch('change');
+  assert.deepEqual(calls, ['first', 'first-finished', 'second', 'added']);
+});
 
 test('options pause commits activation and leaves saved rule flags intact', async (t) => {
   resetState();
@@ -45,12 +75,51 @@ test('options timer selection commits browser-session scope and refreshes radio 
     onChanged() { optionsState.activation = harness.getActivation(); renderDurationField(); },
     onResumeProfile() {}
   });
-  await harness.element('durationPills').dispatch('click', { target: harness.pills[3] });
+  harness.pills[3].checked = true;
+  await harness.element('durationPills').dispatch('change', { target: harness.pills[3] });
   assert.equal(optionsState.activation.untilBrowserClose, true);
   assert.equal(optionsState.activation.expiresAt, null);
-  assert.equal(harness.pills[3].getAttribute('aria-checked'), 'true');
+  assert.equal(harness.pills[3].checked, true);
   assert.equal(harness.element('expiryChip').hidden, true);
   assert.ok(harness.pills.every((pill) => !pill.disabled));
+});
+
+test('duration radios reject extra changes while committing and unlock after success', async (t) => {
+  resetState();
+  const harness = createUiHarness(t, { holdCommit: true });
+  bindOptionsActivation({
+    onChanged() { optionsState.activation = harness.getActivation(); },
+    onResumeProfile() {}
+  });
+  renderDurationField();
+  harness.pills[1].checked = true;
+  const commit = harness.element('durationPills').dispatch('change', { target: harness.pills[1] });
+  assert.ok(harness.pills.every((pill) => pill.disabled));
+  harness.pills[2].checked = true;
+  await harness.element('durationPills').dispatch('change', { target: harness.pills[2] });
+  assert.equal(harness.requests.length, 1);
+  harness.releaseCommit();
+  await commit;
+  assert.equal(harness.pills[1].checked, true);
+  assert.equal(harness.pills[2].checked, false);
+  assert.ok(harness.pills.every((pill) => !pill.disabled));
+});
+
+test('a rejected duration change restores the saved radio selection', async (t) => {
+  resetState();
+  const harness = createUiHarness(t, { failCommit: true });
+  const originalError = console.error;
+  console.error = () => {};
+  t.after(() => { console.error = originalError; });
+  bindOptionsActivation({ onChanged() { assert.fail('Rejected changes must not refresh state'); }, onResumeProfile() {} });
+  renderDurationField();
+  harness.pills[0].checked = false;
+  harness.pills[1].checked = true;
+  await harness.element('durationPills').dispatch('change', { target: harness.pills[1] });
+  assert.equal(harness.pills[0].checked, true);
+  assert.equal(harness.pills[1].checked, false);
+  assert.ok(harness.pills.every((pill) => !pill.disabled));
+  assert.equal(harness.element('activeSetupStatus').textContent, 'Commit rejected');
 });
 
 test('options resume delegates a parked profile to profile activation', async (t) => {
