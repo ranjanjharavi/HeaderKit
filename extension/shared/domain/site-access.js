@@ -1,6 +1,6 @@
 import { filterRulesByProfile, getRuleOriginPattern } from './rules.js';
 
-const BROAD_ORIGIN_PATTERNS = ['https://*/*', '<all_urls>'];
+const BROAD_ORIGIN_PATTERNS = new Set(['https://*/*', '<all_urls>']);
 
 /**
  * Every origin a profile needs in order to apply all of its rules.
@@ -8,7 +8,7 @@ const BROAD_ORIGIN_PATTERNS = ['https://*/*', '<all_urls>'];
 export function getProfileOrigins(rules, profileId) {
   return [...new Set(
     filterRulesByProfile(rules, profileId).map((rule) => getRuleOriginPattern(rule))
-  )].sort();
+  )].sort((left, right) => left.localeCompare(right));
 }
 
 export function isOriginGranted(origin, grantedOrigins) {
@@ -30,7 +30,7 @@ export function getRulesForOriginGrant(rules, origin) {
 }
 
 export function isBroadOrigin(origin) {
-  return BROAD_ORIGIN_PATTERNS.includes(origin) || /^https:\/\/\*\.[^/*]+\/\*$/.test(origin);
+  return BROAD_ORIGIN_PATTERNS.has(origin) || /^https:\/\/\*\.[^/*]+\/\*$/.test(origin);
 }
 
 export function filterOriginGrants(origins, query) {
@@ -45,11 +45,12 @@ export function filterOriginGrants(origins, query) {
   return grants.filter((origin) => {
     const pattern = String(origin || '');
     const host = /^https:\/\/([^/]+)\/\*$/.exec(pattern)?.[1]?.replace(/^\*\./, '') || '';
-    const label = pattern === '<all_urls>'
-      ? 'all websites'
-      : pattern === 'https://*/*'
-        ? 'all https sites'
-        : '';
+    let label = '';
+    if (pattern === '<all_urls>') {
+      label = 'all websites';
+    } else if (pattern === 'https://*/*') {
+      label = 'all https sites';
+    }
     const searchableText = `${pattern} ${host} ${label}`.toLocaleLowerCase();
     return terms.every((term) => searchableText.includes(term))
       || (requestedOrigin && originPatternCovers(pattern, requestedOrigin));
@@ -57,11 +58,15 @@ export function filterOriginGrants(origins, query) {
 }
 
 function getHostSearchOrigin(query) {
-  const host = String(query || '')
+  let host = String(query || '')
     .trim()
     .toLocaleLowerCase()
-    .replace(/^https:\/\//, '')
-    .replace(/\/\*?$/, '');
+    .replace(/^https:\/\//, '');
+  if (host.endsWith('/*')) {
+    host = host.slice(0, -2);
+  } else if (host.endsWith('/')) {
+    host = host.slice(0, -1);
+  }
   if (!host || /[/?#\s]/.test(host)) {
     return null;
   }
@@ -96,7 +101,7 @@ export function filterGrantedRules(rules, grantedOrigins) {
 }
 
 function originPatternCovers(grantedPattern, requestedOrigin) {
-  if (BROAD_ORIGIN_PATTERNS.includes(grantedPattern) || grantedPattern === requestedOrigin) {
+  if (BROAD_ORIGIN_PATTERNS.has(grantedPattern) || grantedPattern === requestedOrigin) {
     return true;
   }
 

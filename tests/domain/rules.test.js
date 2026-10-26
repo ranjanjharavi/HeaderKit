@@ -38,6 +38,8 @@ const sampleRules = [
 
 test('path prefixes normalize to segment prefixes and reject unsafe URL parts', () => {
   assert.equal(normalizePathPrefix('api/v1/'), '/api/v1');
+  assert.equal(normalizePathPrefix(`/api${'/'.repeat(500)}`), '/api');
+  assert.equal(normalizePathPrefix('/'.repeat(512)), '');
   assert.equal(normalizePathPrefix('/'), '');
   assert.equal(normalizePathPrefix(''), '');
   assert.equal(normalizePathPrefix('/api?debug=1'), null);

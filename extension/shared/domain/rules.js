@@ -82,7 +82,7 @@ export function normalizePathPrefix(value) {
   const path = `/${cleanedValue.replace(/^\/+/, '')}`;
   if (path.includes('?') || path.includes('#') || path.includes('\\')
     || [...path].some((character) => {
-      const codePoint = character.charCodeAt(0);
+      const codePoint = character.codePointAt(0);
       return codePoint <= 0x20 || codePoint === 0x7f;
     })) {
     return null;
@@ -93,8 +93,13 @@ export function normalizePathPrefix(value) {
     return null;
   }
 
-  const canonicalPath = new URL(path, 'https://h.invalid').pathname.replace(/\/+$/, '');
-  return canonicalPath.length <= MAX_PATH_PREFIX_LENGTH ? canonicalPath : null;
+  const canonicalPath = new URL(path, 'https://h.invalid').pathname;
+  let end = canonicalPath.length;
+  while (canonicalPath[end - 1] === '/') {
+    end--;
+  }
+  const normalizedPath = canonicalPath.slice(0, end);
+  return normalizedPath.length <= MAX_PATH_PREFIX_LENGTH ? normalizedPath : null;
 }
 
 export function getDisplayPathPrefix(value) {
@@ -110,6 +115,11 @@ export function getDisplayPathPrefix(value) {
 function normalizeResourceType(value) {
   const resourceType = String(value || 'all').trim().toLowerCase();
   return SUPPORTED_RESOURCE_TYPES.has(resourceType) ? resourceType : null;
+}
+
+function hasExplicitPort(authority) {
+  const hostEnd = authority.startsWith('[') ? authority.indexOf(']') + 1 : 0;
+  return authority.slice(hostEnd).includes(':');
 }
 
 export function parseHostInput(value) {
@@ -138,7 +148,7 @@ export function parseHostInput(value) {
   if (authority.includes('/')) {
     return { error: 'Enter only the host. Put paths in Path prefix.' };
   }
-  if (authority.replace(/^\[[^\]]+\]/, '').includes(':')) {
+  if (hasExplicitPort(authority)) {
     return { error: 'Enter only the host, without a port. Rules apply to all HTTPS ports.' };
   }
   if (authority.includes('\\') || /\s/.test(authority)
@@ -418,5 +428,5 @@ export function getRuleOriginPattern(rule) {
 }
 
 function escapeRegex(value) {
-  return String(value).replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(value).replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }
