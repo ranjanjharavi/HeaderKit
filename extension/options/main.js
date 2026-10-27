@@ -5,6 +5,7 @@ import {
 } from './rules/controller.js';
 import { bindProfileEvents, activateProfile } from './profiles/controller.js';
 import { bindSiteAccessEvents } from './site-access/controller.js';
+import { bindBackupEvents } from './backup/controller.js';
 import { showStatus } from '../shared/ui/ui.js';
 import { bindActivationEvents } from './activation/controller.js';
 import { bindWorkspaceEvents, refreshFromStorage, renderWorkspace } from './workspace.js';
@@ -24,6 +25,7 @@ async function start() {
   bindWorkspaceEvents();
   bindProfileEvents({ onChanged: refreshFromStorage });
   bindSiteAccessEvents({ onRefreshState: refreshFromStorage, onRenderRules: renderWorkspace });
+  bindBackupEvents({ onChanged: refreshFromStorage });
 
   await initializeRules({ editRuleId: readEditRuleId() }).catch((error) => {
     console.error('Could not load header rules.', error);

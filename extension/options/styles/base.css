@@ -55,6 +55,7 @@ body {
 
 .options-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
@@ -97,6 +98,7 @@ body {
 
 .options-header-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   flex: none;

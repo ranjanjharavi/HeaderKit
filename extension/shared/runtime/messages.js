@@ -10,3 +10,5 @@ export const PROFILE_MESSAGE_RENAME = 'reqkit:profiles:rename';
 export const PROFILE_MESSAGE_DUPLICATE = 'reqkit:profiles:duplicate';
 export const PROFILE_MESSAGE_DELETE = 'reqkit:profiles:delete';
 export const STATE_MESSAGE_GET = 'reqkit:state:get';
+export const BACKUP_MESSAGE_EXPORT = 'reqkit:backup:export';
+export const BACKUP_MESSAGE_IMPORT = 'reqkit:backup:import';

@@ -34,6 +34,7 @@
           <span class="master-switch-track" aria-hidden="true"><span class="master-switch-thumb"></span></span>
           <span id="masterSwitchLabel" class="master-switch-label">On</span>
         </button>
+        <button id="backupBtn" class="quiet-action" type="button" aria-haspopup="dialog" aria-controls="backupDialog">Export / import</button>
         <button id="siteAccessBtn" class="quiet-action" type="button" aria-haspopup="dialog" aria-controls="siteAccessDialog">Site access</button>
         <a class="options-header-link" href="../privacy/index.html">Privacy policy</a>
       </div>
@@ -210,6 +211,43 @@
         <section id="siteAccessList" class="site-access-list" aria-label="Site access grants" aria-busy="false"></section>
         <footer class="profile-dialog-actions site-access-dialog-actions">
           <button id="doneSiteAccessBtn" class="primary-btn" type="button">Done</button>
+        </footer>
+      </div>
+    </dialog>
+
+    <dialog id="backupDialog" class="profile-dialog backup-dialog" aria-labelledby="backupTitle" aria-describedby="backupDescription">
+      <div class="profile-dialog-shell backup-dialog-shell">
+        <header class="profile-dialog-head">
+          <div>
+            <h2 id="backupTitle">Export / import</h2>
+            <p id="backupDescription">Back up all profiles and rules, or add them from another ReqKit installation.</p>
+          </div>
+          <button id="closeBackupBtn" class="dialog-close-btn" type="button" aria-label="Close export and import">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z"/></svg>
+          </button>
+        </header>
+        <div class="backup-body">
+          <p class="backup-warning">Backups include full header values, including tokens and passwords, as unencrypted text. Store and share them carefully.</p>
+          <section class="backup-section" aria-labelledby="backupExportTitle">
+            <h3 id="backupExportTitle">Export all profiles</h3>
+            <p>Saves profiles, rules, request scopes, and On/Paused settings to a JSON file. Site access, active settings, and timers are not included.</p>
+            <button id="exportBackupBtn" class="secondary-btn" type="button">Download JSON backup</button>
+          </section>
+          <form id="backupImportForm" class="backup-section" aria-labelledby="backupImportTitle" novalidate>
+            <h3 id="backupImportTitle">Import as new profiles</h3>
+            <p>Existing profiles stay unchanged. Imported rules start paused, even if site access is already granted. Review and turn them on when ready.</p>
+            <div class="field">
+              <label for="backupFile">ReqKit JSON backup</label>
+              <input id="backupFile" type="file" accept=".json,application/json" aria-describedby="backupFileHelp backupStatus">
+              <p id="backupFileHelp" class="backup-file-help">Maximum 5 MiB. Matching profile names get an “imported” suffix.</p>
+            </div>
+            <p id="backupPreview" class="backup-preview" role="status" hidden></p>
+            <button id="importBackupBtn" class="primary-btn" type="submit" disabled>Import profiles</button>
+          </form>
+          <output id="backupStatus" class="backup-status" aria-live="polite"></output>
+        </div>
+        <footer class="profile-dialog-actions backup-dialog-actions">
+          <button id="doneBackupBtn" class="secondary-btn" type="button">Done</button>
         </footer>
       </div>
     </dialog>

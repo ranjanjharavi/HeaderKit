@@ -1,4 +1,5 @@
 import { applyRuleIntent, commitRuleSet } from './background/rule-commit.js';
+import { importBackup, serializeBackup } from './shared/domain/backup.js';
 import { applyActivationIntent, applyProfileIntent, commitState } from './background/state-commit.js';
 import {
   clearAlarm,
@@ -24,6 +25,8 @@ import {
   PROFILE_MESSAGE_DUPLICATE,
   PROFILE_MESSAGE_DELETE,
   STATE_MESSAGE_GET,
+  BACKUP_MESSAGE_EXPORT,
+  BACKUP_MESSAGE_IMPORT,
   RULE_MESSAGE_ADD,
   RULE_MESSAGE_UPDATE,
   RULE_MESSAGE_SET_ENABLED,
@@ -140,6 +143,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender?.id !== chrome.runtime.id || typeof sender?.url !== 'string'
     || !sender.url.startsWith(chrome.runtime.getURL(''))) {
     return false;
+  }
+
+  if (message?.type === BACKUP_MESSAGE_EXPORT || message?.type === BACKUP_MESSAGE_IMPORT) {
+    enqueueBackgroundTask(async () => {
+      const state = await loadState();
+      if (message.type === BACKUP_MESSAGE_EXPORT) {
+        return { text: serializeBackup(state) };
+      }
+      const nextState = importBackup(message.text, state);
+      await persistState(nextState, state);
+      return {
+        profileCount: nextState.profiles.length - state.profiles.length,
+        ruleCount: nextState.rules.length - state.rules.length
+      };
+    }).then((result) => sendResponse({ ok: true, ...result })).catch((error) => {
+      // Backup contents may contain credentials. Never log the payload.
+      console.error('Could not process the backup request.');
+      sendResponse({ ok: false, error: error.message || 'Could not process the backup.' });
+    });
+    return true;
   }
 
   if (RULE_MESSAGES.has(message?.type)) {

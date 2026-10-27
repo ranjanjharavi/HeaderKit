@@ -1,0 +1,101 @@
+.backup-dialog-shell {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.backup-body {
+  display: grid;
+  gap: 24px;
+  min-height: 0;
+  padding: var(--space-1);
+  overflow-y: auto;
+}
+
+.backup-warning,
+.backup-section p,
+.backup-status {
+  margin: 0;
+  font-size: var(--type-label);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.backup-warning {
+  padding: var(--space-3);
+  border: 1px solid var(--notice-border);
+  border-radius: var(--radius-md);
+  background: var(--notice-soft);
+  color: var(--notice);
+}
+
+.backup-section {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.backup-section h3 {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 650;
+}
+
+.backup-section p {
+  color: var(--muted-foreground);
+}
+
+.backup-section > button {
+  justify-self: start;
+  min-height: 40px;
+}
+
+.backup-section input[type='file'] {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 40px;
+  font-size: var(--type-support);
+}
+
+.backup-section input::file-selector-button {
+  margin-right: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--secondary);
+  color: var(--foreground);
+  font: inherit;
+  cursor: pointer;
+}
+
+.backup-section input::file-selector-button:hover {
+  background: var(--secondary-hover);
+}
+
+.backup-section .backup-file-help {
+  font-size: var(--type-support);
+}
+
+.backup-section .backup-preview {
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.backup-preview[hidden],
+.backup-status:empty {
+  display: none;
+}
+
+.backup-status {
+  color: var(--muted-foreground);
+}
+
+.backup-status.is-error {
+  color: var(--danger);
+}
+
+.backup-status.is-success {
+  color: var(--success);
+}
+
+.backup-dialog-actions {
+  justify-content: flex-end;
+}

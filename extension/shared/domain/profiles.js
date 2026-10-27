@@ -3,7 +3,7 @@ export const PROFILE_STORAGE_KEY = 'profiles';
 export const DEFAULT_PROFILE_ID = 'default';
 export const DEFAULT_PROFILE_NAME = 'Default';
 
-const MAX_PROFILE_NAME_LENGTH = 40;
+export const MAX_PROFILE_NAME_LENGTH = 40;
 
 export function createDefaultProfile() {
   return {
