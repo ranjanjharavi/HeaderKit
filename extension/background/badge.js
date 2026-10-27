@@ -5,6 +5,19 @@ import { filterGrantedRules } from '../shared/domain/site-access.js';
 export const BADGE_ACTIVE_COLOR = '#2563eb';
 export const BADGE_PAUSED_COLOR = '#64748b';
 
+function runPendingWork(isPending, run) {
+  return new Promise((resolve, reject) => {
+    const step = () => {
+      if (!isPending()) {
+        resolve();
+        return;
+      }
+      Promise.resolve().then(run).then(step, reject);
+    };
+    step();
+  });
+}
+
 export function createBadgeController({ getState, queryTabs, getTab, action, onError }) {
   const jobs = new Map();
   const painted = new Map();
@@ -44,27 +57,25 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
     }
     const job = { knownTab, pending: true, cancelled: false, promise: null };
     jobs.set(tabId, job);
-    job.promise = Promise.resolve().then(async () => {
-      while (job.pending && !job.cancelled) {
-        job.pending = false;
-        const version = revision;
-        const { rules, activation, grantedOrigins } = await getState();
-        const applicableRules = filterGrantedRules(rules, grantedOrigins);
-        const tab = tabId === null ? null : job.knownTab || await getTab(tabId);
-        if (job.cancelled) {
-          return;
-        }
-        if (version !== revision || job.pending) {
-          job.pending = true;
-          continue;
-        }
-        const badge = tabId !== null && !tab?.url
-          ? { text: null, color: null }
-          : resolveBadge(applicableRules, activation, { url: tab?.url });
-        await paintBadge(badge, tabId, job);
-        if (version !== revision) {
-          job.pending = true;
-        }
+    job.promise = runPendingWork(() => job.pending && !job.cancelled, async () => {
+      job.pending = false;
+      const version = revision;
+      const { rules, activation, grantedOrigins } = await getState();
+      const applicableRules = filterGrantedRules(rules, grantedOrigins);
+      const tab = tabId === null ? null : job.knownTab || await getTab(tabId);
+      if (job.cancelled) {
+        return;
+      }
+      if (version !== revision || job.pending) {
+        job.pending = true;
+        return;
+      }
+      const badge = tabId !== null && !tab?.url
+        ? { text: null, color: null }
+        : resolveBadge(applicableRules, activation, { url: tab?.url });
+      await paintBadge(badge, tabId, job);
+      if (version !== revision) {
+        job.pending = true;
       }
     }).catch(onError).finally(() => {
       if (jobs.get(tabId) === job) {
@@ -81,23 +92,21 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
       job.pending = true;
     }
     if (!refreshJob) {
-      refreshJob = Promise.resolve().then(async () => {
-        while (refreshPending) {
-          refreshPending = false;
-          scheduleTab(null);
-          const version = navigationVersion;
-          const tabs = await queryTabs({});
-          for (const tab of tabs) {
-            if ((navigations.get(tab.id) || 0) > version) {
-              continue;
-            }
-            if (!tab.url && reconciled && (!painted.has(tab.id) || painted.get(tab.id).text === null)) {
-              continue;
-            }
-            scheduleTab(tab.id, tab);
+      refreshJob = runPendingWork(() => refreshPending, async () => {
+        refreshPending = false;
+        scheduleTab(null);
+        const version = navigationVersion;
+        const tabs = await queryTabs({});
+        for (const tab of tabs) {
+          if ((navigations.get(tab.id) || 0) > version) {
+            continue;
           }
-          reconciled = true;
+          if (!tab.url && reconciled && (!painted.has(tab.id) || painted.get(tab.id).text === null)) {
+            continue;
+          }
+          scheduleTab(tab.id, tab);
         }
+        reconciled = true;
       }).catch(onError).finally(() => { refreshJob = null; });
     }
     return refreshJob;
@@ -118,10 +127,11 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
     return scheduleTab(tabId, knownTab);
   }
 
-  async function whenIdle() {
-    while (refreshJob || jobs.size) {
-      await Promise.all([refreshJob, ...[...jobs.values()].map((job) => job.promise)]);
-    }
+  function whenIdle() {
+    return runPendingWork(
+      () => refreshJob || jobs.size,
+      () => Promise.all([refreshJob, ...Array.from(jobs.values(), (job) => job.promise)])
+    );
   }
 
   return { refresh, refreshTab, removeTab, whenIdle };
