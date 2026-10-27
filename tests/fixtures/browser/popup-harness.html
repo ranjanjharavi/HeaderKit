@@ -2,8 +2,7 @@
 <html lang="en">
 <head><meta charset="UTF-8"><title>ReqKit popup harness</title></head>
 <body>
-  <script>
-    (async () => {
+  <script type="module">
       const previewParameters = new URLSearchParams(location.search);
       const storage = previewParameters.has('store')
         ? { privacyConsentVersion: Number(previewParameters.get('consent') ?? 2) }
@@ -36,11 +35,13 @@
         Object.assign(storage, createStoreData());
       }
 
-      const grantedOrigins = previewParameters.has('noaccess')
-        ? []
-        : previewParameters.has('campaign')
-          ? ['https://api.example.com/*', 'https://qa.example.com/*']
-          : ['https://example.com/*', 'https://staging.example.com/*'];
+      let grantedOrigins = [];
+      if (!previewParameters.has('noaccess')) {
+        grantedOrigins = ['https://example.com/*', 'https://staging.example.com/*'];
+        if (previewParameters.has('campaign')) {
+          grantedOrigins = ['https://api.example.com/*', 'https://qa.example.com/*'];
+        }
+      }
       window.__REQKIT_CHROME_STUB__ = {
         runtime: {
           lastError: null,
@@ -102,7 +103,6 @@
         .replace('href="popup.css"', `href="popup.css?v=${cacheBust}"`)
         .replace('<script type="module" src="main.js"></' + 'script>', '<script>window.chrome = window.__REQKIT_CHROME_STUB__ || parent.__REQKIT_CHROME_STUB__;</' + `script><script type="module" src="main.js?v=${cacheBust}"></` + 'script>'));
       document.close();
-    })();
   </script>
 </body>
 </html>
