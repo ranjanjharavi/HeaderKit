@@ -47,7 +47,7 @@ import {
   setMasterEnabled,
   startBrowserSession
 } from './shared/domain/activation.js';
-import { PROFILE_STORAGE_KEY, getProfileIds, normalizeProfiles } from './shared/domain/profiles.js';
+import { PROFILE_STORAGE_KEY, createDefaultProfiles, getProfileIds, normalizeProfiles } from './shared/domain/profiles.js';
 import { MIGRATED_KEYS, ensureMigrated } from './background/migrate.js';
 import { createBadgeController } from './background/badge.js';
 import { createSerialQueue } from './shared/runtime/serial-queue.js';
@@ -145,12 +145,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
-  if (message?.type === BACKUP_MESSAGE_EXPORT || message?.type === BACKUP_MESSAGE_IMPORT) {
+  if (message?.type === BACKUP_MESSAGE_EXPORT) {
+    enqueueBackgroundTask(handleBackupExport)
+      .then((text) => sendResponse({ ok: true, text }))
+      .catch((error) => {
+        console.error('Could not export the backup.');
+        sendResponse({ ok: false, error: error.message || 'Could not export a backup.' });
+      });
+    return true;
+  }
+
+  if (message?.type === BACKUP_MESSAGE_IMPORT) {
     enqueueBackgroundTask(async () => {
       const state = await loadState();
-      if (message.type === BACKUP_MESSAGE_EXPORT) {
-        return { text: serializeBackup(state) };
-      }
       const nextState = importBackup(message.text, state);
       await persistState(nextState, state);
       return {
@@ -318,6 +325,14 @@ async function initialize({ newBrowserSession = false } = {}) {
   await applyDynamicRules(state.rules, state.activation, state.grantedOrigins);
   badges.refresh();
   await scheduleExpiryAlarm(state.activation);
+}
+
+async function handleBackupExport() {
+  // Backup reads must not resolve timers or depend on current site access.
+  const stored = await storageAreaGet(chrome.storage.local, [PROFILE_STORAGE_KEY, RULE_STORAGE_KEY]);
+  const profiles = stored[PROFILE_STORAGE_KEY] ?? createDefaultProfiles();
+  const rules = stored[RULE_STORAGE_KEY] ?? [];
+  return serializeBackup({ profiles, rules });
 }
 
 async function handleRuleMessage(message) {

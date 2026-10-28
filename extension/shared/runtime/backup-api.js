@@ -3,8 +3,11 @@ import { BACKUP_MESSAGE_EXPORT, BACKUP_MESSAGE_IMPORT } from './messages.js';
 
 export async function exportBackup() {
   const response = await sendRuntimeMessage({ type: BACKUP_MESSAGE_EXPORT });
-  if (!response?.ok || typeof response.text !== 'string') {
-    throw new Error(response?.error || 'Could not export a backup.');
+  if (response?.ok !== true || typeof response.text !== 'string' || !response.text) {
+    const message = typeof response?.error === 'string' && response.error
+      ? response.error
+      : 'Could not export a backup.';
+    throw new Error(message);
   }
   return response.text;
 }
