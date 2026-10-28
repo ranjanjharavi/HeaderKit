@@ -227,11 +227,12 @@
           </button>
         </header>
         <div class="backup-body">
-          <p class="backup-warning">Backups include full header values, including tokens and passwords, as unencrypted text. Store and share them carefully.</p>
+          <p id="backupWarning" class="backup-warning">Backups include full header values, including tokens and passwords, as unencrypted text. Store and share them carefully.</p>
           <section class="backup-section" aria-labelledby="backupExportTitle">
             <h3 id="backupExportTitle">Export all profiles</h3>
-            <p>Saves profiles, rules, request scopes, and On/Paused settings to a JSON file. Site access, active settings, and timers are not included.</p>
-            <button id="exportBackupBtn" class="secondary-btn" type="button">Download JSON backup</button>
+            <p id="backupExportScope">Saves profiles, rules, request scopes, and On/Paused settings to a JSON file. Site access, active settings, timers, and privacy consent are not included.</p>
+            <button id="exportBackupBtn" class="secondary-btn" type="button" aria-describedby="backupWarning backupExportScope backupExportStatus">Download JSON backup</button>
+            <output id="backupExportStatus" class="backup-status" aria-live="polite" aria-atomic="true"></output>
           </section>
           <form id="backupImportForm" class="backup-section" aria-labelledby="backupImportTitle" novalidate>
             <h3 id="backupImportTitle">Import as new profiles</h3>

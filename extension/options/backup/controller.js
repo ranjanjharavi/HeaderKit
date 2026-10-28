@@ -10,6 +10,7 @@ export function bindBackupEvents({ onChanged }) {
   const dialog = document.getElementById('backupDialog');
   document.getElementById('backupBtn').addEventListener('click', () => {
     setStatus('');
+    setStatus('', '', 'backupExportStatus');
     dialog.showModal();
   });
   document.getElementById('closeBackupBtn').addEventListener('click', closeDialog);
@@ -41,27 +42,30 @@ async function downloadBackup() {
     return;
   }
   setBusy('export');
-  setStatus('Preparing backup…');
+  setStatus('Preparing backup…', '', 'backupExportStatus');
   try {
     const text = await exportBackup();
     const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `reqkit-backup-${new Date().toISOString().replaceAll(':', '-')}.json`;
-    document.body.append(link);
+    const url = URL.createObjectURL(blob);
     try {
+      link.href = url;
+      link.download = `reqkit-backup-${new Date().toISOString().replaceAll(':', '-')}.json`;
+      document.body.append(link);
       link.click();
     } finally {
       link.remove();
       globalThis.setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
-    setStatus('Backup download started. The file contains unencrypted header values.', 'success');
+    setStatus('Backup download started. The file contains unencrypted header values.', 'success', 'backupExportStatus');
   } catch (error) {
-    setStatus(error.message || 'Could not export a backup. Try again.', 'error');
+    setStatus(error.message || 'Could not export a backup. Try again.', 'error', 'backupExportStatus');
   } finally {
     setBusy(null);
-    document.getElementById('exportBackupBtn').focus();
+    if (document.getElementById('backupDialog').open) {
+      document.getElementById('exportBackupBtn').focus({ preventScroll: true });
+      document.getElementById('backupExportStatus').scrollIntoView({ block: 'nearest' });
+    }
   }
 }
 
@@ -152,8 +156,8 @@ function setBusy(operation) {
     : 'Download JSON backup';
 }
 
-function setStatus(message, type = '') {
-  const status = document.getElementById('backupStatus');
+function setStatus(message, type = '', elementId = 'backupStatus') {
+  const status = document.getElementById(elementId);
   status.textContent = message;
   status.classList.toggle('is-error', type === 'error');
   status.classList.toggle('is-success', type === 'success');
