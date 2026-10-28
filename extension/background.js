@@ -1,5 +1,5 @@
 import { applyRuleIntent, commitRuleSet } from './background/rule-commit.js';
-import { importBackup, serializeBackup } from './shared/domain/backup.js';
+import { mergeBackup, parseBackup, serializeBackup } from './shared/domain/backup.js';
 import { applyActivationIntent, applyProfileIntent, commitState } from './background/state-commit.js';
 import {
   clearAlarm,
@@ -157,8 +157,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message?.type === BACKUP_MESSAGE_IMPORT) {
     enqueueBackgroundTask(async () => {
+      const backup = parseBackup(message.text);
       const state = await loadState();
-      const nextState = importBackup(message.text, state);
+      const nextState = mergeBackup(backup, state);
       await persistState(nextState, state);
       return {
         profileCount: nextState.profiles.length - state.profiles.length,

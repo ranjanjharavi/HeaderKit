@@ -127,8 +127,13 @@ export function parseBackup(text) {
   return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: backup.exportedAt, profiles, rules };
 }
 
-export function importBackup(text, state) {
-  const backup = parseBackup(text);
+// Copy a parsed backup into new profiles without changing existing state.
+export function mergeBackup(backup, state) {
+  let nextId = getNextRuleId(state.rules);
+  if (!Number.isSafeInteger(nextId) || nextId + backup.rules.length - 1 > MAX_RULE_ID) {
+    throw new Error('Not enough rule IDs are available. Remove unused rules before importing.');
+  }
+
   const usedIds = new Set(state.profiles.map((profile) => profile.id));
   const usedNames = new Set(state.profiles.map((profile) => profile.name.toLowerCase()));
   const profileMap = new Map();
@@ -144,10 +149,6 @@ export function importBackup(text, state) {
     return { ...profile, id, name };
   });
 
-  let nextId = getNextRuleId(state.rules);
-  if (!Number.isSafeInteger(nextId) || nextId + backup.rules.length - 1 > MAX_RULE_ID) {
-    throw new Error('Not enough rule IDs are available. Remove unused rules before importing.');
-  }
   const rules = backup.rules.map((rule) => ({
     ...rule,
     id: nextId++,
@@ -169,7 +170,15 @@ function getImportedProfileName(name, usedNames) {
   let copy = 1;
   while (true) {
     const suffix = copy === 1 ? ' (imported)' : ` (imported ${copy})`;
-    const candidate = `${name.slice(0, MAX_PROFILE_NAME_LENGTH - suffix.length).trimEnd()}${suffix}`;
+    const maxBaseLength = MAX_PROFILE_NAME_LENGTH - suffix.length;
+    let base = '';
+    for (const character of name) {
+      if (base.length + character.length > maxBaseLength) {
+        break;
+      }
+      base += character;
+    }
+    const candidate = `${base.trimEnd()}${suffix}`;
     if (!usedNames.has(candidate.toLowerCase())) {
       return candidate;
     }
