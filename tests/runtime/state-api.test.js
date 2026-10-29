@@ -7,7 +7,7 @@ test('snapshot refresh applies only the latest result when reads finish out of o
   createUiHarness(t);
   const replies = [];
   chrome.runtime.sendMessage = (message, callback) => {
-    assert.equal(message.type, 'reqkit:state:get');
+    assert.equal(message.type, 'headerkit:state:get');
     replies.push(callback);
   };
   chrome.permissions = { getAll: (callback) => callback({ origins: [] }) };

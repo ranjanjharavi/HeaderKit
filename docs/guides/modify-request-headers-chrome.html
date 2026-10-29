@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modify request headers for an HTTPS API in Chrome | ReqKit</title>
+  <title>Modify request headers for an HTTPS API in Chrome | HeaderKit</title>
   <meta name="description" content="Create exact-host rules. Scope API paths or fetch/XHR requests. Verify in DevTools.">
   <meta name="theme-color" content="#eff6ff">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/ReqKit/guides/modify-request-headers-chrome.html">
+  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/guides/modify-request-headers-chrome.html">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Modify request headers for an HTTPS API in Chrome | ReqKit">
+  <meta property="og:title" content="Modify request headers for an HTTPS API in Chrome | HeaderKit">
   <meta property="og:description" content="Create exact-host rules. Scope API paths or fetch/XHR requests. Verify in DevTools.">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/guides/modify-request-headers-chrome.html">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
+  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/guides/modify-request-headers-chrome.html">
+  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
-  <link rel="icon" type="image/png" href="../assets/reqkit-128.png">
+  <meta name="twitter:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
+  <link rel="icon" type="image/png" href="../assets/headerkit-128.png">
   <link rel="stylesheet" href="../assets/site.css">
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Modify request headers for an HTTPS API in Chrome", "description": "Create exact-host rules. Scope API paths or fetch/XHR requests. Verify in DevTools.", "url": "https://ranjanjharavi.github.io/ReqKit/guides/modify-request-headers-chrome.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "ReqKit", "url": "https://ranjanjharavi.github.io/ReqKit/"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Modify request headers for an HTTPS API in Chrome", "description": "Create exact-host rules. Scope API paths or fetch/XHR requests. Verify in DevTools.", "url": "https://ranjanjharavi.github.io/HeaderKit/guides/modify-request-headers-chrome.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "HeaderKit", "url": "https://ranjanjharavi.github.io/HeaderKit/"}}</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header"><nav class="nav-shell" aria-label="Primary navigation">
-    <a class="brand" href="../"><img src="../assets/reqkit-128.png" width="38" height="38" alt=""><span>ReqKit</span></a>
-    <div class="nav-links"><a href="./" aria-current="page">Guides</a><a href="../privacy-policy.html">Privacy</a><a class="nav-github" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Get ReqKit</a></div>
+    <a class="brand" href="../"><img src="../assets/headerkit-128.png" width="38" height="38" alt=""><span>HeaderKit</span></a>
+    <div class="nav-links"><a href="./" aria-current="page">Guides</a><a href="../privacy-policy.html">Privacy</a><a class="nav-github" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Get HeaderKit</a></div>
   </nav></header>
   <main id="main" class="guide-main section-shell">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">ReqKit</a><span aria-hidden="true">/</span><a href="./">Guides</a></nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">HeaderKit</a><span aria-hidden="true">/</span><a href="./">Guides</a></nav>
     <h1>Modify request headers for an HTTPS API in Chrome</h1>
     <p class="guide-intro">Create exact-host rules. Scope API paths or fetch/XHR requests. Verify in DevTools.</p>
-    <a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
+    <a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
     <article class="guide-prose">
 <h2>Create a request-header rule</h2>
 <p>Use an authorized HTTPS test service and a harmless header such as <code>X-Debug-Mode: enabled</code>. Replace illustrative screenshot hosts with a real test host.</p>
 <ol>
-<li>Install ReqKit. Open it on an HTTPS test site. Review the privacy notice.</li>
+<li>Install HeaderKit. Open it on an HTTPS test site. Review the privacy notice.</li>
 <li>Choose <strong>Add rule for this site</strong>. Check the <strong>Exact HTTPS host</strong>, such as <code>api.example.com</code>.</li>
 <li>Enter <code>X-Debug-Mode</code> as the header name and <code>enabled</code> as the value.</li>
 <li>Narrow matching through <strong>Optional request scoping</strong>. Enter a prefix such as <code>/api/v1</code> and select <strong>API calls (fetch/XHR)</strong> as needed.</li>
 <li>Choose <strong>Add rule</strong>. Approve exact-host access when prompted. Keep the profile active, master switch On, and rule On.</li>
 </ol>
-<figure><img src="../assets/reqkit-request-scoping-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit rule form showing an exact HTTPS host, an API path prefix, and fetch/XHR request matching"><figcaption>Illustrative test data. Create or edit rules in the popup or manager.</figcaption></figure>
+<figure><img src="../assets/headerkit-request-scoping-screenshot.png" width="1280" height="800" loading="lazy" alt="HeaderKit rule form showing an exact HTTPS host, an API path prefix, and fetch/XHR request matching"><figcaption>Illustrative test data. Create or edit rules in the popup or manager.</figcaption></figure>
 <h2>Understand which requests match</h2>
 <p>Match the request destination, not necessarily the current page. Requests from <code>app.example.com</code> to <code>api.example.com</code> need a rule for <code>api.example.com</code>.</p>
 <ul><li>An exact host does not include its sibling hosts or subdomains.</li><li>With no optional scope, the rule covers all paths and supported request types on that HTTPS host.</li><li><code>/api/v1</code> matches that path and its nested paths, such as <code>/api/v1/users</code>. It does not match <code>/api/v10</code>.</li><li>The fetch/XHR option excludes page loads and static assets. It does not capture requests made by curl, a terminal, or another application.</li></ul>
@@ -48,12 +48,12 @@
 <h2>If the header is missing</h2>
 <p>Check HTTPS, destination host, profile, both switches, timer, and request scope. Open <strong>Site access</strong>. Use <strong>Grant</strong> for saved rules lacking access. Check for competing extensions or applications setting the same header.</p>
 <p>Modify request headers only. No response-header edits or CORS bypass. Configure server permission for cross-origin custom headers. Avoid production credentials. Destination logs may retain enabled values.</p>
-<aside class="guide-next" aria-label="Related guides"><h2>Continue testing</h2><ul><li><a href="request-header-profiles.html">Switch staging and QA request headers with profiles</a></li><li><a href="temporary-request-headers.html">Automatically turn off temporary test headers in Chrome</a></li></ul><p>Review the <a href="../privacy-policy.html">privacy policy</a> or <a href="https://github.com/ranjanjharavi/ReqKit/issues">report a problem</a>.</p></aside></article>
+<aside class="guide-next" aria-label="Related guides"><h2>Continue testing</h2><ul><li><a href="request-header-profiles.html">Switch staging and QA request headers with profiles</a></li><li><a href="temporary-request-headers.html">Automatically turn off temporary test headers in Chrome</a></li></ul><p>Review the <a href="../privacy-policy.html">privacy policy</a> or <a href="https://github.com/ranjanjharavi/HeaderKit/issues">report a problem</a>.</p></aside></article>
   </main>
   <footer class="site-footer"><div class="footer-shell">
-    <a class="brand" href="../"><img src="../assets/reqkit-128.png" width="32" height="32" alt=""><span>ReqKit</span></a>
+    <a class="brand" href="../"><img src="../assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
     <p>Request-header tooling for API and web-environment testing.</p>
-    <div class="footer-links"><a href="./">Guides</a><a href="../privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/ReqKit/issues">Support</a></div>
+    <div class="footer-links"><a href="./">Guides</a><a href="../privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a></div>
   </div></footer>
 </body>
 </html>

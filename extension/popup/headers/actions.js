@@ -67,7 +67,7 @@ export async function addRule() {
         renderRules();
         showStatus(
           'headerStatus',
-          `Rule saved, but ReqKit still needs site access to https://${newRule.domain} before it can be applied.`,
+          `Rule saved, but HeaderKit still needs site access to https://${newRule.domain} before it can be applied.`,
           'error'
         );
         return true;
@@ -139,7 +139,7 @@ export async function saveEditedRule(id) {
       }
       showStatus(
         'headerStatus',
-        `Rule saved, but ReqKit still needs site access to https://${updatedRule.domain} before it can be applied.`,
+        `Rule saved, but HeaderKit still needs site access to https://${updatedRule.domain} before it can be applied.`,
         'error'
       );
       return true;
@@ -190,7 +190,7 @@ export async function toggleRule(id) {
         }
         showStatus(
           'headerStatus',
-          `Rule resumed, but ReqKit still needs site access to https://${currentRule.domain} before it can be applied.`,
+          `Rule resumed, but HeaderKit still needs site access to https://${currentRule.domain} before it can be applied.`,
           'error'
         );
         return;

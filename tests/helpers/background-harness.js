@@ -29,7 +29,7 @@ export async function installBackgroundHarness(chromeApi) {
     });
   };
   chromeApi.storage.onChanged = storageChanges;
-  chromeApi.runtime.id ??= 'reqkit-test';
+  chromeApi.runtime.id ??= 'headerkit-test';
   chromeApi.runtime.getURL ??= (path) => `chrome-extension://${chromeApi.runtime.id}/${path}`;
   chromeApi.runtime.onMessage = { addListener: (listener) => messages.push(listener) };
   chromeApi.runtime.onInstalled = createEvent();

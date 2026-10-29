@@ -63,7 +63,7 @@ test('options pause commits activation and leaves saved rule flags intact', asyn
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(optionsState.activation.masterEnabled, false);
   assert.equal(optionsState.rules[0].enabled, true);
-  assert.deepEqual(harness.requests[0], { type: 'reqkit:activation:set-master', enabled: false });
+  assert.deepEqual(harness.requests[0], { type: 'headerkit:activation:set-master', enabled: false });
   assert.equal(renders, 1);
   assert.equal(harness.element('masterPausedBanner').hidden, false);
 });

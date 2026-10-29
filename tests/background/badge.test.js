@@ -199,7 +199,7 @@ test('a host with no rules shows nothing', () => {
   });
 });
 
-test('a page ReqKit can never touch shows nothing', () => {
+test('a page HeaderKit can never touch shows nothing', () => {
   ['chrome://extensions', 'about:blank', 'http://insecure.example.com/'].forEach((url) => {
     assert.deepEqual(resolveBadge(rules, on, { url }), { text: '', color: null }, url);
   });

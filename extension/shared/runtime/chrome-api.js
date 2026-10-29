@@ -24,19 +24,6 @@ export function storageAreaSet(storageArea, value, chromeApi = globalThis.chrome
   });
 }
 
-export function storageAreaRemove(storageArea, keys, chromeApi = globalThis.chrome) {
-  return new Promise((resolve, reject) => {
-    storageArea.remove(keys, () => {
-      const error = getRuntimeError(chromeApi);
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve();
-    });
-  });
-}
-
 export function storageLocalGet(query, chromeApi = globalThis.chrome) {
   return storageAreaGet(chromeApi.storage.local, query, chromeApi);
 }

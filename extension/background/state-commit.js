@@ -71,7 +71,7 @@ export function applyProfileIntent(message, state) {
 export function applyActivationIntent(message, state) {
   if (message.type === ACTIVATION_MESSAGE_SET_MASTER) {
     if (typeof message.enabled !== 'boolean') {
-      throw new TypeError('Choose whether ReqKit is enabled.');
+      throw new TypeError('Choose whether HeaderKit is enabled.');
     }
     return setMasterEnabled(state.activation, message.enabled);
   }

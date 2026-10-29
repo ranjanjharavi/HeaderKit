@@ -43,7 +43,7 @@ test('rule editor keeps header inputs together and the disclosure on its own row
   assert.match(sharedRuleRenderSource, /rule-edit-disclosure/);
 });
 
-test('destructive actions use the ReqKit confirmation dialog', () => {
+test('destructive actions use the HeaderKit confirmation dialog', () => {
   [popupRulesSource, optionsRulesSource, optionsProfilesSource].forEach((source) => {
     assert.match(source, /confirmDestructiveAction/);
     assert.doesNotMatch(source, /globalThis\.confirm/);

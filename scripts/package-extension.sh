@@ -8,7 +8,7 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 EXTENSION_ROOT="$PROJECT_ROOT/extension"
 
-EXTENSION_NAME="reqkit"
+EXTENSION_NAME="headerkit"
 VERSION=$(node -p "JSON.parse(require('fs').readFileSync('$EXTENSION_ROOT/manifest.json', 'utf8')).version")
 OUTPUT="${EXTENSION_NAME}-v${VERSION}.zip"
 
@@ -20,10 +20,10 @@ RUNTIME_FILES=(
   "options"
   "privacy"
   "shared"
-  "icons/reqkit-16.png"
-  "icons/reqkit-32.png"
-  "icons/reqkit-48.png"
-  "icons/reqkit-128.png"
+  "icons/headerkit-16.png"
+  "icons/headerkit-32.png"
+  "icons/headerkit-48.png"
+  "icons/headerkit-128.png"
 )
 
 TEMP_DIR=$(mktemp -d)

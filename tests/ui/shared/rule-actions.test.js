@@ -178,7 +178,7 @@ for (const surface of ['options', 'popup']) {
     assert.equal(harness.state.grantedOrigins.has('https://api.example.com/*'), true);
   });
 
-  test(`${surface} deletion waits for ReqKit confirmation and explains removal of the final grant`, async (t) => {
+  test(`${surface} deletion waits for HeaderKit confirmation and explains removal of the final grant`, async (t) => {
     const rule = {
       id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
       enabled: true, profileId: 'default'

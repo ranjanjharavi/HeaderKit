@@ -69,7 +69,7 @@ export function renderSiteAccessOverview() {
     list.innerHTML = `
       <div class="site-access-empty">
         <strong>No sites to review</strong>
-        <p>ReqKit asks for site access only when you create or resume a rule.</p>
+        <p>HeaderKit asks for site access only when you create or resume a rule.</p>
       </div>
     `;
     restoreListFocus(focusedControl);

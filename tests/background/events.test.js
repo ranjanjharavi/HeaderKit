@@ -63,7 +63,7 @@ async function worker(t, stored = {}) {
   };
   const harness = await installBackgroundHarness(chromeApi);
   t.after(async () => {
-    await new Promise((resolve) => chromeApi.runtime.sendMessage({ type: 'reqkit:state:get' }, resolve));
+    await new Promise((resolve) => chromeApi.runtime.sendMessage({ type: 'headerkit:state:get' }, resolve));
     globalThis.chrome = originalChrome;
     console.error = originalError;
   });
@@ -95,9 +95,9 @@ test('stalled badge queries do not block commits and navigation bursts avoid bro
     callback(tabs);
   };
   const draft = { domain: 'example.com', headerName: 'X-One', headerValue: 'one' };
-  assert.equal((await harness.send({ type: 'reqkit:rules:add', draft, profileId: 'default' })).ok, true);
+  assert.equal((await harness.send({ type: 'headerkit:rules:add', draft, profileId: 'default' })).ok, true);
   await queryStarted;
-  const second = await harness.send({ type: 'reqkit:rules:add', draft: { ...draft, headerName: 'X-Two' }, profileId: 'default' });
+  const second = await harness.send({ type: 'headerkit:rules:add', draft: { ...draft, headerName: 'X-Two' }, profileId: 'default' });
   assert.equal(second.ok, true);
   releaseQuery();
   await new Promise(setImmediate);
@@ -123,32 +123,32 @@ test('worker cache avoids repeated reads and tracks committed writes and externa
   const getAll = chrome.permissions.getAll.bind(chrome.permissions);
   chrome.storage.local.get = (keys, callback) => { reads++; get(keys, callback); };
   chrome.permissions.getAll = (callback) => { grantReads++; getAll(callback); };
-  await harness.send({ type: 'reqkit:state:get' });
-  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
   assert.equal(reads, 1);
   assert.equal(grantReads, 1);
-  const created = await harness.send({ type: 'reqkit:profiles:create', name: 'Cached' });
-  const added = await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: created.profile.id });
+  const created = await harness.send({ type: 'headerkit:profiles:create', name: 'Cached' });
+  const added = await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: created.profile.id });
   assert.equal(added.ok, true);
   const reorderedRules = harness.storage.headerRules.map((rule) => Object.fromEntries(Object.entries(rule).reverse()));
   chrome.storage.onChanged.emit({ headerRules: { newValue: reorderedRules } }, 'local');
-  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
   assert.equal(reads, 1);
   assert.equal(grantReads, 1);
   harness.failNextWrite();
-  const failed = await harness.send({ type: 'reqkit:rules:update', id: added.rule.id, draft: { ...added.rule, headerValue: 'failed' }, profileId: created.profile.id });
+  const failed = await harness.send({ type: 'headerkit:rules:update', id: added.rule.id, draft: { ...added.rule, headerValue: 'failed' }, profileId: created.profile.id });
   assert.equal(failed.ok, false);
-  assert.equal((await harness.send({ type: 'reqkit:state:get' })).rules[0].headerValue, 'one');
+  assert.equal((await harness.send({ type: 'headerkit:state:get' })).rules[0].headerValue, 'one');
   assert.equal(reads, 1);
   chrome.storage.onChanged.emit({ activation: { newValue: {} } }, 'sync');
-  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
   assert.equal(reads, 1);
   harness.storage.headerRules[0].headerValue = 'external';
   chrome.storage.onChanged.emit({ headerRules: { newValue: harness.storage.headerRules } }, 'local');
-  assert.equal((await harness.send({ type: 'reqkit:state:get' })).rules[0].headerValue, 'external');
+  assert.equal((await harness.send({ type: 'headerkit:state:get' })).rules[0].headerValue, 'external');
   assert.equal(reads, 2);
   chrome.permissions.onRemoved.emit({ origins: ['https://example.com/*'] });
-  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
   assert.equal(reads, 3);
   assert.equal(grantReads, 3);
 });
@@ -167,9 +167,9 @@ test('worker cache retries failed permission reads instead of retaining unavaila
     }
     getAll(callback);
   };
-  await harness.send({ type: 'reqkit:state:get' });
-  await harness.send({ type: 'reqkit:state:get' });
-  await harness.send({ type: 'reqkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
+  await harness.send({ type: 'headerkit:state:get' });
   assert.equal(reads, 2);
 });
 
@@ -189,13 +189,13 @@ test('a storage change during a cold read cannot publish a stale cache', async (
     }
     callback(value);
   });
-  const pending = harness.send({ type: 'reqkit:state:get' });
+  const pending = harness.send({ type: 'headerkit:state:get' });
   await readStarted;
   harness.storage.activation.masterEnabled = false;
   chrome.storage.onChanged.emit({ activation: { newValue: harness.storage.activation } }, 'local');
   releaseRead();
   assert.equal((await pending).activation.masterEnabled, false);
-  assert.equal((await harness.send({ type: 'reqkit:state:get' })).activation.masterEnabled, false);
+  assert.equal((await harness.send({ type: 'headerkit:state:get' })).activation.masterEnabled, false);
 });
 
 test('cached state rechecks timer expiry against the current clock', async (context) => {
@@ -204,12 +204,12 @@ test('cached state rechecks timer expiry against the current clock', async (cont
   const harness = await worker(context, {
     activation: { ...createDefaultActivation(), expiresAt: 20_000, durationMs: 10_000 }
   });
-  assert.equal((await harness.send({ type: 'reqkit:state:get' })).activation.profileId, 'default');
+  assert.equal((await harness.send({ type: 'headerkit:state:get' })).activation.profileId, 'default');
   now = 21_000;
-  const expired = await harness.send({ type: 'reqkit:state:get' });
+  const expired = await harness.send({ type: 'headerkit:state:get' });
   assert.equal(expired.activation.profileId, null);
   assert.equal(harness.storage.activation.expiresAt, null);
-  assert.equal((await harness.send({ type: 'reqkit:state:get' })).activation.profileId, null);
+  assert.equal((await harness.send({ type: 'headerkit:state:get' })).activation.profileId, null);
 });
 
 test('actual worker rejects untrusted senders before reading or mutating state', async (context) => {
@@ -235,10 +235,10 @@ test('actual worker rejects untrusted senders before reading or mutating state',
     { id, url: { startsWith: () => true } }
   ];
   const messages = [
-    { type: 'reqkit:state:get' },
-    { type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' } },
-    { type: 'reqkit:activation:set-master', enabled: false },
-    { type: 'reqkit:profiles:create', name: 'Untrusted' }
+    { type: 'headerkit:state:get' },
+    { type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' } },
+    { type: 'headerkit:activation:set-master', enabled: false },
+    { type: 'headerkit:profiles:create', name: 'Untrusted' }
   ];
   for (const sender of senders) {
     for (const message of messages) {
@@ -251,7 +251,7 @@ test('actual worker rejects untrusted senders before reading or mutating state',
   assert.deepEqual(harness.getDynamicRules(), []);
   assert.deepEqual(harness.getSessionRules(), []);
   for (const page of ['popup/index.html', 'options/index.html']) {
-    const result = await harness.sendFrom({ type: 'reqkit:state:get' }, { id, url: chrome.runtime.getURL(page) });
+    const result = await harness.sendFrom({ type: 'headerkit:state:get' }, { id, url: chrome.runtime.getURL(page) });
     assert.equal(result.ok, true);
   }
 });
@@ -260,31 +260,31 @@ test('actual worker merges concurrent rule intents and rejects conflicts and sta
   const harness = await worker(t);
   const draft = { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' };
   const results = await Promise.all([
-    harness.send({ type: 'reqkit:rules:add', id: 42, draft, profileId: 'default' }),
-    harness.send({ type: 'reqkit:rules:add', draft: { ...draft, headerName: 'X-Other' }, profileId: 'default' })
+    harness.send({ type: 'headerkit:rules:add', id: 42, draft, profileId: 'default' }),
+    harness.send({ type: 'headerkit:rules:add', draft: { ...draft, headerName: 'X-Other' }, profileId: 'default' })
   ]);
   assert.ok(results.every((result) => result.ok));
   assert.deepEqual(results.map((result) => result.rule.id), [1, 2]);
-  const conflict = await harness.send({ type: 'reqkit:rules:add', draft: { ...draft, pathPrefix: '/api', headerValue: 'different' }, profileId: 'default' });
+  const conflict = await harness.send({ type: 'headerkit:rules:add', draft: { ...draft, pathPrefix: '/api', headerValue: 'different' }, profileId: 'default' });
   assert.equal(conflict.ok, false);
   assert.equal(conflict.field, 'headerValue');
   assert.equal(conflict.conflictId, 1);
-  const duplicate = await harness.send({ type: 'reqkit:rules:add', draft, profileId: 'default' });
+  const duplicate = await harness.send({ type: 'headerkit:rules:add', draft, profileId: 'default' });
   assert.equal(duplicate.field, 'headerName');
   await Promise.all([
-    harness.send({ type: 'reqkit:rules:set-enabled', id: 1, enabled: false }),
-    harness.send({ type: 'reqkit:rules:update', id: 2, draft: { ...draft, headerName: 'X-Other', headerValue: 'updated' }, profileId: 'default' }),
-    harness.send({ type: 'reqkit:rules:delete', id: 1 })
+    harness.send({ type: 'headerkit:rules:set-enabled', id: 1, enabled: false }),
+    harness.send({ type: 'headerkit:rules:update', id: 2, draft: { ...draft, headerName: 'X-Other', headerValue: 'updated' }, profileId: 'default' }),
+    harness.send({ type: 'headerkit:rules:delete', id: 1 })
   ]);
   assert.equal(harness.storage.headerRules.length, 1);
   assert.equal(harness.storage.headerRules[0].headerValue, 'updated');
-  const stale = await harness.send({ type: 'reqkit:rules:update', id: 1, draft, profileId: 'default' });
+  const stale = await harness.send({ type: 'headerkit:rules:update', id: 1, draft, profileId: 'default' });
   assert.equal(stale.ok, false);
-  const missingProfile = await harness.send({ type: 'reqkit:rules:add', draft, profileId: 'deleted' });
+  const missingProfile = await harness.send({ type: 'headerkit:rules:add', draft, profileId: 'deleted' });
   assert.match(missingProfile.error, /profile no longer exists/);
   const before = structuredClone(harness.storage);
-  assert.equal(await harness.send({ type: 'reqkit:rules:commit', rules: [] }), undefined);
-  assert.equal(await harness.send({ type: 'reqkit:activation:set', activation: {} }), undefined);
+  assert.equal(await harness.send({ type: 'headerkit:rules:commit', rules: [] }), undefined);
+  assert.equal(await harness.send({ type: 'headerkit:activation:set', activation: {} }), undefined);
   assert.deepEqual(harness.storage, before);
 });
 
@@ -293,10 +293,10 @@ test('actual worker profile transactions roll back storage failures and clean up
     headerRules: [{ id: 1, domain: 'staging.example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'staging' }],
     activation: { ...createDefaultActivation(), profileId: 'staging', lastProfileId: 'staging' }
   });
-  await harness.send({ type: 'reqkit:activation:set-master', enabled: true });
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
   const before = structuredClone(harness.storage);
   const dynamicBefore = harness.getDynamicRules();
-  for (const type of ['reqkit:profiles:duplicate', 'reqkit:profiles:delete']) {
+  for (const type of ['headerkit:profiles:duplicate', 'headerkit:profiles:delete']) {
     harness.failNextWrite();
     const result = await harness.send({ type, id: 'staging', name: 'Copy' });
     assert.equal(result.ok, false);
@@ -304,15 +304,15 @@ test('actual worker profile transactions roll back storage failures and clean up
     assert.deepEqual(harness.getDynamicRules(), dynamicBefore);
     assert.deepEqual(harness.removed, []);
   }
-  const copied = await harness.send({ type: 'reqkit:profiles:duplicate', id: 'staging', name: 'Copy' });
+  const copied = await harness.send({ type: 'headerkit:profiles:duplicate', id: 'staging', name: 'Copy' });
   assert.equal(copied.ok, true);
   assert.equal(copied.rules[1].enabled, false);
   assert.deepEqual(Object.keys(harness.writes.at(-1)).sort(), ['activation', 'headerRules', 'profiles']);
-  await harness.send({ type: 'reqkit:profiles:delete', id: copied.profile.id });
+  await harness.send({ type: 'headerkit:profiles:delete', id: copied.profile.id });
   assert.deepEqual(harness.removed, []);
   const [deleted, stale] = await Promise.all([
-    harness.send({ type: 'reqkit:profiles:delete', id: 'staging' }),
-    harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'old' }, profileId: 'staging' })
+    harness.send({ type: 'headerkit:profiles:delete', id: 'staging' }),
+    harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'old' }, profileId: 'staging' })
   ]);
   assert.equal(deleted.ok, true);
   assert.equal(deleted.activation.profileId, 'default');
@@ -324,32 +324,32 @@ test('actual worker profile transactions roll back storage failures and clean up
 
 test('actual worker resolves expired snapshots and applies activation intents to current master state', async (t) => {
   const harness = await worker(t, { activation: { ...createDefaultActivation(), expiresAt: 1, durationMs: 60_000 } });
-  const snapshot = await harness.send({ type: 'reqkit:state:get' });
+  const snapshot = await harness.send({ type: 'headerkit:state:get' });
   assert.equal(snapshot.ok, true);
   assert.equal(snapshot.activation.profileId, null);
   assert.equal(snapshot.activation.expiresAt, null);
-  await harness.send({ type: 'reqkit:activation:set-master', enabled: false });
-  const selected = await harness.send({ type: 'reqkit:activation:set-profile', profileId: 'staging' });
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  const selected = await harness.send({ type: 'headerkit:activation:set-profile', profileId: 'staging' });
   assert.equal(selected.activation.masterEnabled, false);
   assert.equal(selected.activation.profileId, 'staging');
   const before = structuredClone(harness.storage);
   harness.failNextWrite();
-  const failed = await harness.send({ type: 'reqkit:activation:set-master', enabled: true });
+  const failed = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
   assert.equal(failed.ok, false);
   assert.deepEqual(harness.storage, before);
 });
 
 test('until-browser-close activation uses only session rules and Chrome clears them before startup', async (t) => {
   const harness = await worker(t);
-  await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
   assert.equal(harness.getDynamicRules().length, 1);
-  await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+  await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
   assert.equal(harness.getDynamicRules().length, 0);
   assert.equal(harness.getSessionRules().length, 1);
   harness.clearSessionRules();
   assert.equal(harness.getDynamicRules().length + harness.getSessionRules().length, 0);
   chrome.runtime.onStartup.emit();
-  const snapshot = await harness.send({ type: 'reqkit:state:get' });
+  const snapshot = await harness.send({ type: 'headerkit:state:get' });
   assert.equal(snapshot.activation.profileId, null);
   assert.equal(snapshot.rules.length, 1);
   assert.equal(harness.getSessionRules().length, 0);
@@ -357,7 +357,7 @@ test('until-browser-close activation uses only session rules and Chrome clears t
 
 test('switching between session and dynamic rules restores the prior set on API or storage failure', async (t) => {
   const harness = await worker(t);
-  await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
   const dynamicBefore = harness.getDynamicRules();
   for (const failure of ['api', 'storage']) {
     if (failure === 'api') {
@@ -365,26 +365,26 @@ test('switching between session and dynamic rules restores the prior set on API 
     } else {
       harness.failNextWrite();
     }
-    const result = await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+    const result = await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
     assert.equal(result.ok, false);
     assert.equal(harness.storage.activation.untilBrowserClose, false);
     assert.deepEqual(harness.getDynamicRules(), dynamicBefore);
     assert.deepEqual(harness.getSessionRules(), []);
   }
-  await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+  await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
   const sessionBefore = harness.getSessionRules();
   harness.failNextRuleUpdate('dynamic');
-  const rejected = await harness.send({ type: 'reqkit:activation:set-duration', durationMs: 60_000 });
+  const rejected = await harness.send({ type: 'headerkit:activation:set-duration', durationMs: 60_000 });
   assert.equal(rejected.ok, false);
   assert.deepEqual(harness.getSessionRules(), sessionBefore);
   assert.deepEqual(harness.getDynamicRules(), []);
-  const timed = await harness.send({ type: 'reqkit:activation:set-duration', durationMs: 60_000 });
+  const timed = await harness.send({ type: 'headerkit:activation:set-duration', durationMs: 60_000 });
   assert.equal(timed.ok, true);
   assert.equal(harness.getDynamicRules().length, 1);
   assert.equal(harness.getSessionRules().length, 0);
   const expiry = timed.activation.expiresAt;
   chrome.runtime.onStartup.emit();
-  const snapshot = await harness.send({ type: 'reqkit:state:get' });
+  const snapshot = await harness.send({ type: 'headerkit:state:get' });
   assert.equal(snapshot.activation.expiresAt, expiry);
   assert.equal(snapshot.activation.profileId, 'default');
 });
@@ -392,10 +392,10 @@ test('switching between session and dynamic rules restores the prior set on API 
 test('regex quota is checked before changing either applied ruleset', async (t) => {
   const harness = await worker(t);
   chrome.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES = 1;
-  await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' }, profileId: 'default' });
-  await harness.send({ type: 'reqkit:activation:set-duration', untilBrowserClose: true });
+  await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
   const before = harness.getSessionRules();
-  const rejected = await harness.send({ type: 'reqkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Two', headerValue: 'two' }, profileId: 'default' });
+  const rejected = await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Two', headerValue: 'two' }, profileId: 'default' });
   assert.equal(rejected.ok, false);
   assert.match(rejected.error, /at most 1 active header rules/);
   assert.deepEqual(harness.getSessionRules(), before);

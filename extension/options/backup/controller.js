@@ -59,7 +59,7 @@ async function downloadBackup() {
     const url = URL.createObjectURL(blob);
     try {
       link.href = url;
-      link.download = `reqkit-backup-${new Date().toISOString().replaceAll(':', '-')}.json`;
+      link.download = `headerkit-backup-${new Date().toISOString().replaceAll(':', '-')}.json`;
       document.body.append(link);
       link.click();
     } finally {
@@ -92,7 +92,7 @@ async function readBackupFile(event) {
   let resultId = null;
   try {
     if (file.size > MAX_BACKUP_BYTES) {
-      throw new Error('Backups must be 5 MiB or smaller. Choose a smaller ReqKit backup.');
+      throw new Error('Backups must be 5 MiB or smaller. Choose a smaller HeaderKit backup.');
     }
     const text = await file.text();
     if (!isCurrentBackupFile(file)) {
@@ -109,7 +109,7 @@ async function readBackupFile(event) {
     if (isCurrentBackupFile(file)) {
       input.value = '';
       input.setAttribute('aria-invalid', 'true');
-      setStatus(error.message || 'Could not read this file. Choose a ReqKit JSON backup.', 'error');
+      setStatus(error.message || 'Could not read this file. Choose a HeaderKit JSON backup.', 'error');
       resultId = 'backupStatus';
     }
   } finally {

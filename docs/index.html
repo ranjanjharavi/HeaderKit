@@ -5,34 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Modify Chrome request headers for exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.">
   <meta name="theme-color" content="#eff6ff">
-  <meta property="og:title" content="ReqKit - Modify Request Headers for Chrome">
+  <meta property="og:title" content="HeaderKit - Modify Request Headers for Chrome">
   <meta property="og:description" content="Test APIs with exact-host headers, profiles, and expiry. Keep settings local. No account or telemetry.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
+  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/">
+  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="ReqKit request-header profiles for Chrome, with an example of its current-site popup">
+  <meta property="og:image:alt" content="HeaderKit request-header profiles for Chrome, with an example of its current-site popup">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ReqKit - Modify Request Headers for Chrome">
+  <meta name="twitter:title" content="HeaderKit - Modify Request Headers for Chrome">
   <meta name="twitter:description" content="Exact HTTPS hosts. Environment profiles. Temporary test headers that switch off automatically.">
-  <meta name="twitter:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/ReqKit/">
-  <link rel="icon" type="image/png" href="assets/reqkit-128.png">
+  <meta name="twitter:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
+  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/">
+  <link rel="icon" type="image/png" href="assets/headerkit-128.png">
   <link rel="stylesheet" href="assets/site.css">
-  <title>ReqKit - Modify Request Headers for Chrome</title>
+  <title>HeaderKit - Modify Request Headers for Chrome</title>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "ReqKit - Modify Request Headers",
+    "name": "HeaderKit - Modify Request Headers",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Chrome 120 or later",
-    "url": "https://ranjanjharavi.github.io/ReqKit/",
-    "downloadUrl": "https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj",
+    "url": "https://ranjanjharavi.github.io/HeaderKit/",
+    "downloadUrl": "https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj",
     "description": "Modify Chrome request headers on exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.",
-    "image": "https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png",
-    "screenshot": "https://ranjanjharavi.github.io/ReqKit/assets/reqkit-rule-manager-screenshot.png"
+    "image": "https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png",
+    "screenshot": "https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-rule-manager-screenshot.png"
   }
   </script>
 </head>
@@ -40,16 +40,16 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <nav class="nav-shell" aria-label="Primary navigation">
-      <a class="brand" href="./" aria-label="ReqKit home">
-        <img src="assets/reqkit-128.png" width="38" height="38" alt="">
-        <span>ReqKit</span>
+      <a class="brand" href="./" aria-label="HeaderKit home">
+        <img src="assets/headerkit-128.png" width="38" height="38" alt="">
+        <span>HeaderKit</span>
       </a>
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="guides/">Guides</a>
         <a href="#install">Install</a>
         <a href="privacy-policy.html">Privacy</a>
-        <a class="nav-github" href="https://github.com/ranjanjharavi/ReqKit">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="nav-github" href="https://github.com/ranjanjharavi/HeaderKit">GitHub <span aria-hidden="true">↗</span></a>
       </div>
     </nav>
   </header>
@@ -62,19 +62,19 @@
         <p class="hero-lead">Test API headers on exact HTTPS hosts. Switch profiles, scope paths or fetch/XHR calls, and set expiry. Store settings locally.</p>
         <span class="purpose-badge">Built for API and web-environment testing</span>
         <div class="hero-actions">
-          <a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
-          <a class="button secondary" href="https://github.com/ranjanjharavi/ReqKit">View source <span aria-hidden="true">↗</span></a>
+          <a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
+          <a class="button secondary" href="https://github.com/ranjanjharavi/HeaderKit">View source <span aria-hidden="true">↗</span></a>
         </div>
-        <ul class="trust-list" aria-label="ReqKit highlights">
+        <ul class="trust-list" aria-label="HeaderKit highlights">
           <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.1 3.1 3.1L13 4.6"/></svg>Local settings</li>
           <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.1 3.1 3.1L13 4.6"/></svg>Exact-host site access</li>
           <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.1 3.1 3.1L13 4.6"/></svg>No telemetry</li>
         </ul>
       </div>
-      <div class="hero-visual" aria-label="ReqKit request-header preview">
+      <div class="hero-visual" aria-label="HeaderKit request-header preview">
         <div class="preview-window">
-          <div class="preview-bar" aria-hidden="true"><span></span><span></span><span></span><strong>ReqKit</strong></div>
-          <img src="assets/reqkit-popup-preview.png" width="520" height="600" decoding="async" fetchpriority="high" alt="ReqKit popup with an API-scoped staging header, an enabled debug header, and a paused trace header">
+          <div class="preview-bar" aria-hidden="true"><span></span><span></span><span></span><strong>HeaderKit</strong></div>
+          <img src="assets/headerkit-popup-preview.png" width="520" height="600" decoding="async" fetchpriority="high" alt="HeaderKit popup with an API-scoped staging header, an enabled debug header, and a paused trace header">
         </div>
       </div>
     </section>
@@ -125,7 +125,7 @@
             </ul>
           </div>
           <div class="product-frame">
-            <img src="assets/reqkit-headers-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="ReqKit showing exact-host request-header rules">
+            <img src="assets/headerkit-headers-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="HeaderKit showing exact-host request-header rules">
           </div>
         </article>
 
@@ -141,7 +141,7 @@
             </ul>
           </div>
           <div class="product-frame">
-            <img src="assets/reqkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="ReqKit Rule Manager showing profiles, timing, and request-header rules">
+            <img src="assets/headerkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="HeaderKit Rule Manager showing profiles, timing, and request-header rules">
           </div>
         </article>
 
@@ -157,7 +157,7 @@
             </ul>
           </div>
           <div class="product-frame">
-            <img src="assets/reqkit-manage-profiles-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="ReqKit profile duplication dialog explaining that copied rules start paused">
+            <img src="assets/headerkit-manage-profiles-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="HeaderKit profile duplication dialog explaining that copied rules start paused">
           </div>
         </article>
       </div>
@@ -169,7 +169,7 @@
         <h2>Configure, apply, continue.</h2>
       </div>
       <div class="steps-grid">
-        <article><span>1</span><h3>Open ReqKit</h3><p>Review current-host rules in the popup.</p></article>
+        <article><span>1</span><h3>Open HeaderKit</h3><p>Review current-host rules in the popup.</p></article>
         <article><span>2</span><h3>Choose what applies</h3><p>Select a profile and duration. Enable required rules.</p></article>
         <article><span>3</span><h3>Keep testing</h3><p>Apply matching rules through Chrome. Stop automatically at expiry.</p></article>
       </div>
@@ -189,17 +189,17 @@
         <div>
           <h2>Start an API test.</h2>
           <p>Require Chrome 120 or later. No account. Grant exact-host access when prompted.</p>
-          <div class="hero-actions"><a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a></div>
+          <div class="hero-actions"><a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a></div>
         </div>
         <ol class="install-steps">
-          <li><span>1</span><div><strong>Add ReqKit to Chrome</strong><small>Open the store listing and choose Add to Chrome.</small></div></li>
+          <li><span>1</span><div><strong>Add HeaderKit to Chrome</strong><small>Open the store listing and choose Add to Chrome.</small></div></li>
           <li><span>2</span><div><strong>Open on a test site</strong><small>Review the privacy notice, then add an exact-host rule.</small></div></li>
           <li><span>3</span><div><strong>Choose what applies and for how long</strong><small>Use profiles and the auto-off timer in the rule manager.</small></div></li>
         </ol>
       </div>
       <details class="source-install">
         <summary>Load from source</summary>
-        <p>Clone the <a href="https://github.com/ranjanjharavi/ReqKit">GitHub repository</a>, open <code>chrome://extensions</code>, enable Developer mode, choose <strong>Load unpacked</strong>, and select the <code>extension</code> directory.</p>
+        <p>Clone the <a href="https://github.com/ranjanjharavi/HeaderKit">GitHub repository</a>, open <code>chrome://extensions</code>, enable Developer mode, choose <strong>Load unpacked</strong>, and select the <code>extension</code> directory.</p>
       </details>
     </section>
 
@@ -217,8 +217,8 @@
 
     <section class="content-section section-shell faq-section" aria-labelledby="faq-heading">
       <h2 id="faq-heading">Before installing</h2>
-      <h3>Does ReqKit modify response headers?</h3>
-      <p>ReqKit manages request headers for exact HTTPS hosts. It does not edit response headers, inspect response bodies, or bypass CORS.</p>
+      <h3>Does HeaderKit modify response headers?</h3>
+      <p>HeaderKit manages request headers for exact HTTPS hosts. It does not edit response headers, inspect response bodies, or bypass CORS.</p>
       <h3>Does it have access to every website?</h3>
       <p>Request exact-host access on demand. Review exact and broader grants through <strong>Site access</strong>.</p>
       <h3>Where are rules stored?</h3>
@@ -228,9 +228,9 @@
 
   <footer class="site-footer">
     <div class="footer-shell">
-      <a class="brand" href="./"><img src="assets/reqkit-128.png" width="32" height="32" alt=""><span>ReqKit</span></a>
+      <a class="brand" href="./"><img src="assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
       <p>Test API and web environments.</p>
-      <div class="footer-links"><a href="guides/">Guides</a><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/ReqKit/issues">Support</a><a href="https://github.com/ranjanjharavi/ReqKit">Source</a></div>
+      <div class="footer-links"><a href="guides/">Guides</a><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a><a href="https://github.com/ranjanjharavi/HeaderKit">Source</a></div>
     </div>
   </footer>
 </body>

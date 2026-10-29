@@ -5,7 +5,7 @@ import { STATE_MESSAGE_GET } from './messages.js';
 export async function getStateSnapshot() {
   const response = await sendRuntimeMessage({ type: STATE_MESSAGE_GET });
   if (!response?.ok) {
-    throw new Error(response?.error || 'Could not read ReqKit state.');
+    throw new Error(response?.error || 'Could not read HeaderKit state.');
   }
   return { rules: response.rules, profiles: response.profiles, activation: response.activation };
 }
@@ -32,7 +32,7 @@ export function createStateRefresh(applySnapshot) {
     latestRequest++;
     queueMicrotask(() => {
       scheduled = false;
-      refresh().catch((error) => console.error('Could not refresh ReqKit state.', error));
+      refresh().catch((error) => console.error('Could not refresh HeaderKit state.', error));
     });
   }
 

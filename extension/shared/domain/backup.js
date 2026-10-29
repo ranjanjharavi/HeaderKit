@@ -1,7 +1,7 @@
 import { createProfileId, MAX_PROFILE_NAME_LENGTH, validateProfileDraft } from './profiles.js';
 import { getNextRuleId, getRuleIdentityKey, validateRuleDraft } from './rules.js';
 
-export const BACKUP_FORMAT = 'reqkit';
+export const BACKUP_FORMAT = 'headerkit';
 export const BACKUP_VERSION = 1;
 export const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
 
@@ -27,7 +27,7 @@ export function serializeBackup({ profiles, rules }, { now = new Date() } = {}) 
 
 export function parseBackup(text) {
   if (typeof text !== 'string') {
-    throw new Error('Choose a ReqKit JSON backup.');
+    throw new Error('Choose a HeaderKit JSON backup.');
   }
   if (text.length > MAX_BACKUP_BYTES || new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) {
     throw new Error('Backups must be 5 MiB or smaller.');
@@ -37,13 +37,13 @@ export function parseBackup(text) {
   try {
     backup = JSON.parse(text.replace(/^\uFEFF/, ''));
   } catch {
-    throw new Error('This file is not valid JSON. Choose a ReqKit backup.');
+    throw new Error('This file is not valid JSON. Choose a HeaderKit backup.');
   }
   if (!isRecord(backup) || backup.format !== BACKUP_FORMAT) {
-    throw new Error('This file is not a ReqKit backup.');
+    throw new Error('This file is not a HeaderKit backup.');
   }
   if (backup.version !== BACKUP_VERSION) {
-    throw new Error('Unsupported backup version. Export a new backup with this version of ReqKit.');
+    throw new Error('Unsupported backup version. Export a new backup with this version of HeaderKit.');
   }
   if (!isValidExportDate(backup.exportedAt)) {
     throw new Error('The backup needs a valid ISO UTC export timestamp, such as 2026-01-01T00:00:00.000Z.');

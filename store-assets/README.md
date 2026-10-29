@@ -6,7 +6,7 @@
 | `icons/` | 128px store icon and 1024px artwork |
 | `promotional/` | 440×280 promo, 1400×560 marquee, 1200×630 social image |
 
-Build from [preview sources](../scripts/previews/README.md). Exclude store assets from the extension ZIP.
+Build HeaderKit artwork from [preview sources](../scripts/previews/README.md). Use `headerkit-` filenames. Exclude store assets from the extension ZIP.
 
 ## Asset ownership
 

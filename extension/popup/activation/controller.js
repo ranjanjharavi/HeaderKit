@@ -44,7 +44,7 @@ async function commitActivation(enabled, message) {
   } catch (error) {
     console.error(error);
     renderMasterSwitch();
-    showStatus('headerStatus', error.message || 'Could not change the ReqKit switch.', 'error');
+    showStatus('headerStatus', error.message || 'Could not change the HeaderKit switch.', 'error');
   } finally {
     controls.forEach((control) => {
       control.disabled = false;

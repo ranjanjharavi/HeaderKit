@@ -52,7 +52,7 @@ import { MIGRATED_KEYS, ensureMigrated } from './background/migrate.js';
 import { createBadgeController } from './background/badge.js';
 import { createSerialQueue } from './shared/runtime/serial-queue.js';
 
-const EXPIRY_ALARM = 'reqkit:activation-expiry';
+const EXPIRY_ALARM = 'headerkit:activation-expiry';
 // Keep storage, DNR, and alarm work ordered around the latest state.
 const enqueueBackgroundTask = createSerialQueue();
 let cachedState = null;
@@ -188,7 +188,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then((activation) => sendResponse({ ok: true, activation }))
       .catch((error) => {
         console.error('Could not process the activation request.', error);
-        sendResponse({ ok: false, error: error.message || 'Could not update the ReqKit switch.' });
+        sendResponse({ ok: false, error: error.message || 'Could not update the HeaderKit switch.' });
       });
     return true;
   }
@@ -289,7 +289,7 @@ chrome.commands.onCommand.addListener((command) => {
   }
 
   enqueueBackgroundTask(() => toggleMasterSwitch()).catch((error) => {
-    console.error('Could not toggle the ReqKit master switch.', error);
+    console.error('Could not toggle the HeaderKit master switch.', error);
   });
 });
 
