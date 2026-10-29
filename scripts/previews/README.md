@@ -1,19 +1,19 @@
 # Local previews
 
-Serve the repository root:
+Start the local preview server:
 
 ```sh
-python3 -m http.server 4173 --bind 127.0.0.1
+node scripts/previews/server.mjs
 ```
 
-Open a preview:
+Open `http://127.0.0.1:4173` with a preview path:
 
-- Manager: `/tests/fixtures/browser/options-harness.html?campaign=1`
-- Popup: `/tests/fixtures/browser/popup-harness.html?campaign=1`
+- Manager: `/extension/options/index.html`
+- Popup: `/extension/popup/index.html`
 - Artwork: `/scripts/previews/store-screenshot.html?view=manager`
 
 Artwork views: `popup`, `manager`, `scope`, `access`, `profiles`, `promo`, `marquee`, `social`.
 
-Use harnesses for UI review and artwork. Expect Chrome API stubs and fictional data. Verify real permissions and worker behavior in the unpacked extension.
+Use read-only Chrome API stubs and fictional data from `fixture.js`. Render the real extension pages. Keep test fixtures separate. Verify permissions and worker behavior in the unpacked extension.
 
-Keep harnesses/data in `tests/fixtures/browser/`. Keep artwork composition here. Exclude both from upload archives.
+Set `PORT` to change the local port. Exclude preview sources and artwork from upload archives.

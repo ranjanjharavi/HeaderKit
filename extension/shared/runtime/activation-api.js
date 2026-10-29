@@ -25,7 +25,7 @@ export function setActivationDuration({ durationMs = null, untilBrowserClose = f
 async function sendActivationMessage(message) {
   const response = await sendRuntimeMessage(message);
   if (!response?.ok) {
-    throw new Error(response?.error || 'Could not update the ReqKit switch.');
+    throw new Error(response?.error || 'Could not update the HeaderKit switch.');
   }
 
   return response.activation;

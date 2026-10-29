@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "ReqKit - Modify Request Headers",
+  "name": "HeaderKit - Modify Request Headers",
   "version": "1.2.1",
   "minimum_chrome_version": "120",
   "description": "Create scoped request-header rules for HTTPS sites. Switch profiles, auto-pause sessions, and manage site access locally.",
-  "homepage_url": "https://ranjanjharavi.github.io/ReqKit/",
+  "homepage_url": "https://ranjanjharavi.github.io/HeaderKit/",
   "permissions": [
     "activeTab",
     "alarms",
@@ -32,22 +32,22 @@
       "suggested_key": {
         "default": "Alt+Shift+X"
       },
-      "description": "Pause or resume all ReqKit header rules"
+      "description": "Pause or resume all HeaderKit header rules"
     }
   },
   "icons": {
-    "16": "icons/reqkit-16.png",
-    "32": "icons/reqkit-32.png",
-    "48": "icons/reqkit-48.png",
-    "128": "icons/reqkit-128.png"
+    "16": "icons/headerkit-16.png",
+    "32": "icons/headerkit-32.png",
+    "48": "icons/headerkit-48.png",
+    "128": "icons/headerkit-128.png"
   },
   "action": {
     "default_popup": "popup/index.html",
-    "default_title": "ReqKit",
+    "default_title": "HeaderKit",
     "default_icon": {
-      "16": "icons/reqkit-16.png",
-      "32": "icons/reqkit-32.png",
-      "48": "icons/reqkit-48.png"
+      "16": "icons/headerkit-16.png",
+      "32": "icons/headerkit-32.png",
+      "48": "icons/headerkit-48.png"
     }
   }
 }

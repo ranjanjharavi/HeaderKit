@@ -167,7 +167,7 @@ export function resolveBadge(rules, activation, { url } = {}) {
 
 /**
  * Returns the rules the badge should count, or `null` when the tab is a page
- * ReqKit can never act on.
+ * HeaderKit can never act on.
  */
 function scopeRules(rules, url) {
   const allRules = Array.isArray(rules) ? rules : [];

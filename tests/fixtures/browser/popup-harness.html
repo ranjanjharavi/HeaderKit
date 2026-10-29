@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>ReqKit popup harness</title></head>
+<head><meta charset="UTF-8"><title>HeaderKit popup harness</title></head>
 <body>
   <script type="module">
       const previewParameters = new URLSearchParams(location.search);
@@ -23,7 +23,7 @@
             untilBrowserClose: false
           },
           headerRules: [
-            { id: 1, domain: 'example.com', headerName: 'X-ReqKit-Review', headerValue: 'enabled', enabled: true, profileId: 'default' },
+            { id: 1, domain: 'example.com', headerName: 'X-HeaderKit-Review', headerValue: 'enabled', enabled: true, profileId: 'default' },
             { id: 2, domain: 'example.com', headerName: 'X-Debug-Mode', headerValue: 'verbose', enabled: false, profileId: 'default' },
             { id: 3, domain: 'staging.example.com', headerName: 'X-Environment', headerValue: 'staging', enabled: true, profileId: 'staging' }
           ]
@@ -42,7 +42,7 @@
           grantedOrigins = ['https://api.example.com/*', 'https://qa.example.com/*'];
         }
       }
-      window.__REQKIT_CHROME_STUB__ = {
+      window.__HEADERKIT_CHROME_STUB__ = {
         runtime: {
           lastError: null,
           getURL(path) { return `/extension/${path}`; },
@@ -88,9 +88,9 @@
         }
       };
       if (parent !== window) {
-        parent.__REQKIT_CHROME_STUB__ = window.__REQKIT_CHROME_STUB__;
+        parent.__HEADERKIT_CHROME_STUB__ = window.__HEADERKIT_CHROME_STUB__;
       }
-      window.chrome = window.__REQKIT_CHROME_STUB__;
+      window.chrome = window.__HEADERKIT_CHROME_STUB__;
       const { installBackgroundHarness } = await import('../../helpers/background-harness.js');
       await installBackgroundHarness(window.chrome);
 
@@ -101,7 +101,7 @@
         .replace('<head>', '<head><base href="/extension/popup/">')
         .replace('href="../shared/styles/index.css"', `href="../shared/styles/index.css?v=${cacheBust}"`)
         .replace('href="popup.css"', `href="popup.css?v=${cacheBust}"`)
-        .replace('<script type="module" src="main.js"></' + 'script>', '<script>window.chrome = window.__REQKIT_CHROME_STUB__ || parent.__REQKIT_CHROME_STUB__;</' + `script><script type="module" src="main.js?v=${cacheBust}"></` + 'script>'));
+        .replace('<script type="module" src="main.js"></' + 'script>', '<script>window.chrome = window.__HEADERKIT_CHROME_STUB__ || parent.__HEADERKIT_CHROME_STUB__;</' + `script><script type="module" src="main.js?v=${cacheBust}"></` + 'script>'));
       document.close();
   </script>
 </body>

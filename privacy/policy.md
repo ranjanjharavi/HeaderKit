@@ -1,10 +1,10 @@
-# ReqKit Privacy Policy
+# HeaderKit Privacy Policy
 
 Last updated: October 29, 2026
 
-ReqKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.
+HeaderKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.
 
-## Data ReqKit handles
+## Data HeaderKit handles
 
 - **Active tab URL:** read locally when the popup opens. Match the current host.
 - **Toolbar badge URLs:** compare available tab URLs with rule hosts on navigation, tab selection, and rule, activation, or site-access changes. Access depends on site grants or temporary `activeTab` access. Never store URLs or send them to the developer.
@@ -18,7 +18,7 @@ No page-content reads or retained browsing history.
 
 Chrome sends active header values only to the rule's exact HTTPS host with site access. Match configured path/request-type scopes. Without optional scoping, match all paths and request types on that host.
 
-Destination services follow separate policies. Destination or intermediary logs may retain header values. ReqKit sends no data to its developer.
+Destination services follow separate policies. Destination or intermediary logs may retain header values. HeaderKit sends no data to its developer.
 
 Export/import behavior:
 
@@ -31,9 +31,9 @@ The badge reflects rule and activation state. Use `Alt+Shift+X` to pause or resu
 
 ## Retention and deletion
 
-- Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or ReqKit is uninstalled.
+- Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or HeaderKit is uninstalled.
 - Delete a profile to remove its rules.
-- Delete downloaded backups separately. Clearing extension data or uninstalling ReqKit does not remove those files.
+- Delete downloaded backups separately. Clearing extension data or uninstalling HeaderKit does not remove those files.
 - Attempt to release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile. Broader grants may remain.
 - Review or revoke grants through **Site access**. Keep affected rules saved. Stop applying them unless another grant still covers the host.
 
@@ -41,8 +41,8 @@ The badge reflects rule and activation state. Use `Alt+Shift+X` to pause or resu
 
 **Site access** means permission to apply rules on selected HTTPS hosts.
 
-- `activeTab`: read the active tab URL after invoking ReqKit. Identify the current host and support badge updates.
-- `alarms`: stop timed activations with ReqKit pages closed.
+- `activeTab`: read the active tab URL after invoking HeaderKit. Identify the current host and support badge updates.
+- `alarms`: stop timed activations with HeaderKit pages closed.
 - `storage`: save profiles, rules, activation settings, and consent in the current Chrome profile.
 - `declarativeNetRequestWithHostAccess`: apply request headers on approved HTTPS hosts. No script injection or response-body reads.
 - Optional `https://*/*`: request exact-host access on save, resume, **Grant**, or profile switch. No all-site access by default. Review or revoke grants through **Site access**.
@@ -65,4 +65,4 @@ Information received from Google APIs follows the Chrome Web Store User Data Pol
 
 ## Contact
 
-[Report a privacy concern or request support](https://github.com/ranjanjharavi/ReqKit/issues).
+[Report a privacy concern or request support](https://github.com/ranjanjharavi/HeaderKit/issues).

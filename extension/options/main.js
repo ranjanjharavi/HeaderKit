@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {
     console.error('Could not start the rule manager.', error);
     const status = document.getElementById('privacyConsentStatus');
-    status.textContent = 'ReqKit could not start. Reload this page and try again.';
+    status.textContent = 'HeaderKit could not start. Reload this page and try again.';
   });
 });
 

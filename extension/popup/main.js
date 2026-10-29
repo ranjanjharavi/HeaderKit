@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {
     console.error('Could not start the popup.', error);
     const status = document.getElementById('privacyConsentStatus');
-    status.textContent = 'ReqKit could not start. Close the popup and try again.';
+    status.textContent = 'HeaderKit could not start. Close the popup and try again.';
   });
 });
 

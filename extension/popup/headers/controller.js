@@ -65,7 +65,7 @@ export const { refresh: refreshFromStorage, schedule: scheduleRefresh } = create
 
 function openManager() {
   openOptionsPage().catch((error) => {
-    console.error('Could not open the ReqKit manager.', error);
+    console.error('Could not open the HeaderKit manager.', error);
   });
 }
 

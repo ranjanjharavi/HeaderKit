@@ -12,7 +12,7 @@ const sharedRuleRenderSource = readSource('extension/shared/ui/rule-render.js');
 
 test('rule manager separates active setup, rules, and profile administration', () => {
   assert.match(optionsMarkup, /id="active-setup"/);
-  assert.match(optionsMarkup, /Accept to open ReqKit\. Existing rules and site access are unchanged/);
+  assert.match(optionsMarkup, /Accept to open HeaderKit\. Existing rules and site access are unchanged/);
   assert.match(optionsMarkup, /id="profileTabs"[^>]*role="tablist"/);
   assert.match(optionsMarkup, /id="profilePanel"[^>]*role="tabpanel"[^>]*aria-labelledby="profileTab-0"/);
   assert.doesNotMatch(optionsMarkup, /activeProfileSelect|profileFilterSelect/);
@@ -53,7 +53,7 @@ test('site access overview audits grants and revokes without deleting rules', ()
   assert.match(siteAccessControllerSource, /removeOriginPermission\(origin\)/);
   assert.match(siteAccessControllerSource, /confirmDestructiveAction/);
   assert.match(siteAccessControllerSource, /Saved rules were kept/);
-  assert.match(optionsMarkup, /Review ReqKit's site access grants/);
+  assert.match(optionsMarkup, /Review HeaderKit's site access grants/);
   assert.match(siteAccessControllerSource, /Broad site access/);
   assert.match(siteAccessControllerSource, /Can cover rules for any HTTPS host/);
   assert.match(siteAccessControllerSource, /Host-specific site access/);

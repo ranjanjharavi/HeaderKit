@@ -88,7 +88,7 @@ export function getMissingProfileOrigins(rules, profileId, grantedOrigins) {
 }
 
 /**
- * Rules ReqKit can actually apply. Chrome already refuses to act on a host
+ * Rules HeaderKit can actually apply. Chrome already refuses to act on a host
  * without access, so filtering here keeps the badge and the rule set honest
  * rather than counting rules that silently do nothing.
  */

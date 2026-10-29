@@ -21,12 +21,12 @@ async function writeExtensionPrivacyPage(target, renderedBody) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReqKit Privacy Policy</title>
+  <title>HeaderKit Privacy Policy</title>
   <style>${getExtensionStyles()}</style>
 </head>
 <body>
   <main>
-    <header><img src="../icons/reqkit-128.png" width="64" height="64" alt="ReqKit"><div><span class="eyebrow">ReqKit</span><span>Request-header privacy</span></div></header>
+    <header><img src="../icons/headerkit-128.png" width="64" height="64" alt="HeaderKit"><div><span class="eyebrow">HeaderKit</span><span>Request-header privacy</span></div></header>
     <span class="purpose-badge">Built for API and web-environment testing</span>
     ${renderedBody}
   </main>
@@ -45,29 +45,29 @@ async function writeDocsPrivacyPage(target, renderedBody) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Review local storage, request headers, and Chrome permissions.">
   <meta name="theme-color" content="#eff6ff">
-  <meta property="og:title" content="ReqKit Privacy Policy">
+  <meta property="og:title" content="HeaderKit Privacy Policy">
   <meta property="og:description" content="Local data, exact-host access, and plaintext header values.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/privacy-policy.html">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-headers-screenshot.png">
-  <meta property="og:image:alt" content="ReqKit showing exact-host request-header rules">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/ReqKit/privacy-policy.html">
-  <link rel="icon" type="image/png" href="assets/reqkit-128.png">
+  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
+  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-headers-screenshot.png">
+  <meta property="og:image:alt" content="HeaderKit showing exact-host request-header rules">
+  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
+  <link rel="icon" type="image/png" href="assets/headerkit-128.png">
   <link rel="stylesheet" href="assets/site.css">
-  <title>Privacy Policy — ReqKit</title>
+  <title>Privacy Policy — HeaderKit</title>
 </head>
 <body>
   <header class="site-header">
     <nav class="nav-shell" aria-label="Primary navigation">
-      <a class="brand" href="./" aria-label="ReqKit home">
-        <img src="assets/reqkit-128.png" width="38" height="38" alt="">
-        <span>ReqKit</span>
+      <a class="brand" href="./" aria-label="HeaderKit home">
+        <img src="assets/headerkit-128.png" width="38" height="38" alt="">
+        <span>HeaderKit</span>
       </a>
       <div class="nav-links">
         <a href="./">Home</a>
         <a href="index.html#features">Features</a>
         <a aria-current="page" href="privacy-policy.html">Privacy</a>
-        <a class="nav-github" href="https://github.com/ranjanjharavi/ReqKit">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="nav-github" href="https://github.com/ranjanjharavi/HeaderKit">GitHub <span aria-hidden="true">↗</span></a>
       </div>
     </nav>
   </header>
@@ -95,7 +95,7 @@ async function writeDocsPrivacyPage(target, renderedBody) {
       <aside class="privacy-toc">
         <strong>On this page</strong>
         <nav aria-label="Privacy policy sections">
-          <a href="#data-reqkit-handles">Data handled</a>
+          <a href="#data-headerkit-handles">Data handled</a>
           <a href="#how-data-is-used-and-transmitted">Use &amp; transmission</a>
           <a href="#retention-and-deletion">Retention</a>
           <a href="#permissions">Permissions</a>
@@ -112,9 +112,9 @@ async function writeDocsPrivacyPage(target, renderedBody) {
 
   <footer class="site-footer">
     <div class="footer-shell">
-      <a class="brand" href="./"><img src="assets/reqkit-128.png" width="32" height="32" alt=""><span>ReqKit</span></a>
+      <a class="brand" href="./"><img src="assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
       <p>Test API and web environments.</p>
-      <div class="footer-links"><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/ReqKit/issues">Support</a><a href="https://github.com/ranjanjharavi/ReqKit">Source</a></div>
+      <div class="footer-links"><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a><a href="https://github.com/ranjanjharavi/HeaderKit">Source</a></div>
     </div>
   </footer>
 </body>

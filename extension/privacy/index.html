@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReqKit Privacy Policy</title>
+  <title>HeaderKit Privacy Policy</title>
   <style>
 :root{color-scheme:light;--blue:#2563eb;--blue-deep:#1d4ed8;--blue-soft:#eff6ff;--border:#bfdbfe;--ink:#0f172a;--ink-soft:#334155;--muted:#64748b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--blue-soft)}
 *{box-sizing:border-box}body{margin:0;padding:40px 20px;background:linear-gradient(145deg,#eaf3ff,#f8fbff 48%,#eaf2ff)}
@@ -18,12 +18,12 @@ p,li{color:var(--ink-soft);font-size:15px;line-height:1.65}li+li{margin-top:8px}
 </head>
 <body>
   <main>
-    <header><img src="../icons/reqkit-128.png" width="64" height="64" alt="ReqKit"><div><span class="eyebrow">ReqKit</span><span>Request-header privacy</span></div></header>
+    <header><img src="../icons/headerkit-128.png" width="64" height="64" alt="HeaderKit"><div><span class="eyebrow">HeaderKit</span><span>Request-header privacy</span></div></header>
     <span class="purpose-badge">Built for API and web-environment testing</span>
-    <h1>ReqKit Privacy Policy</h1>
+    <h1>HeaderKit Privacy Policy</h1>
     <p>Last updated: October 29, 2026</p>
-    <p>ReqKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.</p>
-    <h2 id="data-reqkit-handles">Data ReqKit handles</h2>
+    <p>HeaderKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.</p>
+    <h2 id="data-headerkit-handles">Data HeaderKit handles</h2>
     <ul>
     <li><strong>Active tab URL:</strong> read locally when the popup opens. Match the current host.</li>
     <li><strong>Toolbar badge URLs:</strong> compare available tab URLs with rule hosts on navigation, tab selection, and rule, activation, or site-access changes. Access depends on site grants or temporary <code>activeTab</code> access. Never store URLs or send them to the developer.</li>
@@ -34,7 +34,7 @@ p,li{color:var(--ink-soft);font-size:15px;line-height:1.65}li+li{margin-top:8px}
     <p>No page-content reads or retained browsing history.</p>
     <h2 id="how-data-is-used-and-transmitted">How data is used and transmitted</h2>
     <p>Chrome sends active header values only to the rule&#039;s exact HTTPS host with site access. Match configured path/request-type scopes. Without optional scoping, match all paths and request types on that host.</p>
-    <p>Destination services follow separate policies. Destination or intermediary logs may retain header values. ReqKit sends no data to its developer.</p>
+    <p>Destination services follow separate policies. Destination or intermediary logs may retain header values. HeaderKit sends no data to its developer.</p>
     <p>Export/import behavior:</p>
     <ul>
     <li>Export saved profiles and rules to local JSON. Include full, unencrypted values, even when masked in the interface.</li>
@@ -45,17 +45,17 @@ p,li{color:var(--ink-soft);font-size:15px;line-height:1.65}li+li{margin-top:8px}
     <p>The badge reflects rule and activation state. Use <code>Alt+Shift+X</code> to pause or resume all rules without opening the popup. Keep saved rules and grants unchanged.</p>
     <h2 id="retention-and-deletion">Retention and deletion</h2>
     <ul>
-    <li>Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or ReqKit is uninstalled.</li>
+    <li>Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or HeaderKit is uninstalled.</li>
     <li>Delete a profile to remove its rules.</li>
-    <li>Delete downloaded backups separately. Clearing extension data or uninstalling ReqKit does not remove those files.</li>
+    <li>Delete downloaded backups separately. Clearing extension data or uninstalling HeaderKit does not remove those files.</li>
     <li>Attempt to release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile. Broader grants may remain.</li>
     <li>Review or revoke grants through <strong>Site access</strong>. Keep affected rules saved. Stop applying them unless another grant still covers the host.</li>
     </ul>
     <h2 id="permissions">Permissions</h2>
     <p><strong>Site access</strong> means permission to apply rules on selected HTTPS hosts.</p>
     <ul>
-    <li><code>activeTab</code>: read the active tab URL after invoking ReqKit. Identify the current host and support badge updates.</li>
-    <li><code>alarms</code>: stop timed activations with ReqKit pages closed.</li>
+    <li><code>activeTab</code>: read the active tab URL after invoking HeaderKit. Identify the current host and support badge updates.</li>
+    <li><code>alarms</code>: stop timed activations with HeaderKit pages closed.</li>
     <li><code>storage</code>: save profiles, rules, activation settings, and consent in the current Chrome profile.</li>
     <li><code>declarativeNetRequestWithHostAccess</code>: apply request headers on approved HTTPS hosts. No script injection or response-body reads.</li>
     <li>Optional <code>https://*/*</code>: request exact-host access on save, resume, <strong>Grant</strong>, or profile switch. No all-site access by default. Review or revoke grants through <strong>Site access</strong>.</li>
@@ -69,7 +69,7 @@ p,li{color:var(--ink-soft);font-size:15px;line-height:1.65}li+li{margin-top:8px}
     <p>No data sale or rental. No transfers to the developer, advertisers, or data brokers. Send configured header values only to selected destinations as described above. No advertising, creditworthiness, or unrelated uses.</p>
     <p>Information received from Google APIs follows the Chrome Web Store User Data Policy, including Limited Use requirements.</p>
     <h2 id="contact">Contact</h2>
-    <p><a href="https://github.com/ranjanjharavi/ReqKit/issues">Report a privacy concern or request support</a>.</p>
+    <p><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Report a privacy concern or request support</a>.</p>
   </main>
 </body>
 </html>

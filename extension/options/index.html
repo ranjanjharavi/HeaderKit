@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReqKit — Rule manager</title>
+  <title>HeaderKit — Rule manager</title>
   <link rel="stylesheet" href="../shared/styles/index.css">
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <section id="privacyGate" class="privacy-gate" aria-labelledby="privacyGateTitle">
-    <img class="privacy-gate-icon" src="../icons/reqkit-128.png" width="72" height="72" alt="ReqKit">
-    <h1 id="privacyGateTitle">Review how ReqKit handles your data</h1>
-    <p>ReqKit reads tab URLs locally for the current host and toolbar badges, including in the background on sites you grant access to. URLs are not stored or sent to the developer.</p>
+    <img class="privacy-gate-icon" src="../icons/headerkit-128.png" width="72" height="72" alt="HeaderKit">
+    <h1 id="privacyGateTitle">Review HeaderKit data handling</h1>
+    <p>HeaderKit reads tab URLs locally for the current host and toolbar badges, including background updates on approved sites. Never store URLs or send them to the developer.</p>
     <p>Profiles, settings, and header values are stored unencrypted in this Chrome profile. Anyone with access to its files may be able to read them.</p>
-    <p>ReqKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site access; destination or intermediary logs may include them.</p>
+    <p>HeaderKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site access. Destination or intermediary logs may include them.</p>
     <a class="privacy-policy-link" href="../privacy/index.html">Read the privacy policy</a>
-    <p>Accept to open ReqKit. Existing rules and site access are unchanged.</p>
+    <p>Accept to open HeaderKit. Existing rules and site access are unchanged.</p>
     <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
     <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
   </section>
@@ -23,7 +23,7 @@
   <div id="appShell" class="shell options-shell" hidden>
     <header class="options-header">
       <div class="options-header-brand">
-        <img src="../icons/reqkit-48.png" width="32" height="32" alt="">
+        <img src="../icons/headerkit-48.png" width="32" height="32" alt="">
         <div class="options-header-copy">
           <h1>Rule manager</h1>
           <p>Profiles, timing, and request-header rules.</p>
@@ -88,7 +88,7 @@
                   <div class="field">
                     <label for="domain">Exact HTTPS host</label>
                     <input type="text" id="domain" placeholder="https://api.example.com" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                    <p class="helper-text">ReqKit applies this rule only to the exact HTTPS host you enter. Use optional request scoping below to narrow which requests receive the header.</p>
+                    <p class="helper-text">HeaderKit applies rules only to the exact HTTPS host. Narrow requests through optional scoping.</p>
                   </div>
 
                   <details id="requestScopeDetails" class="request-scope-options">
@@ -113,7 +113,7 @@
                   <div class="header-fields-row">
                     <div class="field">
                       <label for="headerName">Header name</label>
-                      <input type="text" id="headerName" data-header-name placeholder="X-ReqKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
+                      <input type="text" id="headerName" data-header-name placeholder="X-HeaderKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
                     </div>
 
                     <div class="field">
@@ -131,7 +131,7 @@
                     <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.25 13 3v3.85c0 3.38-2.08 6.43-5 7.9-2.92-1.47-5-4.52-5-7.9V3l5-1.75Zm0 1.59L4.5 4.07v2.78c0 2.58 1.47 4.99 3.5 6.21 2.03-1.22 3.5-3.63 3.5-6.21V4.07L8 2.84Zm-.75 2.41h1.5V8h-1.5V5.25Zm0 3.75h1.5v1.5h-1.5V9Z"/></svg>
                     <div>
                       <strong>Site access needed for <code id="siteAccessPreflightHost"></code></strong>
-                      <p>Chrome will ask you to grant ReqKit site access to this exact HTTPS host. No other sites are included in the request.</p>
+                      <p>Grant HeaderKit site access through Chrome. Include only this exact HTTPS host.</p>
                     </div>
                   </div>
 
@@ -196,7 +196,7 @@
         <header class="profile-dialog-head">
           <div>
             <h2 id="siteAccessTitle">Site access</h2>
-            <p id="siteAccessDescription">Review ReqKit's site access grants. Revoking a grant keeps rules saved but stops them from applying unless another grant still covers the host. A broad grant can cover rules listed under exact hosts.</p>
+            <p id="siteAccessDescription">Review HeaderKit site access grants. Revoking a grant keeps rules saved but stops them from applying unless another grant still covers the host. A broad grant can cover rules listed under exact hosts.</p>
           </div>
           <button id="closeSiteAccessBtn" class="dialog-close-btn" type="button" aria-label="Close site access overview">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z"/></svg>
@@ -220,7 +220,7 @@
         <header class="profile-dialog-head">
           <div>
             <h2 id="backupTitle">Export / import</h2>
-            <p id="backupDescription">Back up all profiles and rules, or add them from another ReqKit installation.</p>
+            <p id="backupDescription">Back up all profiles and rules, or add them from another HeaderKit installation.</p>
           </div>
           <button id="closeBackupBtn" class="dialog-close-btn" type="button" aria-label="Close export and import">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z"/></svg>
@@ -238,7 +238,7 @@
             <h3 id="backupImportTitle">Import as new profiles</h3>
             <p id="backupImportHelp">Existing profiles stay unchanged. Imported rules start paused, even if site access is already granted. Review and turn them on when ready.</p>
             <div class="field">
-              <label for="backupFile">ReqKit JSON backup</label>
+              <label for="backupFile">HeaderKit JSON backup</label>
               <input id="backupFile" type="file" accept=".json,application/json" aria-describedby="backupFileHelp backupStatus" aria-controls="backupPreview">
               <p id="backupFileHelp" class="backup-file-help">Maximum 5 MiB. Matching profile names get an “imported” suffix.</p>
             </div>

@@ -1,5 +1,5 @@
 {
-  "name": "reqkit-extension",
+  "name": "headerkit-extension",
   "private": true,
   "type": "module",
   "scripts": {

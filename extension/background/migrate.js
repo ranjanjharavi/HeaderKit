@@ -31,10 +31,6 @@ const MIGRATION_STEPS = [
     }
   },
   {
-    version: 3,
-    apply: (state) => state
-  },
-  {
     version: 4,
     apply(state) {
       return {

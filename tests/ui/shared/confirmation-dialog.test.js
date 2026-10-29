@@ -44,7 +44,7 @@ function createDialogDocument() {
   };
 }
 
-test('ReqKit confirmation resolves only after the destructive action is confirmed', async () => {
+test('HeaderKit confirmation resolves only after the destructive action is confirmed', async () => {
   const originalDocument = globalThis.document;
   const fakeDocument = createDialogDocument();
   globalThis.document = fakeDocument;
@@ -68,7 +68,7 @@ test('ReqKit confirmation resolves only after the destructive action is confirme
   }
 });
 
-test('ReqKit confirmation resolves false when cancelled', async () => {
+test('HeaderKit confirmation resolves false when cancelled', async () => {
   const originalDocument = globalThis.document;
   const fakeDocument = createDialogDocument();
   globalThis.document = fakeDocument;

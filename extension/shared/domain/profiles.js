@@ -71,10 +71,6 @@ export function findProfile(profiles, id) {
   return (Array.isArray(profiles) ? profiles : []).find((profile) => profile.id === resolvedId) || null;
 }
 
-export function hasProfile(profiles, id) {
-  return Boolean(findProfile(profiles, id));
-}
-
 export function getProfileName(profiles, id) {
   return findProfile(profiles, id)?.name || DEFAULT_PROFILE_NAME;
 }
@@ -99,13 +95,6 @@ export function cloneRulesIntoProfile(rules, sourceProfileId, targetProfileId, n
   return (Array.isArray(rules) ? rules : [])
     .filter((rule) => resolveProfileId(rule.profileId) === sourceId)
     .map((rule) => ({ ...rule, id: id++, profileId: resolveProfileId(targetProfileId) }));
-}
-
-export function removeRulesFromProfile(rules, profileId) {
-  const sourceId = resolveProfileId(profileId);
-
-  return (Array.isArray(rules) ? rules : [])
-    .filter((rule) => resolveProfileId(rule.profileId) !== sourceId);
 }
 
 export function countRulesInProfile(rules, profileId) {

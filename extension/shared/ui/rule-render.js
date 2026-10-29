@@ -114,7 +114,7 @@ function renderAccessNotice(rule) {
   return `
     <div class="rule-access-notice" role="note">
       ${ICON_WARNING}
-      <span>ReqKit doesn't have site access to <code>${escapeHtml(rule.domain)}</code>, so this rule isn't being applied.</span>
+      <span>HeaderKit doesn't have site access to <code>${escapeHtml(rule.domain)}</code>, so this rule isn't being applied.</span>
       <button class="rule-access-btn" type="button" data-rule-action="grant" data-id="${rule.id}">Grant</button>
     </div>
   `;

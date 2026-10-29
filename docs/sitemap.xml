@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://ranjanjharavi.github.io/ReqKit/</loc></url>
-  <url><loc>https://ranjanjharavi.github.io/ReqKit/guides/</loc></url>
-  <url><loc>https://ranjanjharavi.github.io/ReqKit/guides/modify-request-headers-chrome.html</loc></url>
-  <url><loc>https://ranjanjharavi.github.io/ReqKit/guides/request-header-profiles.html</loc></url>
-  <url><loc>https://ranjanjharavi.github.io/ReqKit/guides/temporary-request-headers.html</loc></url>
-  <url><loc>https://ranjanjharavi.github.io/ReqKit/privacy-policy.html</loc></url>
+  <url><loc>https://ranjanjharavi.github.io/HeaderKit/</loc></url>
+  <url><loc>https://ranjanjharavi.github.io/HeaderKit/guides/</loc></url>
+  <url><loc>https://ranjanjharavi.github.io/HeaderKit/guides/modify-request-headers-chrome.html</loc></url>
+  <url><loc>https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html</loc></url>
+  <url><loc>https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html</loc></url>
+  <url><loc>https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html</loc></url>
 </urlset>

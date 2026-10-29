@@ -113,6 +113,6 @@ test('generated policy pages retain the source date and material disclosures', (
     assert.doesNotMatch(source, /Header values are visible while you edit/);
     assert.match(source, /edit its last rule to use another host/);
     assert.match(source, /Alt\+Shift\+X/);
-    assert.doesNotMatch(source, /only after you open ReqKit|These protections do not prevent/);
+    assert.doesNotMatch(source, /only after you open HeaderKit|These protections do not prevent/);
   }
 });

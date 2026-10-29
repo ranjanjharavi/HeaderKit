@@ -114,7 +114,7 @@ test('a rule is granted only when its own host is', () => {
   assert.equal(isRuleGranted(rules[0], new Set()), false);
 });
 
-test('filtering keeps only rules ReqKit can actually apply', () => {
+test('filtering keeps only rules HeaderKit can actually apply', () => {
   const granted = new Set(['https://api.example.com/*']);
 
   assert.deepEqual(filterGrantedRules(rules, granted).map((rule) => rule.id), [1, 2]);

@@ -46,7 +46,7 @@ async function toggleMaster(forceOn = false) {
     );
   } catch (error) {
     console.error(error);
-    showStatus('headerStatus', error.message || 'Could not change the ReqKit switch.', 'error');
+    showStatus('headerStatus', error.message || 'Could not change the HeaderKit switch.', 'error');
   } finally {
     controls.forEach((control) => {
       control.disabled = false;
