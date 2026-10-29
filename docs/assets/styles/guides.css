@@ -1,43 +1,191 @@
-/* Task guides share the site's typography, surfaces, and link colors. */
-::selection { background: #bfdbfe; color: #0b1220; }
-.skip-link { position: fixed; top: 10px; left: 10px; z-index: 100; padding: 12px 18px; background: var(--blue-deep); color: white; transform: translateY(-160%); }
-.skip-link:focus { transform: translateY(0); }
-.source-install { margin-top: 28px; color: var(--ink-soft); }
-.source-install summary { width: fit-content; padding: 10px 0; cursor: pointer; font-weight: 650; }
-.source-install p { max-width: 72ch; line-height: 1.7; }
-.source-install a, .faq-section a, .guide-prose a { color: var(--blue-deep); text-decoration: underline; text-underline-offset: 3px; }
-.source-install summary:focus-visible, .guide-prose summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
-.guide-list { display: grid; }
-.guide-list > a { display: block; padding: 26px 0; border-bottom: 1px solid var(--border); }
-.guide-list > a:first-child { border-top: 1px solid var(--border); }
-.guide-list h3 { margin: 0 0 8px; color: var(--blue-deep); font-size: 22px; line-height: 1.35; letter-spacing: -0.02em; }
-.guide-list p { margin: 0; color: var(--ink-soft); line-height: 1.7; }
-.guide-list a:hover h3 { text-decoration: underline; text-underline-offset: 4px; }
-.faq-section { max-width: 780px; }
-.faq-section h2 { margin: 0 0 32px; font-size: clamp(30px, 4vw, 44px); letter-spacing: -0.03em; }
-.faq-section h3 { margin: 28px 0 8px; font-size: 20px; }
-.faq-section p { margin: 0; color: var(--ink-soft); line-height: 1.75; }
-.guide-main { padding-block: 58px 80px; }
-.guide-main .breadcrumb { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 32px; color: var(--blue-deep); font-size: 14px; }
-.guide-main h1 { max-width: 23ch; margin: 0 0 24px; font-size: clamp(34px, 4.4vw, 56px); line-height: 1.1; letter-spacing: -0.035em; text-wrap: balance; }
-.guide-intro { max-width: 70ch; margin: 0 0 28px; color: var(--ink-soft); font-size: 18px; line-height: 1.75; }
-.guide-prose { max-width: 74ch; margin: 44px auto 0; font-size: 16px; line-height: 1.8; }
-.guide-prose h2 { margin: 44px 0 12px; font-size: 28px; line-height: 1.25; letter-spacing: -0.025em; }
-.guide-prose h3 { margin: 28px 0 8px; font-size: 20px; line-height: 1.4; }
-.guide-prose p { margin: 0 0 18px; color: var(--ink-soft); }
-.guide-prose ol, .guide-prose ul { padding-left: 24px; color: var(--ink-soft); }
-.guide-prose li { padding-left: 6px; margin-block: 12px; }
-.guide-prose figure { margin: 32px 0; }
-.guide-prose figure img { width: 100%; height: auto; border-radius: 12px; }
-.guide-prose figcaption { margin-top: 12px; color: var(--muted); font-size: 14px; line-height: 1.6; }
-.guide-prose table { width: 100%; margin: 22px 0; border-collapse: collapse; font-size: 14px; }
-.guide-prose th, .guide-prose td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
-.guide-prose th { color: var(--ink); background: var(--blue-soft); }
-.guide-prose .guide-next { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
-@media (max-width: 720px) {
-  .guide-main { padding-block: 38px 60px; }
-  .guide-intro { font-size: 16px; }
-  .guide-list h3 { font-size: 20px; }
-  .guide-prose { margin-top: 32px; }
-  .guide-prose h2 { font-size: 25px; }
+.guide-main {
+  padding-block: 40px 80px;
+}
+.guide-header {
+  max-width: 900px;
+  margin-bottom: 48px;
+}
+.guide-header h1 {
+  max-width: 850px;
+  font-size: clamp(36px, 4.5vw, 56px);
+  line-height: 1.08;
+}
+.guide-intro {
+  max-width: 680px;
+  margin-top: 24px;
+  color: var(--ink-soft);
+  font-size: 18px;
+}
+.guide-header .button {
+  margin-top: 24px;
+}
+.guide-index-header {
+  max-width: 800px;
+  margin-inline: auto;
+  padding-block: 32px 16px;
+  text-align: center;
+}
+.guide-index-header .guide-intro {
+  margin-inline: auto;
+}
+.guide-list {
+  display: grid;
+}
+.guide-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: center;
+  gap: 64px;
+  padding-block: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.guide-card:first-child {
+  border-top: 1px solid var(--border);
+}
+.guide-card:hover h2, .guide-card:hover h3 {
+  color: var(--blue-deep);
+}
+.guide-card:hover .guide-arrow {
+  transform: translateX(4px);
+}
+.guide-card .eyebrow {
+  margin-bottom: 16px;
+}
+.guide-card h2, .guide-card h3 {
+  max-width: 600px;
+  font-size: 26px;
+  line-height: 1.25;
+  letter-spacing: -.03em;
+}
+.guide-card p {
+  max-width: 600px;
+  margin-top: 12px;
+  font-size: 15px;
+}
+.guide-card img {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.guide-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  color: var(--blue-deep);
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 200ms cubic-bezier(.22, 1, .36, 1);
+}
+.guide-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  align-items: start;
+  gap: 64px;
+}
+.article-toc {
+  position: sticky;
+  top: 32px;
+  padding-top: 8px;
+}
+.article-toc strong {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font: 11px/1.5 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.article-toc nav {
+  display: grid;
+  gap: 8px;
+}
+.article-toc a {
+  display: block;
+  padding-block: 8px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.article-toc a:hover {
+  color: var(--blue-deep);
+}
+.guide-prose {
+  min-width: 0;
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 16px;
+  line-height: 1.8;
+}
+.guide-prose h2 {
+  margin: 40px 0 16px;
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+  scroll-margin-top: 32px;
+}
+.guide-prose > h2:first-child {
+  margin-top: 0;
+}
+.guide-prose p {
+  margin-bottom: 20px;
+}
+.guide-prose ul, .guide-prose ol {
+  padding-left: 24px;
+  color: var(--ink-soft);
+}
+.guide-prose li {
+  margin-block: 12px;
+  padding-left: 4px;
+}
+.guide-prose a {
+  color: var(--blue-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guide-prose a:hover {
+  text-decoration-thickness: 2px;
+}
+.guide-prose figure {
+  margin-block: 32px;
+}
+.guide-prose figure img {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.guide-prose figcaption {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.guide-prose table {
+  width: 100%;
+  margin-block: 24px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.guide-prose th, .guide-prose td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.guide-prose th {
+  background: var(--blue-soft);
+}
+.guide-next {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.guide-next h2 {
+  margin-top: 0;
+}
+.guide-next p:last-child {
+  margin-bottom: 0;
 }

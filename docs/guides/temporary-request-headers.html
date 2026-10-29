@@ -1,55 +1,216 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Automatically turn off temporary test headers in Chrome | HeaderKit</title>
-  <meta name="description" content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.">
-  <meta name="theme-color" content="#eff6ff">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html">
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="Automatically turn off temporary test headers in Chrome | HeaderKit">
-  <meta property="og:description" content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
-  <link rel="icon" type="image/png" href="../assets/headerkit-128.png">
-  <link rel="stylesheet" href="../assets/site.css">
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Automatically turn off temporary test headers in Chrome", "description": "Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.", "url": "https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "HeaderKit", "url": "https://ranjanjharavi.github.io/HeaderKit/"}}</script>
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header"><nav class="nav-shell" aria-label="Primary navigation">
-    <a class="brand" href="../"><img src="../assets/headerkit-128.png" width="38" height="38" alt=""><span>HeaderKit</span></a>
-    <div class="nav-links"><a href="./" aria-current="page">Guides</a><a href="../privacy-policy.html">Privacy</a><a class="nav-github" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Get HeaderKit</a></div>
-  </nav></header>
-  <main id="main" class="guide-main section-shell">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">HeaderKit</a><span aria-hidden="true">/</span><a href="./">Guides</a></nav>
-    <h1>Automatically turn off temporary test headers in Chrome</h1>
-    <p class="guide-intro">Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.</p>
-    <a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
-    <article class="guide-prose">
-<h2>Choose how long a profile applies</h2>
-<p>Stop temporary headers automatically. Keep the rules saved.</p>
-<ol><li>Open the manager and select a profile.</li><li>Choose <strong>1 hour</strong>, <strong>8 hours</strong>, <strong>Chrome closes</strong>, or manual shutoff.</li><li>Enable the master switch and required rules. Confirm exact-host access.</li><li>Continue testing. Chrome alarms enforce timed expiry with HeaderKit pages closed.</li></ol>
-<table><thead><tr><th scope="col">Duration</th><th scope="col">When headers stop applying</th></tr></thead><tbody>
-<tr><td>1 hour</td><td>One hour after arming.</td></tr><tr><td>8 hours</td><td>Eight hours after arming.</td></tr><tr><td>Chrome closes</td><td>At session end. Closing one window may leave Chrome running.</td></tr><tr><td>Manual shutoff</td><td>On pausing the profile or all rules.</td></tr></tbody></table>
-<figure><img src="../assets/headerkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" alt="HeaderKit activation controls with a selected one-hour timer and remaining time"><figcaption>Review duration beside the active profile. Treat example data as illustrative.</figcaption></figure>
-<h2>What happens when the timer ends?</h2>
-<p>Park the active profile at expiry. Keep names, values, scopes, and On/Paused states saved. Resume as needed and choose a fresh timer.</p>
-<p>Switch profiles to clear the timer. Choose a duration to restart it. Check the active profile and remaining time.</p>
-<h2>Pause everything immediately</h2>
-<p>Use the master switch or press <code>Alt+Shift+X</code>. Check shortcut availability in Chrome settings. Expect an <code>off</code> badge while rules are held back. Resume previous rule states without enabling individually paused rules.</p>
-<h2>Review site access separately</h2>
-<p>Stop rules with the timer. Keep rules and grants saved. Open <strong>Site access</strong> to revoke grants. Keep affected rules saved and inactive unless another grant covers the host.</p>
-<figure><img src="../assets/headerkit-site-access-screenshot.png" width="1280" height="800" loading="lazy" alt="HeaderKit Site access dialog listing exact-host grants, covered rule counts, and revoke controls"><figcaption>Review rule state and site access separately.</figcaption></figure>
-<aside class="guide-next" aria-label="Related guides"><h2>Continue testing</h2><ul><li><a href="modify-request-headers-chrome.html">Modify request headers for an HTTPS API in Chrome</a></li><li><a href="request-header-profiles.html">Switch staging and QA request headers with profiles</a></li></ul><p>Review the <a href="../privacy-policy.html">privacy policy</a> or <a href="https://github.com/ranjanjharavi/HeaderKit/issues">report a problem</a>.</p></aside></article>
-  </main>
-  <footer class="site-footer"><div class="footer-shell">
-    <a class="brand" href="../"><img src="../assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
-    <p>Request-header tooling for API and web-environment testing.</p>
-    <div class="footer-links"><a href="./">Guides</a><a href="../privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a></div>
-  </div></footer>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automatically turn off temporary test headers in Chrome | HeaderKit</title>
+    <meta
+      name="description"
+      content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests." />
+    <meta name="theme-color" content="#f4f7fd" />
+    <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Automatically turn off temporary test headers in Chrome | HeaderKit" />
+    <meta
+      property="og:description"
+      content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests." />
+    <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html" />
+    <meta
+      property="og:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png" />
+    <link rel="icon" type="image/png" href="../assets/headerkit-128.png" />
+    <link rel="stylesheet" href="../assets/site.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Automatically turn off temporary test headers in Chrome",
+        "description": "Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.",
+        "url": "https://ranjanjharavi.github.io/HeaderKit/guides/temporary-request-headers.html",
+        "inLanguage": "en",
+        "about": {
+          "@type": "SoftwareApplication",
+          "name": "HeaderKit",
+          "url": "https://ranjanjharavi.github.io/HeaderKit/"
+        }
+      }
+    </script>
+    <meta name="twitter:title" content="Automatically turn off temporary test headers in Chrome | HeaderKit" />
+    <meta
+      name="twitter:description"
+      content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests." />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav-shell" aria-label="Primary navigation">
+        <a class="brand" href="../" aria-label="HeaderKit home">
+          <img src="../assets/headerkit-128.png" width="34" height="34" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <div class="nav-links">
+          <a class="nav-feature" href="../#features">Features</a>
+          <a href="./" aria-current="location">Guides</a>
+          <a href="../privacy-policy.html">Privacy</a>
+          <a class="nav-source" href="https://github.com/ranjanjharavi/HeaderKit">
+            Source
+            <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <use href="../assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+    <main id="main" class="guide-main section-shell">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../">HeaderKit</a>
+        <span aria-hidden="true">/</span>
+        <a href="./">Guides</a>
+      </nav>
+      <header class="guide-header">
+        <span class="eyebrow">03 / Automatic expiry</span>
+        <h1>Automatically turn off temporary test headers in Chrome</h1>
+        <p class="guide-intro">
+          Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.
+        </p>
+        <a class="button" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">
+          Add to Chrome
+          <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <use href="../assets/icons.svg#open-in-new"></use>
+          </svg>
+        </a>
+      </header>
+      <div class="guide-layout">
+        <aside class="article-toc">
+          <strong>On this page</strong>
+          <nav aria-label="Guide sections">
+            <a href="#choose-how-long-a-profile-applies">Choose how long a profile applies</a>
+            <a href="#what-happens-when-the-timer-ends">What happens when the timer ends?</a>
+            <a href="#pause-everything-immediately">Pause everything immediately</a>
+            <a href="#review-site-access-separately">Review site access separately</a>
+          </nav>
+        </aside>
+        <article class="guide-prose">
+          <h2 id="choose-how-long-a-profile-applies">Choose how long a profile applies</h2>
+          <p>Stop temporary headers automatically. Keep the rules saved.</p>
+          <ol>
+            <li>Open the manager and select a profile.</li>
+            <li>
+              Choose
+              <strong>1 hour</strong>
+              ,
+              <strong>8 hours</strong>
+              ,
+              <strong>Chrome closes</strong>
+              , or manual shutoff.
+            </li>
+            <li>Enable the master switch and required rules. Confirm exact-host access.</li>
+            <li>Continue testing. Chrome alarms enforce timed expiry with HeaderKit pages closed.</li>
+          </ol>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Duration</th>
+                <th scope="col">When headers stop applying</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1 hour</td>
+                <td>One hour after arming.</td>
+              </tr>
+              <tr>
+                <td>8 hours</td>
+                <td>Eight hours after arming.</td>
+              </tr>
+              <tr>
+                <td>Chrome closes</td>
+                <td>At session end. Closing one window may leave Chrome running.</td>
+              </tr>
+              <tr>
+                <td>Manual shutoff</td>
+                <td>On pausing the profile or all rules.</td>
+              </tr>
+            </tbody>
+          </table>
+          <figure>
+            <img
+              src="../assets/headerkit-rule-manager-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt="HeaderKit activation controls with a selected one-hour timer and remaining time" />
+            <figcaption>Review duration beside the active profile. Treat example data as illustrative.</figcaption>
+          </figure>
+          <h2 id="what-happens-when-the-timer-ends">What happens when the timer ends?</h2>
+          <p>
+            Park the active profile at expiry. Keep names, values, scopes, and On/Paused states saved. Resume as needed
+            and choose a fresh timer.
+          </p>
+          <p>
+            Switch profiles to clear the timer. Choose a duration to restart it. Check the active profile and remaining
+            time.
+          </p>
+          <h2 id="pause-everything-immediately">Pause everything immediately</h2>
+          <p>
+            Use the master switch or press
+            <code>Alt+Shift+X</code>
+            . Check shortcut availability in Chrome settings. Expect an
+            <code>off</code>
+            badge while rules are held back. Resume previous rule states without enabling individually paused rules.
+          </p>
+          <h2 id="review-site-access-separately">Review site access separately</h2>
+          <p>
+            Stop rules with the timer. Keep rules and grants saved. Open
+            <strong>Site access</strong>
+            to revoke grants. Keep affected rules saved and inactive unless another grant covers the host.
+          </p>
+          <figure>
+            <img
+              src="../assets/headerkit-site-access-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt="HeaderKit Site access dialog listing exact-host grants, covered rule counts, and revoke controls" />
+            <figcaption>Review rule state and site access separately.</figcaption>
+          </figure>
+          <aside class="guide-next" aria-label="Related guides">
+            <h2>Continue testing</h2>
+            <ul>
+              <li>
+                <a href="modify-request-headers-chrome.html">Modify request headers for an HTTPS API in Chrome</a>
+              </li>
+              <li><a href="request-header-profiles.html">Switch staging and QA request headers with profiles</a></li>
+            </ul>
+            <p>
+              Review the
+              <a href="../privacy-policy.html">privacy policy</a>
+              or
+              <a href="https://github.com/ranjanjharavi/HeaderKit/issues">report a problem</a>
+              .
+            </p>
+          </aside>
+        </article>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-shell">
+        <a class="brand" href="../">
+          <img src="../assets/headerkit-128.png" width="26" height="26" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <p>Focused tools for API testing.</p>
+        <div class="footer-links">
+          <a href="./">Guides</a>
+          <a href="../privacy-policy.html">Privacy</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit">Source</a>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>

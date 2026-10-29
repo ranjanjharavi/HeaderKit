@@ -1,53 +1,193 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Switch staging and QA request headers with profiles | HeaderKit</title>
-  <meta name="description" content="Separate staging and QA headers. Switch profiles without retyping values.">
-  <meta name="theme-color" content="#eff6ff">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html">
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="Switch staging and QA request headers with profiles | HeaderKit">
-  <meta property="og:description" content="Separate staging and QA headers. Switch profiles without retyping values.">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
-  <link rel="icon" type="image/png" href="../assets/headerkit-128.png">
-  <link rel="stylesheet" href="../assets/site.css">
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Switch staging and QA request headers with profiles", "description": "Separate staging and QA headers. Switch profiles without retyping values.", "url": "https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "HeaderKit", "url": "https://ranjanjharavi.github.io/HeaderKit/"}}</script>
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header"><nav class="nav-shell" aria-label="Primary navigation">
-    <a class="brand" href="../"><img src="../assets/headerkit-128.png" width="38" height="38" alt=""><span>HeaderKit</span></a>
-    <div class="nav-links"><a href="./" aria-current="page">Guides</a><a href="../privacy-policy.html">Privacy</a><a class="nav-github" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Get HeaderKit</a></div>
-  </nav></header>
-  <main id="main" class="guide-main section-shell">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">HeaderKit</a><span aria-hidden="true">/</span><a href="./">Guides</a></nav>
-    <h1>Switch staging and QA request headers with profiles</h1>
-    <p class="guide-intro">Separate staging and QA headers. Switch profiles without retyping values.</p>
-    <a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
-    <article class="guide-prose">
-<h2>Give each environment its own profile</h2>
-<p>Apply one profile at a time. Keep other profiles and their On/Paused states saved.</p>
-<ol><li>Choose <strong>Manage profiles and all rules</strong> in the popup.</li><li>Open <strong>Manage profiles → New profile</strong>. Name it <strong>Staging</strong> and save.</li><li>Select Staging. Add rules for an authorized test host.</li><li>Create QA with the required hosts and values.</li><li>Select a profile before triggering requests.</li></ol>
-<figure><img src="../assets/headerkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" alt="HeaderKit Rule Manager with Staging, QA, and Development profile tabs, a one-hour timer, and example header rules"><figcaption>Review the profile, timer, and rule states together. Treat example domains as illustrative.</figcaption></figure>
-<h2>Understand switching and permissions</h2>
-<p>Approve missing site access when switching profiles. Declining still switches profiles, but unapproved rules remain saved and inactive. Use <strong>Grant</strong> to allow them later.</p>
-<p>Switch profiles to clear the previous activation timer. Choose a new duration for automatic expiry.</p>
-<h2>Duplicate a useful starting point</h2>
-<p>Choose <strong>Duplicate</strong> in <strong>Manage profiles</strong>. Copy rules into a new profile, all paused. Review names, hosts, scopes, and values before enabling.</p>
-<figure><img src="../assets/headerkit-manage-profiles-screenshot.png" width="1280" height="800" loading="lazy" alt="HeaderKit profile manager showing a duplicate profile with copied rules"><figcaption>Start with paused copies. Enable only after review.</figcaption></figure>
-<h2>Keep changes predictable</h2>
-<ul><li>Use the popup for current-host rules. Use the manager for all hosts.</li><li>Pause all rules with the master switch. Preserve individual On/Paused states.</li><li>Rename without losing rules. Review deletion carefully. Deleting a profile also deletes its rules.</li><li>Check copied hosts, scopes, and values before enabling rules.</li></ul>
-<aside class="guide-next" aria-label="Related guides"><h2>Continue testing</h2><ul><li><a href="modify-request-headers-chrome.html">Modify request headers for an HTTPS API in Chrome</a></li><li><a href="temporary-request-headers.html">Automatically turn off temporary test headers in Chrome</a></li></ul><p>Review the <a href="../privacy-policy.html">privacy policy</a> or <a href="https://github.com/ranjanjharavi/HeaderKit/issues">report a problem</a>.</p></aside></article>
-  </main>
-  <footer class="site-footer"><div class="footer-shell">
-    <a class="brand" href="../"><img src="../assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
-    <p>Request-header tooling for API and web-environment testing.</p>
-    <div class="footer-links"><a href="./">Guides</a><a href="../privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a></div>
-  </div></footer>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Switch staging and QA request headers with profiles | HeaderKit</title>
+    <meta name="description" content="Separate staging and QA headers. Switch profiles without retyping values." />
+    <meta name="theme-color" content="#f4f7fd" />
+    <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Switch staging and QA request headers with profiles | HeaderKit" />
+    <meta
+      property="og:description"
+      content="Separate staging and QA headers. Switch profiles without retyping values." />
+    <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html" />
+    <meta
+      property="og:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png" />
+    <link rel="icon" type="image/png" href="../assets/headerkit-128.png" />
+    <link rel="stylesheet" href="../assets/site.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Switch staging and QA request headers with profiles",
+        "description": "Separate staging and QA headers. Switch profiles without retyping values.",
+        "url": "https://ranjanjharavi.github.io/HeaderKit/guides/request-header-profiles.html",
+        "inLanguage": "en",
+        "about": {
+          "@type": "SoftwareApplication",
+          "name": "HeaderKit",
+          "url": "https://ranjanjharavi.github.io/HeaderKit/"
+        }
+      }
+    </script>
+    <meta name="twitter:title" content="Switch staging and QA request headers with profiles | HeaderKit" />
+    <meta
+      name="twitter:description"
+      content="Separate staging and QA headers. Switch profiles without retyping values." />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav-shell" aria-label="Primary navigation">
+        <a class="brand" href="../" aria-label="HeaderKit home">
+          <img src="../assets/headerkit-128.png" width="34" height="34" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <div class="nav-links">
+          <a class="nav-feature" href="../#features">Features</a>
+          <a href="./" aria-current="location">Guides</a>
+          <a href="../privacy-policy.html">Privacy</a>
+          <a class="nav-source" href="https://github.com/ranjanjharavi/HeaderKit">
+            Source
+            <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <use href="../assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+    <main id="main" class="guide-main section-shell">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../">HeaderKit</a>
+        <span aria-hidden="true">/</span>
+        <a href="./">Guides</a>
+      </nav>
+      <header class="guide-header">
+        <span class="eyebrow">02 / Environments</span>
+        <h1>Switch staging and QA request headers with profiles</h1>
+        <p class="guide-intro">Separate staging and QA headers. Switch profiles without retyping values.</p>
+        <a class="button" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">
+          Add to Chrome
+          <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <use href="../assets/icons.svg#open-in-new"></use>
+          </svg>
+        </a>
+      </header>
+      <div class="guide-layout">
+        <aside class="article-toc">
+          <strong>On this page</strong>
+          <nav aria-label="Guide sections">
+            <a href="#give-each-environment-its-own-profile">Give each environment its own profile</a>
+            <a href="#understand-switching-and-permissions">Understand switching and permissions</a>
+            <a href="#duplicate-a-useful-starting-point">Duplicate a useful starting point</a>
+            <a href="#keep-changes-predictable">Keep changes predictable</a>
+          </nav>
+        </aside>
+        <article class="guide-prose">
+          <h2 id="give-each-environment-its-own-profile">Give each environment its own profile</h2>
+          <p>Apply one profile at a time. Keep other profiles and their On/Paused states saved.</p>
+          <ol>
+            <li>
+              Choose
+              <strong>Manage profiles and all rules</strong>
+              in the popup.
+            </li>
+            <li>
+              Open
+              <strong>Manage profiles → New profile</strong>
+              . Name it
+              <strong>Staging</strong>
+              and save.
+            </li>
+            <li>Select Staging. Add rules for an authorized test host.</li>
+            <li>Create QA with the required hosts and values.</li>
+            <li>Select a profile before triggering requests.</li>
+          </ol>
+          <figure>
+            <img
+              src="../assets/headerkit-rule-manager-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt="HeaderKit Rule Manager with Staging, QA, and Development profile tabs, a one-hour timer, and example header rules" />
+            <figcaption>
+              Review the profile, timer, and rule states together. Treat example domains as illustrative.
+            </figcaption>
+          </figure>
+          <h2 id="understand-switching-and-permissions">Understand switching and permissions</h2>
+          <p>
+            Approve missing site access when switching profiles. Declining still switches profiles, but unapproved rules
+            remain saved and inactive. Use
+            <strong>Grant</strong>
+            to allow them later.
+          </p>
+          <p>Switch profiles to clear the previous activation timer. Choose a new duration for automatic expiry.</p>
+          <h2 id="duplicate-a-useful-starting-point">Duplicate a useful starting point</h2>
+          <p>
+            Choose
+            <strong>Duplicate</strong>
+            in
+            <strong>Manage profiles</strong>
+            . Copy rules into a new profile, all paused. Review names, hosts, scopes, and values before enabling.
+          </p>
+          <figure>
+            <img
+              src="../assets/headerkit-manage-profiles-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt="HeaderKit profile manager showing a duplicate profile with copied rules" />
+            <figcaption>Start with paused copies. Enable only after review.</figcaption>
+          </figure>
+          <h2 id="keep-changes-predictable">Keep changes predictable</h2>
+          <ul>
+            <li>Use the popup for current-host rules. Use the manager for all hosts.</li>
+            <li>Pause all rules with the master switch. Preserve individual On/Paused states.</li>
+            <li>Rename without losing rules. Review deletion carefully. Deleting a profile also deletes its rules.</li>
+            <li>Check copied hosts, scopes, and values before enabling rules.</li>
+          </ul>
+          <aside class="guide-next" aria-label="Related guides">
+            <h2>Continue testing</h2>
+            <ul>
+              <li>
+                <a href="modify-request-headers-chrome.html">Modify request headers for an HTTPS API in Chrome</a>
+              </li>
+              <li>
+                <a href="temporary-request-headers.html">Automatically turn off temporary test headers in Chrome</a>
+              </li>
+            </ul>
+            <p>
+              Review the
+              <a href="../privacy-policy.html">privacy policy</a>
+              or
+              <a href="https://github.com/ranjanjharavi/HeaderKit/issues">report a problem</a>
+              .
+            </p>
+          </aside>
+        </article>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-shell">
+        <a class="brand" href="../">
+          <img src="../assets/headerkit-128.png" width="26" height="26" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <p>Focused tools for API testing.</p>
+        <div class="footer-links">
+          <a href="./">Guides</a>
+          <a href="../privacy-policy.html">Privacy</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit">Source</a>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>

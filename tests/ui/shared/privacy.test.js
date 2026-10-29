@@ -103,7 +103,8 @@ test('both privacy gates disclose background URL reads and unencrypted storage',
 test('generated policy pages retain the source date and material disclosures', () => {
   const policy = readSource('privacy/policy.md');
   const date = policy.match(/^Last updated: (.+)$/m)[1];
-  for (const source of [policy, readSource('extension/privacy/index.html'), readSource('docs/privacy-policy.html')]) {
+  for (const rawSource of [policy, readSource('extension/privacy/index.html'), readSource('docs/privacy-policy.html')]) {
+    const source = rawSource.replace(/\s+/g, ' ');
     assert.ok(source.includes(`Last updated: ${date}`));
     assert.match(source, /Toolbar badge URLs/);
     assert.match(source, /on navigation, tab selection, and rule, activation, or site-access changes/);

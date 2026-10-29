@@ -38,86 +38,96 @@ async function writeExtensionPrivacyPage(target, renderedBody) {
 async function writeDocsPrivacyPage(target, renderedBody) {
   await mkdir(dirname(target), { recursive: true });
   const articleBody = renderedBody.replace(/^\s*<h1[^>]*>.*?<\/h1>\s*/, '');
-  await writeFile(target, `<!DOCTYPE html>
+  await writeFile(target, `<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Review local storage, request headers, and Chrome permissions.">
-  <meta name="theme-color" content="#eff6ff">
-  <meta property="og:title" content="HeaderKit Privacy Policy">
-  <meta property="og:description" content="Local data, exact-host access, and plaintext header values.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-headers-screenshot.png">
-  <meta property="og:image:alt" content="HeaderKit showing exact-host request-header rules">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
-  <link rel="icon" type="image/png" href="assets/headerkit-128.png">
-  <link rel="stylesheet" href="assets/site.css">
-  <title>Privacy Policy — HeaderKit</title>
-</head>
-<body>
-  <header class="site-header">
-    <nav class="nav-shell" aria-label="Primary navigation">
-      <a class="brand" href="./" aria-label="HeaderKit home">
-        <img src="assets/headerkit-128.png" width="38" height="38" alt="">
-        <span>HeaderKit</span>
-      </a>
-      <div class="nav-links">
-        <a href="./">Home</a>
-        <a href="index.html#features">Features</a>
-        <a aria-current="page" href="privacy-policy.html">Privacy</a>
-        <a class="nav-github" href="https://github.com/ranjanjharavi/HeaderKit">GitHub <span aria-hidden="true">↗</span></a>
-      </div>
-    </nav>
-  </header>
-
-  <main class="privacy-main section-shell">
-    <section class="privacy-hero">
-      <div class="privacy-hero-copy">
-        <span class="section-kicker">Request-header privacy</span>
-        <h1>Local data. Exact hosts.</h1>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Review local storage, request headers, and Chrome permissions.">
+    <meta name="theme-color" content="#f4f7fd">
+    <meta property="og:title" content="HeaderKit Privacy Policy">
+    <meta property="og:description" content="Local data, exact-host access, and plaintext header values.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
+    <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-headers-screenshot.png">
+    <meta property="og:image:alt" content="HeaderKit showing exact-host request-header rules">
+    <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
+    <link rel="icon" type="image/png" href="assets/headerkit-128.png">
+    <link rel="stylesheet" href="assets/site.css">
+    <title>Privacy Policy — HeaderKit</title>
+    <meta name="twitter:title" content="Privacy Policy — HeaderKit">
+    <meta name="twitter:description" content="Review local storage, request headers, and Chrome permissions.">
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav-shell" aria-label="Primary navigation">
+        <a class="brand" href="./" aria-label="HeaderKit home">
+          <img src="./assets/headerkit-128.png" width="34" height="34" alt="">
+          <span>HeaderKit</span>
+        </a>
+        <div class="nav-links">
+          <a class="nav-feature" href="./#features">Features</a>
+          <a href="guides/">Guides</a>
+          <a href="./privacy-policy.html" aria-current="page">Privacy</a>
+          <a class="nav-source" href="https://github.com/ranjanjharavi/HeaderKit">Source <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/icons.svg#open-in-new"></use></svg></a>
+        </div>
+      </nav>
+    </header>
+    <main class="privacy-main section-shell" id="main">
+      <section class="privacy-hero">
+        <span class="eyebrow">Request-header privacy</span>
+        <h1>Local data.<br><span>Exact hosts.</span></h1>
         <p>Keep settings in Chrome. Send active header values only to approved exact HTTPS hosts. No developer uploads.</p>
-        <span class="purpose-badge">Built for API and web-environment testing</span>
+      </section>
+      <section class="privacy-highlights" aria-label="Privacy highlights">
+        <article class="privacy-highlight">
+          <strong>No analytics</strong>
+          <span>No telemetry, ads, accounts, or developer API.</span>
+        </article>
+        <article class="privacy-highlight">
+          <strong>Local Chrome storage</strong>
+          <span>Save profiles, rules, activation, and consent in <code>chrome.storage.local</code>.</span>
+        </article>
+        <article class="privacy-highlight">
+          <strong>On-demand site access</strong>
+          <span>Grant exact-host access on demand. No all-site access by default.</span>
+        </article>
+      </section>
+      <div class="privacy-layout">
+        <aside class="article-toc">
+          <strong>On this page</strong>
+          <nav aria-label="Privacy policy sections">
+            <a href="#data-headerkit-handles">Data handled</a>
+            <a href="#how-data-is-used-and-transmitted">Use &amp; transmission</a>
+            <a href="#retention-and-deletion">Retention</a>
+            <a href="#permissions">Permissions</a>
+            <a href="#security-and-responsible-use">Security</a>
+            <a href="#data-sharing-and-sale">Sharing &amp; sale</a>
+            <a href="#contact">Contact</a>
+          </nav>
+        </aside>
+        <article class="privacy-prose">
+          ${articleBody}
+        </article>
       </div>
-      <div class="privacy-hero-mark" aria-hidden="true">
-        <svg viewBox="0 0 64 64"><path d="M32 7 13 15v14c0 13 7.5 22.5 19 28 11.5-5.5 19-15 19-28V15L32 7Z"/><path d="m23 32 6 6 13-15"/></svg>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-shell">
+        <a class="brand" href="./">
+          <img src="./assets/headerkit-128.png" width="26" height="26" alt="">
+          <span>HeaderKit</span>
+        </a>
+        <p>Focused tools for API testing.</p>
+        <div class="footer-links">
+          <a href="guides/">Guides</a>
+          <a href="./privacy-policy.html">Privacy</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit">Source</a>
+        </div>
       </div>
-    </section>
-
-    <section class="privacy-highlights" aria-label="Privacy highlights">
-      <article class="privacy-highlight"><strong>No analytics</strong><span>No telemetry, ads, accounts, or developer API.</span></article>
-      <article class="privacy-highlight"><strong>Local Chrome storage</strong><span>Save profiles, rules, activation, and consent in <code>chrome.storage.local</code>.</span></article>
-      <article class="privacy-highlight"><strong>On-demand site access</strong><span>Grant exact-host access on demand. No all-site access by default.</span></article>
-    </section>
-
-    <div class="privacy-layout">
-      <aside class="privacy-toc">
-        <strong>On this page</strong>
-        <nav aria-label="Privacy policy sections">
-          <a href="#data-headerkit-handles">Data handled</a>
-          <a href="#how-data-is-used-and-transmitted">Use &amp; transmission</a>
-          <a href="#retention-and-deletion">Retention</a>
-          <a href="#permissions">Permissions</a>
-          <a href="#security-and-responsible-use">Security</a>
-          <a href="#data-sharing-and-sale">Sharing &amp; sale</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </aside>
-      <article class="privacy-prose">
-        ${articleBody}
-      </article>
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-shell">
-      <a class="brand" href="./"><img src="assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
-      <p>Test API and web environments.</p>
-      <div class="footer-links"><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a><a href="https://github.com/ranjanjharavi/HeaderKit">Source</a></div>
-    </div>
-  </footer>
-</body>
+    </footer>
+  </body>
 </html>
 `, 'utf8');
 }

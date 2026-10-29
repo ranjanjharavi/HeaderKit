@@ -1,13 +1,26 @@
 .footer-shell {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 28px;
-  min-height: 120px;
+  display: flex;
+  min-height: 96px;
   align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding-block: 24px;
+  border-top: 1px solid var(--border);
 }
-
+.footer-shell .brand {
+  font-size: 16px;
+}
+.footer-shell .brand img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
 .footer-shell p {
-  margin: 0;
   color: var(--muted);
+  font-size: 12px;
+}
+.footer-links {
+  flex-wrap: wrap;
+  gap: 24px;
   font-size: 12px;
 }
