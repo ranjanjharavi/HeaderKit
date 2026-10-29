@@ -40,9 +40,54 @@ const loading = document.getElementById('image-loading');
 const status = document.getElementById('gallery-status');
 const retryButton = document.getElementById('retry-screenshot');
 const buttons = [...document.querySelectorAll('[data-shot]')];
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+const still = new URLSearchParams(window.location.search).has('still');
 let currentKey = 'manager';
 let failedKey = null;
 let requestVersion = 0;
+let imageTransition;
+
+function stopImageTransition() {
+  if (!imageTransition) return;
+  imageTransition.animation.cancel();
+  imageTransition.overlay.remove();
+  imageTransition = null;
+}
+
+function updateImage(source, alt) {
+  stopImageTransition();
+  const canFade = !motionPreference.matches && !still && typeof image.animate === 'function';
+  const hasImage = image.complete && image.naturalWidth > 0;
+  let overlay;
+  if (canFade && hasImage && image.src !== source) {
+    overlay = image.cloneNode(false);
+    overlay.removeAttribute('id');
+    overlay.alt = '';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.classList.add('gallery-outgoing');
+    image.after(overlay);
+  }
+  image.src = source;
+  image.alt = alt;
+  if (!overlay) return;
+  const animation = overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: 280,
+    easing: 'cubic-bezier(.33, 1, .68, 1)',
+    fill: 'forwards'
+  });
+  const transition = { animation, overlay };
+  imageTransition = transition;
+  const finish = () => {
+    overlay.remove();
+    animation.cancel();
+    if (imageTransition === transition) imageTransition = null;
+  };
+  animation.finished.then(finish, finish);
+}
+
+motionPreference.addEventListener('change', (event) => {
+  if (event.matches) stopImageTransition();
+});
 
 function finishLoading() {
   loading.hidden = true;
@@ -52,6 +97,7 @@ function finishLoading() {
 
 function showImageError(key) {
   failedKey = key;
+  stopImageTransition();
   finishLoading();
   status.classList.add('is-error');
   status.textContent = 'Screenshot could not load. Check the connection or try again.';
@@ -68,15 +114,14 @@ function showScreenshot(key) {
   status.textContent = 'Loading ' + shot.label.toLowerCase() + ' screenshot…';
   retryButton.hidden = true;
   retryButton.disabled = true;
-  loading.hidden = false;
+  loading.hidden = image.complete && image.naturalWidth > 0;
   buttons.forEach((button) => {
     button.setAttribute('aria-busy', String(button.dataset.shot === key));
   });
 
   nextImage.onload = () => {
     if (version !== requestVersion) return;
-    image.src = nextImage.src;
-    image.alt = shot.alt;
+    updateImage(nextImage.src, shot.alt);
     currentKey = key;
     failedKey = null;
     document.getElementById('gallery-title').textContent = shot.title;

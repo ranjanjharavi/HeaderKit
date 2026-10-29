@@ -54,13 +54,14 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
     <link rel="icon" type="image/png" href="assets/headerkit-128.png">
     <link rel="stylesheet" href="assets/site.css">
+    <script src="assets/motion.js"></script>
     <title>Privacy Policy — HeaderKit</title>
     <meta name="twitter:title" content="Privacy Policy — HeaderKit">
     <meta name="twitter:description" content="Review local storage, request headers, and Chrome permissions.">
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
-    <header class="site-header">
+    <header class="site-header" data-motion="intro">
       <nav class="nav-shell" aria-label="Primary navigation">
         <a class="brand" href="./" aria-label="HeaderKit home">
           <img src="./assets/headerkit-128.png" width="34" height="34" alt="">
@@ -76,9 +77,9 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     </header>
     <main class="privacy-main section-shell" id="main">
       <section class="privacy-hero">
-        <span class="eyebrow">Request-header privacy</span>
-        <h1>Local data.<br><span>Exact hosts.</span></h1>
-        <p>Keep settings in Chrome. Send active header values only to approved exact HTTPS hosts. No developer uploads.</p>
+        <span class="eyebrow" data-motion="intro">Request-header privacy</span>
+        <h1><span class="motion-line" data-motion="intro">Local data.</span><br><span class="motion-line accent" data-motion="intro">Exact hosts.</span></h1>
+        <p data-motion="intro">Keep settings in Chrome. Send active header values only to approved exact HTTPS hosts. No developer uploads.</p>
       </section>
       <section class="privacy-highlights" aria-label="Privacy highlights">
         <article class="privacy-highlight">
