@@ -43,10 +43,10 @@ async function writeDocsPrivacyPage(target, renderedBody) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Learn how ReqKit handles request headers, Chrome permissions, and locally stored settings.">
+  <meta name="description" content="Review local storage, request headers, and Chrome permissions.">
   <meta name="theme-color" content="#eff6ff">
   <meta property="og:title" content="ReqKit Privacy Policy">
-  <meta property="og:description" content="A clear account of ReqKit's local storage, permissions, and data handling.">
+  <meta property="og:description" content="Local data, exact-host access, and plaintext header values.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/privacy-policy.html">
   <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-headers-screenshot.png">
@@ -76,8 +76,8 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     <section class="privacy-hero">
       <div class="privacy-hero-copy">
         <span class="section-kicker">Request-header privacy</span>
-        <h1>Clear, local, user-controlled.</h1>
-        <p>ReqKit does not send data to its developer. Request-header profiles stay in Chrome, while configured values reach only the exact HTTPS destinations you approve.</p>
+        <h1>Local data. Exact hosts.</h1>
+        <p>Keep settings in Chrome. Send active header values only to approved exact HTTPS hosts. No developer uploads.</p>
         <span class="purpose-badge">Built for API and web-environment testing</span>
       </div>
       <div class="privacy-hero-mark" aria-hidden="true">
@@ -86,9 +86,9 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     </section>
 
     <section class="privacy-highlights" aria-label="Privacy highlights">
-      <article class="privacy-highlight"><strong>No analytics</strong><span>No telemetry, advertising, account system, or developer-operated API.</span></article>
-      <article class="privacy-highlight"><strong>Local Chrome storage</strong><span>Your profiles, activation settings, header rules, and privacy choice stay in <code>chrome.storage.local</code>.</span></article>
-      <article class="privacy-highlight"><strong>On-demand site access</strong><span>Chrome asks for access only to the exact HTTPS hosts that you choose.</span></article>
+      <article class="privacy-highlight"><strong>No analytics</strong><span>No telemetry, ads, accounts, or developer API.</span></article>
+      <article class="privacy-highlight"><strong>Local Chrome storage</strong><span>Save profiles, rules, activation, and consent in <code>chrome.storage.local</code>.</span></article>
+      <article class="privacy-highlight"><strong>On-demand site access</strong><span>Grant exact-host access on demand. No all-site access by default.</span></article>
     </section>
 
     <div class="privacy-layout">
@@ -113,7 +113,7 @@ async function writeDocsPrivacyPage(target, renderedBody) {
   <footer class="site-footer">
     <div class="footer-shell">
       <a class="brand" href="./"><img src="assets/reqkit-128.png" width="32" height="32" alt=""><span>ReqKit</span></a>
-      <p>Focused request-header tooling for API and web-environment testing.</p>
+      <p>Test API and web environments.</p>
       <div class="footer-links"><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/ReqKit/issues">Support</a><a href="https://github.com/ranjanjharavi/ReqKit">Source</a></div>
     </div>
   </footer>

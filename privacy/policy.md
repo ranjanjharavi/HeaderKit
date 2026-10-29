@@ -1,53 +1,68 @@
 # ReqKit Privacy Policy
 
-Last updated: October 27, 2026
+Last updated: October 29, 2026
 
-ReqKit is a Chrome extension for creating, organizing, and temporarily applying user-created request-header rules to exact HTTPS hosts. It is built for API and web-environment testing. ReqKit has no analytics, advertising, telemetry, remote code, developer-operated API, or account system.
+ReqKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.
 
 ## Data ReqKit handles
 
-- **Active tab URL:** when you open the popup, ReqKit reads the active tab URL locally to identify the current host.
-- **Toolbar badge URLs:** the background worker reads available URLs of open tabs when pages navigate, tabs are selected, or rules, activation settings, or site access change. Chrome makes tab URLs available for sites covered by your site access grants and for tabs temporarily accessible through `activeTab`. ReqKit compares these URLs locally with rule hosts to update toolbar badges. URLs are not stored or sent to the developer. ReqKit does not read page content or retain browsing history.
-- **Profiles and activation settings:** profile names, the selected profile, pause state, and optional activation timing are stored in `chrome.storage.local` in your Chrome profile.
-- **Header rules:** exact HTTPS hosts, header names, header values, optional path prefixes and request-type scopes, profile assignments, and enabled states are stored in `chrome.storage.local` in your Chrome profile.
-- **Privacy choice:** acceptance of the privacy disclosure and its version are stored locally. A revised disclosure may require acceptance again before you can use the popup or rule manager controls. This does not pause existing rules or revoke site access.
+- **Active tab URL:** read locally when the popup opens. Match the current host.
+- **Toolbar badge URLs:** compare available tab URLs with rule hosts on navigation, tab selection, and rule, activation, or site-access changes. Access depends on site grants or temporary `activeTab` access. Never store URLs or send them to the developer.
+- **Profiles and activation:** store names, selected profile, pause state, and timing in `chrome.storage.local` in the current Chrome profile.
+- **Header rules:** store HTTPS hosts, names, values, path/request-type scopes, profile assignments, and enabled states locally.
+- **Privacy choice:** store disclosure acceptance and version locally. Revised disclosures may require acceptance again. Existing rules and grants stay unchanged.
+
+No page-content reads or retained browsing history.
 
 ## How data is used and transmitted
 
-ReqKit sends no data to its developer. While an enabled header rule is active, Chrome sends its configured value only to that rule's exact HTTPS host, and only when a site access grant covers the host. The value is added only to requests matching the rule's optional path and request-type scope. With no scope selected, the rule matches all request types on that host. Destination services process request headers under their own policies, and those values may appear in destination or intermediary logs.
+Chrome sends active header values only to the rule's exact HTTPS host with site access. Match configured path/request-type scopes. Without optional scoping, match all paths and request types on that host.
 
-The toolbar badge reflects header-rule and activation state. The default keyboard shortcut `Alt+Shift+X` pauses or resumes all rules without opening the popup; it does not delete saved rules or site access grants.
+Destination services follow separate policies. Destination or intermediary logs may retain header values. ReqKit sends no data to its developer.
+
+Export/import behavior:
+
+- Export saved profiles and rules to local JSON. Include full, unencrypted values, even when masked in the interface.
+- Exclude activation, timers, site access grants, and privacy consent.
+- Import locally as new profiles with paused rules. Preserve existing profiles. Request no new site access. Repeated imports add copies.
+- Never send backup contents to the developer.
+
+The badge reflects rule and activation state. Use `Alt+Shift+X` to pause or resume all rules without opening the popup. Keep saved rules and grants unchanged.
 
 ## Retention and deletion
 
-Profiles, activation settings, header rules, and the privacy choice remain in this Chrome profile until you change or delete them, clear extension data, or uninstall ReqKit. Deleting a profile also deletes the header rules assigned to it.
-
-ReqKit attempts to remove unused host-specific site access grants when you delete the last rule for a host, edit its last rule to use another host, or delete a profile whose rules were the last ones for that host. Removing a host-specific grant does not remove broader grants that may still cover that host. You can review and revoke remaining grants from the rule manager; revoking a grant keeps affected rules saved but stops them from applying unless another grant still covers the host.
+- Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or ReqKit is uninstalled.
+- Delete a profile to remove its rules.
+- Delete downloaded backups separately. Clearing extension data or uninstalling ReqKit does not remove those files.
+- Attempt to release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile. Broader grants may remain.
+- Review or revoke grants through **Site access**. Keep affected rules saved. Stop applying them unless another grant still covers the host.
 
 ## Permissions
 
-Chrome uses technical permission names. In ReqKit, **site access** means permission for rules to run on HTTPS hosts you choose. ReqKit requests it on saving and resuming a rule, grant it access, or select a profile that needs access.
+**Site access** means permission to apply rules on selected HTTPS hosts.
 
-- `activeTab` gives ReqKit temporary access to the active tab URL when you invoke the extension. The popup uses it to identify the current hostname and show matching rules. The background worker also uses available tab URLs for toolbar badges as described above. ReqKit does not read page content or retain browsing history.
-- `alarms` runs the user-selected automatic expiry so active request-header rules stop applying even when no ReqKit page is open.
-- `storage` retains privacy consent, profiles, activation settings, and request-header rules locally in the current Chrome profile.
-- `declarativeNetRequestWithHostAccess` applies user-created request-header rules to HTTPS hosts where you grant ReqKit site access, without injecting scripts or reading response bodies.
-- Chrome's optional `https://*/*` host permission lets ReqKit request site access for the exact HTTPS hosts in your rules when you save or resume a rule, grant it access, or select a profile that needs access. Granted site access also makes matching tab URLs available to the background worker for toolbar badges. It enables on-demand prompts; it does not give ReqKit access to every website by default. The **Site access** overview shows active site access grants and lets you revoke them.
+- `activeTab`: read the active tab URL after invoking ReqKit. Identify the current host and support badge updates.
+- `alarms`: stop timed activations with ReqKit pages closed.
+- `storage`: save profiles, rules, activation settings, and consent in the current Chrome profile.
+- `declarativeNetRequestWithHostAccess`: apply request headers on approved HTTPS hosts. No script injection or response-body reads.
+- Optional `https://*/*`: request exact-host access on save, resume, **Grant**, or profile switch. No all-site access by default. Review or revoke grants through **Site access**.
 
 ## Security and responsible use
 
-ReqKit limits rules to exact HTTPS hosts, supports optional path and fetch/XHR request scoping, and detects conflicting active rules whose scopes overlap. Values of headers whose names suggest authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys, tokens, secrets, or cookies are hidden by default in lists and in creation and edit forms in both the popup and rule manager. Reveal controls show or hide them. Detection uses header names and may miss sensitive values under other names. Masking is visual only and does not encrypt stored values.
+Use exact HTTPS hosts, optional path/fetch/XHR scopes, and conflict checks for overlapping active rules.
 
-ReqKit does not encrypt header values stored in `chrome.storage.local`. Anyone with access to this Chrome profile's files may be able to read them. The same unencrypted local storage holds profiles, activation settings, and your privacy choice.
+Mask sensitive-looking values in popup and manager lists and forms. Detection uses header names suggesting authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys, tokens, secrets, or cookies. Other names may be missed. Reveal values as needed.
 
-These safeguards do not authorize access to systems or data. Use ReqKit only with systems and data you are authorized to access. Avoid using long-lived production credentials as test header values.
+Masking is visual only. Local extension storage and backups remain unencrypted. Access to Chrome profile files may expose stored values, settings, and consent.
+
+Use authorized systems and data only. Avoid long-lived production credentials.
 
 ## Data sharing and sale
 
-ReqKit does not sell or rent user data, and it does not send data to the developer, advertisers, or data brokers. It transmits configured header values only to destinations selected by the user as described above. It does not use data for advertising, creditworthiness, or any purpose unrelated to its user-facing features.
+No data sale or rental. No transfers to the developer, advertisers, or data brokers. Send configured header values only to selected destinations as described above. No advertising, creditworthiness, or unrelated uses.
 
-The use of information received from Google APIs adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements.
+Information received from Google APIs follows the Chrome Web Store User Data Policy, including Limited Use requirements.
 
 ## Contact
 
-For questions or support, open an issue at [github.com/ranjanjharavi/ReqKit](https://github.com/ranjanjharavi/ReqKit/issues).
+[Report a privacy concern or request support](https://github.com/ranjanjharavi/ReqKit/issues).

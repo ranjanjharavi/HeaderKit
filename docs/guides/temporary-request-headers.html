@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Automatically turn off temporary test headers in Chrome | ReqKit</title>
-  <meta name="description" content="Use ReqKit’s one-hour, eight-hour, or browser-session timer to stop applying request headers while keeping rules saved for your next API test.">
+  <meta name="description" content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.">
   <meta name="theme-color" content="#eff6ff">
   <link rel="canonical" href="https://ranjanjharavi.github.io/ReqKit/guides/temporary-request-headers.html">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Automatically turn off temporary test headers in Chrome | ReqKit">
-  <meta property="og:description" content="Use ReqKit’s one-hour, eight-hour, or browser-session timer to stop applying request headers while keeping rules saved for your next API test.">
+  <meta property="og:description" content="Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.">
   <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/guides/temporary-request-headers.html">
   <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
   <link rel="icon" type="image/png" href="../assets/reqkit-128.png">
   <link rel="stylesheet" href="../assets/site.css">
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Automatically turn off temporary test headers in Chrome", "description": "Use ReqKit’s one-hour, eight-hour, or browser-session timer to stop applying request headers while keeping rules saved for your next API test.", "url": "https://ranjanjharavi.github.io/ReqKit/guides/temporary-request-headers.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "ReqKit", "url": "https://ranjanjharavi.github.io/ReqKit/"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Automatically turn off temporary test headers in Chrome", "description": "Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.", "url": "https://ranjanjharavi.github.io/ReqKit/guides/temporary-request-headers.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "ReqKit", "url": "https://ranjanjharavi.github.io/ReqKit/"}}</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -27,23 +27,23 @@
   <main id="main" class="guide-main section-shell">
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">ReqKit</a><span aria-hidden="true">/</span><a href="./">Guides</a></nav>
     <h1>Automatically turn off temporary test headers in Chrome</h1>
-    <p class="guide-intro">Use ReqKit’s one-hour, eight-hour, or browser-session timer to stop applying request headers while keeping rules saved for your next API test.</p>
+    <p class="guide-intro">Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.</p>
     <a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
     <article class="guide-prose">
 <h2>Choose how long a profile applies</h2>
-<p>Temporary debug headers are easy to forget. ReqKit can stop applying an active profile automatically, while keeping the rules saved for your next test.</p>
-<ol><li>Open the rule manager from the popup and select the profile you want to use.</li><li>In the active setup row, choose <strong>1 hour</strong>, <strong>8 hours</strong>, <strong>Chrome closes</strong>, or <strong>I turn it off</strong>.</li><li>Check that the master switch and the rules you need are On. Confirm site access for their exact HTTPS hosts.</li><li>Continue testing. ReqKit uses a Chrome alarm for timed expiry even while its popup and rule manager are closed.</li></ol>
+<p>Stop temporary headers automatically. Keep the rules saved.</p>
+<ol><li>Open the manager and select a profile.</li><li>Choose <strong>1 hour</strong>, <strong>8 hours</strong>, <strong>Chrome closes</strong>, or manual shutoff.</li><li>Enable the master switch and required rules. Confirm exact-host access.</li><li>Continue testing. Chrome alarms enforce timed expiry with ReqKit pages closed.</li></ol>
 <table><thead><tr><th scope="col">Duration</th><th scope="col">When headers stop applying</th></tr></thead><tbody>
-<tr><td>1 hour</td><td>One hour after you arm the timer.</td></tr><tr><td>8 hours</td><td>Eight hours after you arm the timer.</td></tr><tr><td>Chrome closes</td><td>When the browser session ends. Closing just one tab or window may leave Chrome running.</td></tr><tr><td>I turn it off</td><td>When you pause the profile or all rules yourself.</td></tr></tbody></table>
-<figure><img src="../assets/reqkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit activation controls with a selected one-hour timer and remaining time"><figcaption>Duration choices sit next to the active profile and rule summary. Example data is illustrative.</figcaption></figure>
+<tr><td>1 hour</td><td>One hour after arming.</td></tr><tr><td>8 hours</td><td>Eight hours after arming.</td></tr><tr><td>Chrome closes</td><td>At session end. Closing one window may leave Chrome running.</td></tr><tr><td>Manual shutoff</td><td>On pausing the profile or all rules.</td></tr></tbody></table>
+<figure><img src="../assets/reqkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit activation controls with a selected one-hour timer and remaining time"><figcaption>Review duration beside the active profile. Treat example data as illustrative.</figcaption></figure>
 <h2>What happens when the timer ends?</h2>
-<p>ReqKit parks the active profile. Its rules stop applying, but their names, values, scopes, and individual On or Paused settings stay saved. Resume when you need the setup again, then choose a fresh timer if appropriate.</p>
-<p>Changing profiles disarms the timer. Choosing a duration arms a new one. Always check the current profile and remaining time after switching environments.</p>
+<p>Park the active profile at expiry. Keep names, values, scopes, and On/Paused states saved. Resume as needed and choose a fresh timer.</p>
+<p>Switch profiles to clear the timer. Choose a duration to restart it. Check the active profile and remaining time.</p>
 <h2>Pause everything immediately</h2>
-<p>Use the master switch in the popup or rule manager, or press <code>Alt+Shift+X</code> if that shortcut is available in your Chrome setup. The toolbar badge shows <code>off</code> while rules are paused. Resuming restores the previous individual rule states; it does not turn every paused rule On.</p>
+<p>Use the master switch or press <code>Alt+Shift+X</code>. Check shortcut availability in Chrome settings. Expect an <code>off</code> badge while rules are held back. Resume previous rule states without enabling individually paused rules.</p>
 <h2>Review site access separately</h2>
-<p>A timer controls whether rules apply; it does not delete rules or revoke a site's permission. Open <strong>Site access</strong> to inspect and revoke grants. Revoking a grant keeps rules saved, but they stop applying unless another grant still covers the host.</p>
-<figure><img src="../assets/reqkit-site-access-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit Site access dialog listing exact-host grants, covered rule counts, and revoke controls"><figcaption>Rule state and site permission are separate controls. Review both for a predictable test setup.</figcaption></figure>
+<p>Stop rules with the timer. Keep rules and grants saved. Open <strong>Site access</strong> to revoke grants. Keep affected rules saved and inactive unless another grant covers the host.</p>
+<figure><img src="../assets/reqkit-site-access-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit Site access dialog listing exact-host grants, covered rule counts, and revoke controls"><figcaption>Review rule state and site access separately.</figcaption></figure>
 <aside class="guide-next" aria-label="Related guides"><h2>Continue testing</h2><ul><li><a href="modify-request-headers-chrome.html">Modify request headers for an HTTPS API in Chrome</a></li><li><a href="request-header-profiles.html">Switch staging and QA request headers with profiles</a></li></ul><p>Review the <a href="../privacy-policy.html">privacy policy</a> or <a href="https://github.com/ranjanjharavi/ReqKit/issues">report a problem</a>.</p></aside></article>
   </main>
   <footer class="site-footer"><div class="footer-shell">

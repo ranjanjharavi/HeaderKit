@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Switch staging and QA request headers with profiles | ReqKit</title>
-  <meta name="description" content="Keep staging and QA request-header rules separate in Chrome. Create, switch, and duplicate ReqKit profiles without losing your saved setup.">
+  <meta name="description" content="Separate staging and QA headers. Switch profiles without retyping values.">
   <meta name="theme-color" content="#eff6ff">
   <link rel="canonical" href="https://ranjanjharavi.github.io/ReqKit/guides/request-header-profiles.html">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Switch staging and QA request headers with profiles | ReqKit">
-  <meta property="og:description" content="Keep staging and QA request-header rules separate in Chrome. Create, switch, and duplicate ReqKit profiles without losing your saved setup.">
+  <meta property="og:description" content="Separate staging and QA headers. Switch profiles without retyping values.">
   <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/guides/request-header-profiles.html">
   <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
   <link rel="icon" type="image/png" href="../assets/reqkit-128.png">
   <link rel="stylesheet" href="../assets/site.css">
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Switch staging and QA request headers with profiles", "description": "Keep staging and QA request-header rules separate in Chrome. Create, switch, and duplicate ReqKit profiles without losing your saved setup.", "url": "https://ranjanjharavi.github.io/ReqKit/guides/request-header-profiles.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "ReqKit", "url": "https://ranjanjharavi.github.io/ReqKit/"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Switch staging and QA request headers with profiles", "description": "Separate staging and QA headers. Switch profiles without retyping values.", "url": "https://ranjanjharavi.github.io/ReqKit/guides/request-header-profiles.html", "inLanguage": "en", "about": {"@type": "SoftwareApplication", "name": "ReqKit", "url": "https://ranjanjharavi.github.io/ReqKit/"}}</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -27,21 +27,21 @@
   <main id="main" class="guide-main section-shell">
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">ReqKit</a><span aria-hidden="true">/</span><a href="./">Guides</a></nav>
     <h1>Switch staging and QA request headers with profiles</h1>
-    <p class="guide-intro">Keep staging and QA request-header rules separate in Chrome. Create, switch, and duplicate ReqKit profiles without losing your saved setup.</p>
+    <p class="guide-intro">Separate staging and QA headers. Switch profiles without retyping values.</p>
     <a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
     <article class="guide-prose">
 <h2>Give each environment its own profile</h2>
-<p>Profiles are separate collections of rules. Only the selected profile applies. Each other profile keeps its saved On and Paused states, so switching environments does not require retyping every value.</p>
-<ol><li>Open ReqKit and choose <strong>Manage profiles and all rules</strong> to open the rule manager.</li><li>Open <strong>Manage profiles</strong>, choose <strong>New profile</strong>, name it <strong>Staging</strong>, and save it.</li><li>Select the Staging tab, then create the rules needed for your authorized staging test host.</li><li>Create a QA profile and its rules in the same way. Use different values or hosts as your test setup requires.</li><li>Select the desired profile tab before triggering a new request.</li></ol>
-<figure><img src="../assets/reqkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit Rule Manager with Staging, QA, and Development profile tabs, a one-hour timer, and example header rules"><figcaption>The selected profile, its timer, and saved rule states remain visible together. Example domains are illustrative.</figcaption></figure>
+<p>Apply one profile at a time. Keep other profiles and their On/Paused states saved.</p>
+<ol><li>Choose <strong>Manage profiles and all rules</strong> in the popup.</li><li>Open <strong>Manage profiles → New profile</strong>. Name it <strong>Staging</strong> and save.</li><li>Select Staging. Add rules for an authorized test host.</li><li>Create QA with the required hosts and values.</li><li>Select a profile before triggering requests.</li></ol>
+<figure><img src="../assets/reqkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit Rule Manager with Staging, QA, and Development profile tabs, a one-hour timer, and example header rules"><figcaption>Review the profile, timer, and rule states together. Treat example domains as illustrative.</figcaption></figure>
 <h2>Understand switching and permissions</h2>
-<p>Switching to a profile asks for site access it still needs. If you decline, the profile still switches, but rules without access stay saved and do not apply. Use their <strong>Grant</strong> action when you are ready to allow the exact host.</p>
-<p>Switching profiles also disarms the previous activation timer. Choose a duration again for the newly selected profile if you want automatic expiry. The timer belongs to the activation, rather than being carried from the old profile.</p>
+<p>Approve missing site access when switching profiles. Declining still switches profiles, but unapproved rules remain saved and inactive. Use <strong>Grant</strong> to allow them later.</p>
+<p>Switch profiles to clear the previous activation timer. Choose a new duration for automatic expiry.</p>
 <h2>Duplicate a useful starting point</h2>
-<p>In <strong>Manage profiles</strong>, choose <strong>Duplicate</strong> beside an existing profile. ReqKit copies its rules into a new profile with every copied rule paused. Rename the profile and edit hosts or values before enabling the rules you need.</p>
-<figure><img src="../assets/reqkit-manage-profiles-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit profile manager showing a duplicate profile with copied rules"><figcaption>Duplicating creates a saved starting point. Copied rules are paused until you enable them.</figcaption></figure>
+<p>Choose <strong>Duplicate</strong> in <strong>Manage profiles</strong>. Copy rules into a new profile, all paused. Review names, hosts, scopes, and values before enabling.</p>
+<figure><img src="../assets/reqkit-manage-profiles-screenshot.png" width="1280" height="800" loading="lazy" alt="ReqKit profile manager showing a duplicate profile with copied rules"><figcaption>Start with paused copies. Enable only after review.</figcaption></figure>
 <h2>Keep changes predictable</h2>
-<ul><li>The popup focuses on the current site's rules; use the rule manager to review all hosts in the selected profile.</li><li>Pausing the master switch suspends all rules while preserving each rule's own On or Paused state.</li><li>Renaming a profile keeps its rules. Deleting a profile also deletes every rule assigned to it; review the confirmation before deleting.</li><li>A duplicated rule retains its host and scope, so review those along with the header value before enabling it.</li></ul>
+<ul><li>Use the popup for current-host rules. Use the manager for all hosts.</li><li>Pause all rules with the master switch. Preserve individual On/Paused states.</li><li>Rename without losing rules. Review deletion carefully. Deleting a profile also deletes its rules.</li><li>Check copied hosts, scopes, and values before enabling rules.</li></ul>
 <aside class="guide-next" aria-label="Related guides"><h2>Continue testing</h2><ul><li><a href="modify-request-headers-chrome.html">Modify request headers for an HTTPS API in Chrome</a></li><li><a href="temporary-request-headers.html">Automatically turn off temporary test headers in Chrome</a></li></ul><p>Review the <a href="../privacy-policy.html">privacy policy</a> or <a href="https://github.com/ranjanjharavi/ReqKit/issues">report a problem</a>.</p></aside></article>
   </main>
   <footer class="site-footer"><div class="footer-shell">

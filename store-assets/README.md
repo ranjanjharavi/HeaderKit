@@ -1,28 +1,24 @@
 # Store artwork
 
 | Directory | Contents |
-| --- | --- |
-| `screenshots/` | Five 1280×800 product screenshots |
-| `icons/` | The 128px store icon and 1024px artwork |
-| `promotional/` | 440×280 promo, 1400×560 marquee, and 1200×630 social artwork |
+|---|---|
+| `screenshots/` | Five 1280×800 screenshots |
+| `icons/` | 128px store icon and 1024px artwork |
+| `promotional/` | 440×280 promo, 1400×560 marquee, 1200×630 social image |
 
-Composition sources are in [`scripts/previews/`](../scripts/previews/README.md).
-These files are release artwork and are excluded from the extension ZIP.
+Build from [preview sources](../scripts/previews/README.md). Exclude store assets from the extension ZIP.
 
 ## Asset ownership
 
-- `extension/icons/` contains runtime icons referenced by the manifest.
-- `store-assets/` contains store submission and promotional exports.
-- `docs/assets/` contains the public website's images at stable URLs.
+- Keep runtime icons in `extension/icons/`.
+- Keep store exports in `store-assets/`.
+- Keep website images in `docs/assets/` at stable URLs.
 
-The five screenshot files and social artwork currently have identical website
-copies. After regenerating a screenshot, copy its final export into
-`docs/assets/`, removing the `-1280x800` suffix from its filename. Copy social
-artwork with its existing filename. Review both destinations together.
+After regenerating artwork:
 
-The 128px icon also has intentional copies in the runtime, store, and website
-directories. Keep those copies synchronized when the icon changes. Other icon
-sizes serve their existing runtime or release purposes.
+1. Copy final screenshots to `docs/assets/`. Remove the `-1280x800` filename suffix.
+2. Copy the social image with its existing filename.
+3. Sync the 128px icon across runtime, store, and website directories. Keep other icon sizes for their existing purposes.
+4. Review store and website copies together.
 
-Avoid replacing website copies with links to this directory: GitHub Pages
-publishes `docs/`, while the extension package publishes `extension/`.
+Keep website copies as files, not links into `store-assets/`. GitHub Pages publishes `docs/`. Package the extension from `extension/`.

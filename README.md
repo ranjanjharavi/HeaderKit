@@ -1,6 +1,6 @@
 # ReqKit
 
-ReqKit is a lightweight Chrome extension for modifying request headers on exact HTTPS hosts. API developers and QA testers can organize rules into profiles, scope them to API paths or fetch/XHR requests, and stop applying them automatically after a chosen time.
+Modify request headers on exact HTTPS hosts. Group rules into profiles. Scope requests. Set automatic expiry.
 
 [Install from Chrome Web Store](https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj) · [Website and guides](https://ranjanjharavi.github.io/ReqKit/)
 
@@ -8,177 +8,140 @@ ReqKit is a lightweight Chrome extension for modifying request headers on exact 
 
 ### Request headers
 
-- Creates request-header rules for exact HTTPS hostnames, with optional path-prefix and API (fetch/XHR) scoping.
-- Reuses existing site access grants, asks Chrome for access only when the rule's host is not already covered.
-- Supports turning individual rules on or pausing them, as well as editing and deleting them.
-- Applies enabled rules through Chrome's `declarativeNetRequest` API. By default, a rule matches all request types for that host, optional scopes can limit it to a path and nested paths, and/or fetch/XHR requests.
-- Detects conflicting active rules for the same host and header when their request scopes overlap.
-- Masks sensitive-looking header values in the popup until explicitly revealed.
-- Removes a site's access grant after the final rule for a hostname is deleted.
-- Includes a **Site access** overview for reviewing active site access grants, seeing which saved rules each grant covers, and revoking a grant without deleting those rules.
+- Create, edit, pause, resume, or delete exact-host rules.
+- Match all paths and request types by default. Narrow to a path prefix or fetch/XHR calls.
+- Detect overlapping active rules with conflicting header values.
+- Mask sensitive-looking values in popup and manager lists/forms. Reveal as needed.
+- Reuse existing site access, including broader grants. Request missing access through Chrome.
+- Remove the final rule for a host to release its host-specific grant. Broader grants may remain.
+- Open **Site access** to review or revoke grants without deleting rules.
 
-Use header modification only with systems you are authorized to test.
+Use authorized systems only.
 
 ### Profiles
 
-Rules are grouped into profiles, and one profile is active at a time. Rules in the other
-profiles keep their own On/Paused state and are simply not applied, so the same header can hold
-a different value in each environment without the two ever colliding.
+- Create, rename, duplicate, or delete profiles in the rule manager.
+- Apply one profile at a time. Keep other profiles and their On/Paused states saved.
+- Move rules between profiles through the edit form.
+- Duplicate profiles with all copied rules paused.
+- Delete a profile to delete its rules.
+- Switch profiles to request missing site access in one prompt. Declined rules stay saved. Use **Grant** to allow them later.
 
-- The popup shows the selected profile and how long it will apply. The adjacent **Change**
-  action opens the active setup in the rule manager.
-- The rule manager creates, renames, duplicates, and deletes profiles, and its edit form moves
-  a rule between them.
-- Duplicating a profile copies its rules paused, so nothing goes live by accident.
-- Deleting a profile also deletes every request-header rule assigned to it.
-- Switching to a profile asks for any site access it still needs in one prompt. If you
-  decline, the profile still switches, rules without site access stay saved and show a **Grant** button.
+### Export / import
+
+Open **Export / import** in the rule manager.
+
+- Select **Download JSON backup** to export saved profiles, rules, full values, scopes, and On/Paused states. Exclude unsaved drafts.
+- Choose a ReqKit JSON file. Review the counts. Select **Import profiles**. Limit backups to **5 MiB**.
+- Add copies with fresh IDs and unique names. Existing data stays unchanged. Repeated imports add more copies.
+- Start every imported rule paused. Review a copied profile before enabling rules or granting site access.
+- Exclude activation, timers, site access grants, and privacy consent.
+- Retry failed imports with the validated file still selected. Reselect invalid or unreadable files. Follow reload guidance before another import.
+
+Format: `format: "reqkit"`, `version: 1`, `exportedAt`, `profiles`, `rules`. Reject invalid files before saving import changes.
+
+**Backups contain unencrypted values, including masked secrets.** Store and share carefully. Delete backups separately. Clearing extension data or uninstalling ReqKit does not remove downloaded files.
 
 ### Auto-off timer
 
-Rules can be set to apply for **1 hour**, **8 hours**, **until Chrome closes**, or until you
-turn them off. When the time is up ReqKit parks the active profile: every rule stops being
-applied, but nothing is edited or deleted, so resuming is one click.
+- Choose **1 hour**, **8 hours**, **Chrome closes**, or manual shutoff.
+- Expire the activation without deleting rules or changing their On/Paused states.
+- Switch profiles to clear the timer. Choose a duration to arm a fresh timer.
+- Enforce timed expiry through Chrome alarms, even with ReqKit pages closed.
 
-The timer belongs to the activation rather than to a profile. Switching profiles disarms it,
-and choosing a duration arms a fresh one. The remaining time is rounded, and a Chrome alarm
-stops the rules even when no ReqKit page is open.
-
-Until Chrome closes uses session rules, cleared by Chrome on shutdown. Timed
-activations survive restarts. If a timer expires while Chrome is closed, restored
-tabs may briefly receive headers until the background worker handles startup.
+Timed activations survive restarts. Browser-close activations use session rules, cleared on shutdown. If a timer expires while Chrome is closed, restored tabs may briefly receive headers before startup handling runs.
 
 ### Pausing everything
 
-A single switch pauses every header rule without deleting anything or changing any rule's
-own On/Paused state. Resuming restores exactly what was there before. Paused rules stay
-saved and editable.
+Pause all rules with the master switch. Keep individual On/Paused states unchanged. Resume the previous setup.
 
-While rules are paused the toolbar badge reads `off`, and both the popup and the rule
-manager show a banner. The badge stays blank when there was nothing to apply anyway.
+Badge meanings:
 
-Readable tabs show the enabled rule count for that exact destination host. Unreadable
-tabs show `on` for an active profile with enabled rules. Counts describe configured
-scope, not observed requests or cross-origin Fetch/XHR traffic.
+- `off`: rules held back by pause or expiry.
+- Number: enabled rules configured for the readable destination host.
+- `on`: active rules exist, but the tab URL is unavailable.
+- Blank: nothing applicable.
+
+Counts describe configured scope, not observed requests or cross-origin fetch/XHR traffic.
 
 ### Popup and rule manager
 
-The popup answers one question: what ReqKit is doing to the current site. It lists that
-host's rules, adds new ones, and shows the selected profile and activation lifetime.
-
-The rule manager is a full page, opened from the popup or from **Extension options** in
-`chrome://extensions`. It manages profiles, activation timing, and all request-header rules.
-
-Profile editing, rule validation, deletion confirmations, and site access revocation use
-ReqKit's own UI. Chrome controls approval for new site access. Editing or resuming a rule
-on an already approved host does not request access again, including when a broader grant
-covers that host. Deleting the last rule for a host releases its host-specific grant,
-using that host again can require approval.
+- Use the popup for current-host rules, active profile, and timing.
+- Select **Change** to open the active setup in the manager.
+- Open the manager from the popup or **Extension options** at `chrome://extensions`.
+- Manage all profiles, rules, timers, and site access there. Chrome controls new access approvals.
 
 ### Keyboard shortcuts
 
 | Shortcut | Action |
 |---|---|
-| `Alt+Shift+R` | Open the ReqKit popup. |
-| `Alt+Shift+X` | Pause or resume every header rule without opening the popup. The badge shows `off` while rules are paused. |
+| `Alt+Shift+R` | Open the popup. |
+| `Alt+Shift+X` | Pause or resume all rules. |
 
-Both are editable at `chrome://extensions/shortcuts`.
+Edit shortcuts at `chrome://extensions/shortcuts`.
 
 ## Install locally
 
-ReqKit requires Chrome 120 or later.
+Require Chrome 120 or later.
 
-1. Clone or download this repository.
-2. Open `chrome://extensions` in Chrome.
-3. Enable **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the repository's `extension` directory.
-6. Pin ReqKit from Chrome's Extensions menu if desired.
+1. Clone or download the repository.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Select **Load unpacked**, then choose `extension/`.
+4. Pin ReqKit if needed.
 
-Changes to extension files require clicking **Reload** on the ReqKit card in `chrome://extensions`.
+After extension edits, click **Reload** on the ReqKit card.
 
 ## Permissions
 
-| Chrome permission | Why ReqKit needs it |
+| Permission | Purpose |
 |---|---|
-| `activeTab` | Reads the active tab URL locally only after you open ReqKit, so the popup can identify the current hostname and show matching rules. It does not read page content or general browsing history. |
-| `alarms` | Runs the user-selected automatic expiry so active request-header rules stop applying even when no ReqKit page is open. |
-| `storage` | Stores privacy consent, profiles, activation settings, and request-header rules locally in the current Chrome profile. |
-| `declarativeNetRequestWithHostAccess` | Applies user-created request-header rules to HTTPS hosts where you grant ReqKit site access, without injecting scripts or reading response bodies. |
-| Optional site access (`https://*/*`) | This optional Chrome host permission lets ReqKit ask for site access to the exact HTTPS host you choose when creating or resuming a rule. It does not give ReqKit access to every website by default. Review or revoke site access grants in the rule manager's **Site access** overview. |
+| `activeTab` | Read the active tab URL after opening ReqKit. Identify the current host. |
+| `alarms` | Stop timed activations with ReqKit pages closed. |
+| `storage` | Save profiles, rules, activation settings, and consent locally. |
+| `declarativeNetRequestWithHostAccess` | Apply request headers on approved HTTPS hosts. No injected scripts or response-body reads. |
+| Optional `https://*/*` | Request exact-host access on demand. No all-site access by default. Review or revoke through **Site access**. |
 
 ## Privacy and security
+
+Keep production credentials out of test rules. Local storage and backups remain unencrypted. Masking hides values visually only.
 
 Read the [privacy policy](privacy/policy.md).
 
 ## Development
 
-The project uses browser-native JavaScript modules and has no runtime package dependencies.
-
-The repository is organized by runtime responsibility:
+Use browser-native JavaScript modules. No runtime dependencies.
 
 ```text
 extension/
-  background.js       Service-worker entry point
-  background/        Rule commits, migrations, and badge calculation
-  options/           Manager features, workspace coordination, and styles
-  popup/             Popup features, page state, and layout
-  shared/
-    domain/          Pure rules, activation, profiles, and site access
-    runtime/         Chrome adapters, message clients, and permission workflows
-    ui/              Shared rendering, dialogs, consent, and DOM helpers
-    styles/          Shared tokens and components
-tests/
-  background/        Worker helper and event checks
-  domain/            Pure model tests
-  runtime/           Chrome adapters, module graph, and save ordering
-  ui/                Popup, manager, and shared UI tests
-  fixtures/browser/  Browser harnesses and sample data
-  helpers/           Test source loaders and UI stubs
-docs/                Published website, guides, and site assets
-privacy/             Canonical privacy policy Markdown
-scripts/             Privacy generation, packaging, and preview sources
-store-assets/        Screenshots, icons, and promotional artwork
+  background.js       Worker entry point
+  background/         Commits, migrations, badges
+  options/            Rule manager
+  popup/              Current-host controls
+  shared/domain/      Pure data logic
+  shared/runtime/     Chrome adapters and workflows
+  shared/ui/          Shared controls and rendering
+  shared/styles/      Tokens and components
+tests/                Automated checks
+docs/                 Published website and guides
+privacy/              Canonical privacy policy
+scripts/              Generation, packaging, previews
+store-assets/         Release artwork
 ```
 
-Domain modules contain reusable data logic. Runtime modules bridge that logic to
-Chrome, and the service worker owns applied rules and activation commits. Page
-controllers wire events, composers, views, and actions handle their respective
-feature responsibilities. The manager workspace coordinates the independent
-features and refreshes their shared page state.
+Keep domain logic pure. Bridge Chrome through runtime adapters. Commit applied state through the worker. Preserve stylesheet import order, with responsive overrides last.
 
-Stylesheet entry points import focused fragments in an explicit order. Keep
-that order when editing shared components or responsive overrides.
+- Run checks: `npm test`.
+- Regenerate privacy pages: `npm run build:privacy`.
+- Build and verify the upload ZIP: `npm run package`.
 
-For browser harnesses and artwork capture, see the [local preview instructions](scripts/previews/README.md).
-For release image ownership, see the [store artwork notes](store-assets/README.md).
+Output: `reqkit-v<version>.zip`, with `manifest.json` at the root. Include runtime files only.
 
-Run the tests:
-
-```bash
-npm test
-```
-
-Regenerate the extension and GitHub Pages privacy-policy HTML from the canonical Markdown source:
-
-```bash
-npm run build:privacy
-```
-
-Create and integrity-check the Chrome Web Store upload archive:
-
-```bash
-npm run package
-```
-
-The packaging script creates `reqkit-v<version>.zip` with `manifest.json` at the archive root. Tests, documentation, source artwork, and store assets are excluded from the upload.
+See [preview instructions](scripts/previews/README.md) and [artwork ownership](store-assets/README.md).
 
 ## Support
 
-Report problems or request enhancements through [Report an issue](https://github.com/ranjanjharavi/ReqKit/issues).
+[Report an issue](https://github.com/ranjanjharavi/ReqKit/issues).
 
 ## License
 
-ReqKit is available under the [MIT License](LICENSE). 
-
-> **Note:** This repository was originally hosted under another account belonging to the same author.
+[MIT](LICENSE).

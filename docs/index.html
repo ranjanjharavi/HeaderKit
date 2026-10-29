@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Modify request headers in Chrome for exact HTTPS hosts. ReqKit gives API developers and QA testers profiles, fetch/XHR scoping, and an auto-off timer.">
+  <meta name="description" content="Modify Chrome request headers for exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.">
   <meta name="theme-color" content="#eff6ff">
   <meta property="og:title" content="ReqKit - Modify Request Headers for Chrome">
-  <meta property="og:description" content="Test APIs with exact-host request headers, environment profiles, and automatic expiry. Local settings, no account, no telemetry.">
+  <meta property="og:description" content="Test APIs with exact-host headers, profiles, and expiry. Keep settings local. No account or telemetry.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ranjanjharavi.github.io/ReqKit/">
   <meta property="og:image" content="https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png">
@@ -30,7 +30,7 @@
     "operatingSystem": "Chrome 120 or later",
     "url": "https://ranjanjharavi.github.io/ReqKit/",
     "downloadUrl": "https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj",
-    "description": "A Chrome extension for applying request headers to exact HTTPS hosts, with environment profiles, optional path and fetch/XHR scoping, and automatic expiry.",
+    "description": "Modify Chrome request headers on exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.",
     "image": "https://ranjanjharavi.github.io/ReqKit/assets/reqkit-social-1200x630.png",
     "screenshot": "https://ranjanjharavi.github.io/ReqKit/assets/reqkit-rule-manager-screenshot.png"
   }
@@ -59,7 +59,7 @@
       <div class="hero-copy">
         <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Request headers · Chrome 120+</span>
         <h1>Modify request headers.<br><span>Keep testing in control.</span></h1>
-        <p class="hero-lead">Test APIs in Chrome with exact-host header rules, environment profiles, and automatic expiry. Narrow rules to an API path or fetch/XHR calls, with settings stored in your Chrome profile.</p>
+        <p class="hero-lead">Test API headers on exact HTTPS hosts. Switch profiles, scope paths or fetch/XHR calls, and set expiry. Store settings locally.</p>
         <span class="purpose-badge">Built for API and web-environment testing</span>
         <div class="hero-actions">
           <a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
@@ -82,30 +82,30 @@
     <section id="features" class="content-section section-shell">
       <div class="section-heading">
         <span class="section-kicker">Built for focused testing</span>
-        <h2>Useful controls, without the configuration maze.</h2>
-        <p>Exact-host rules and environment profiles keep every change scoped, visible, and reversible.</p>
+        <h2>Scope changes. Keep control.</h2>
+        <p>Keep rules scoped, visible, and reversible.</p>
       </div>
 
       <div class="feature-grid">
         <article class="feature-card">
           <div class="feature-icon blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5"/></svg></div>
           <h3>Exact-host headers</h3>
-          <p>Create, pause, edit, and remove request headers only for HTTPS hosts where you grant ReqKit site access through Chrome.</p>
+          <p>Create, edit, pause, or remove headers for approved HTTPS hosts.</p>
         </article>
         <article class="feature-card">
           <div class="feature-icon sky"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
           <h3>Environment profiles</h3>
-          <p>Keep staging, QA, and other rule sets separate, then select the one environment that should apply.</p>
+          <p>Separate staging and QA rules. Apply one profile.</p>
         </article>
         <article class="feature-card">
           <div class="feature-icon indigo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></div>
           <h3>Automatic expiry</h3>
-          <p>Apply a profile for one hour, eight hours, the browser session, or until you explicitly turn it off.</p>
+          <p>Choose one hour, eight hours, Chrome shutdown, or manual shutoff.</p>
         </article>
         <article class="feature-card">
           <div class="feature-icon green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></div>
-          <h3>Privacy-conscious by default</h3>
-          <p>Settings stay in the current Chrome profile. ReqKit has no analytics, remote code, account system, or developer server.</p>
+          <h3>Keep settings local</h3>
+          <p>Store settings in Chrome. No analytics, remote code, accounts, or developer server.</p>
         </article>
       </div>
     </section>
@@ -115,8 +115,8 @@
         <article class="showcase-row">
           <div class="showcase-copy">
             <span class="number-label">Request headers</span>
-            <h2>Control the current host from one focused popup.</h2>
-            <p>Create, pause, edit, and remove request headers for an exact HTTPS hostname, optionally limited to API paths or fetch/XHR requests.</p>
+            <h2>Manage the current host.</h2>
+            <p>Set exact-host headers. Limit paths or fetch/XHR requests as needed.</p>
             <ul class="check-list">
               <li>Optional path-prefix and fetch/XHR-only matching</li>
               <li>Current-host and all-rule views stay one click apart</li>
@@ -133,7 +133,7 @@
           <div class="showcase-copy">
             <span class="number-label">Rule manager</span>
             <h2>Keep every environment organized.</h2>
-            <p>Review rules by profile and hostname, switch how long a profile runs, and see exactly what is active before continuing your test.</p>
+            <p>Review profiles, hosts, active rules, and expiry.</p>
             <ul class="check-list">
               <li>Compact profile tabs with rule counts</li>
               <li>Rules grouped by exact HTTPS hostname</li>
@@ -149,7 +149,7 @@
           <div class="showcase-copy">
             <span class="number-label">Profiles</span>
             <h2>Separate rule sets without losing context.</h2>
-            <p>Create, rename, duplicate, or delete profiles in a dedicated view while the active setup remains visible behind it.</p>
+            <p>Create, rename, duplicate, or delete profiles. Keep the active setup visible.</p>
             <ul class="check-list">
               <li>Active profile clearly highlighted</li>
               <li>Rule counts visible before switching context</li>
@@ -169,17 +169,17 @@
         <h2>Configure, apply, continue.</h2>
       </div>
       <div class="steps-grid">
-        <article><span>1</span><h3>Open ReqKit</h3><p>The popup identifies the current hostname and shows the rules that affect it.</p></article>
-        <article><span>2</span><h3>Choose what applies</h3><p>Select a profile and activation lifetime in the rule manager, then turn on only the rules you need.</p></article>
-        <article><span>3</span><h3>Keep testing</h3><p>Chrome applies rules marked On to matching exact-host requests and stops them automatically when configured.</p></article>
+        <article><span>1</span><h3>Open ReqKit</h3><p>Review current-host rules in the popup.</p></article>
+        <article><span>2</span><h3>Choose what applies</h3><p>Select a profile and duration. Enable required rules.</p></article>
+        <article><span>3</span><h3>Keep testing</h3><p>Apply matching rules through Chrome. Stop automatically at expiry.</p></article>
       </div>
     </section>
 
     <section class="section-shell privacy-callout">
       <div>
-        <span class="section-kicker">Privacy you can inspect</span>
-        <h2>No hidden data pipeline.</h2>
-        <p>ReqKit's source, permissions, storage behavior, and complete privacy policy are public. Header values may still be logged by destinations or intermediaries, so use only authorized systems and test data.</p>
+        <span class="section-kicker">Inspect privacy</span>
+        <h2>No developer uploads.</h2>
+        <p>Inspect public source, permissions, and privacy policy. Use authorized test data. Destination or intermediary logs may retain header values.</p>
       </div>
       <a class="button light" href="privacy-policy.html">Read the privacy policy</a>
     </section>
@@ -187,18 +187,18 @@
     <section id="install" class="content-section section-shell">
       <div class="install-panel">
         <div>
-          <h2>Start your next API test with ReqKit.</h2>
-          <p>Install in Chrome 120 or later. No account is needed. ReqKit asks for site access when you create or resume a rule for an HTTPS host.</p>
+          <h2>Start an API test.</h2>
+          <p>Require Chrome 120 or later. No account. Grant exact-host access when prompted.</p>
           <div class="hero-actions"><a class="button primary" href="https://chromewebstore.google.com/detail/reqkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a></div>
         </div>
         <ol class="install-steps">
           <li><span>1</span><div><strong>Add ReqKit to Chrome</strong><small>Open the store listing and choose Add to Chrome.</small></div></li>
-          <li><span>2</span><div><strong>Open it on your test site</strong><small>Review the privacy notice, then add an exact-host rule.</small></div></li>
+          <li><span>2</span><div><strong>Open on a test site</strong><small>Review the privacy notice, then add an exact-host rule.</small></div></li>
           <li><span>3</span><div><strong>Choose what applies and for how long</strong><small>Use profiles and the auto-off timer in the rule manager.</small></div></li>
         </ol>
       </div>
       <details class="source-install">
-        <summary>Developing or reviewing the source?</summary>
+        <summary>Load from source</summary>
         <p>Clone the <a href="https://github.com/ranjanjharavi/ReqKit">GitHub repository</a>, open <code>chrome://extensions</code>, enable Developer mode, choose <strong>Load unpacked</strong>, and select the <code>extension</code> directory.</p>
       </details>
     </section>
@@ -206,30 +206,30 @@
     <section class="content-section section-shell" aria-labelledby="guides-heading">
       <div class="section-heading compact">
         <h2 id="guides-heading">Solve a testing task.</h2>
-        <p>Practical guides with example headers, matching rules, and checks you can repeat.</p>
+        <p>Follow examples. Verify host matching and headers.</p>
       </div>
       <div class="guide-list">
-        <a href="guides/modify-request-headers-chrome.html"><h3>Modify request headers for an HTTPS API in Chrome</h3><p>Create your first rule, narrow its scope, and verify it in DevTools.</p></a>
+        <a href="guides/modify-request-headers-chrome.html"><h3>Modify request headers for an HTTPS API in Chrome</h3><p>Create a rule, narrow its scope, and verify it in DevTools.</p></a>
         <a href="guides/request-header-profiles.html"><h3>Switch staging and QA headers with profiles</h3><p>Keep environment settings separate and understand which rules apply.</p></a>
         <a href="guides/temporary-request-headers.html"><h3>Automatically turn off temporary test headers</h3><p>Choose a timer, pause everything, and resume a saved setup.</p></a>
       </div>
     </section>
 
     <section class="content-section section-shell faq-section" aria-labelledby="faq-heading">
-      <h2 id="faq-heading">Before you install</h2>
+      <h2 id="faq-heading">Before installing</h2>
       <h3>Does ReqKit modify response headers?</h3>
       <p>ReqKit manages request headers for exact HTTPS hosts. It does not edit response headers, inspect response bodies, or bypass CORS.</p>
       <h3>Does it have access to every website?</h3>
-      <p>ReqKit requests site access on demand for the exact host a rule needs. Chrome also lets you manage extension access; review any exact or broader grants in the rule manager's <strong>Site access</strong> overview.</p>
-      <h3>Where are my rules stored?</h3>
-      <p>In the current Chrome profile, without a ReqKit account, analytics, or developer server. Enabled header values reach matching destinations and may appear in their logs. Read the <a href="privacy-policy.html">privacy policy</a> for details.</p>
+      <p>Request exact-host access on demand. Review exact and broader grants through <strong>Site access</strong>.</p>
+      <h3>Where are rules stored?</h3>
+      <p>Store rules in the current Chrome profile. No accounts, analytics, or developer server. Active values reach matching destinations and may appear in logs. Read the <a href="privacy-policy.html">privacy policy</a>.</p>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="footer-shell">
       <a class="brand" href="./"><img src="assets/reqkit-128.png" width="32" height="32" alt=""><span>ReqKit</span></a>
-      <p>Focused request-header tooling for API and web-environment testing.</p>
+      <p>Test API and web environments.</p>
       <div class="footer-links"><a href="guides/">Guides</a><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/ReqKit/issues">Support</a><a href="https://github.com/ranjanjharavi/ReqKit">Source</a></div>
     </div>
   </footer>

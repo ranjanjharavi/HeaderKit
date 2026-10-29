@@ -1,23 +1,19 @@
-# Local UI and artwork previews
+# Local previews
 
-Serve the repository root with a static HTTP server, for example:
+Serve the repository root:
 
 ```sh
 python3 -m http.server 4173 --bind 127.0.0.1
 ```
 
-- Options UI: `/tests/fixtures/browser/options-harness.html?campaign=1`
-- Popup UI: `/tests/fixtures/browser/popup-harness.html?campaign=1`
-- Store artwork: `/scripts/previews/store-screenshot.html?view=manager`
+Open a preview:
 
-Artwork views: `popup`, `manager`, `scope`, `access`, `profiles`, `promo`,
-`marquee`, and `social`.
+- Manager: `/tests/fixtures/browser/options-harness.html?campaign=1`
+- Popup: `/tests/fixtures/browser/popup-harness.html?campaign=1`
+- Artwork: `/scripts/previews/store-screenshot.html?view=manager`
 
-The browser harnesses load the actual extension markup and modules with a local
-Chrome API stub and fictional sample data. They are useful for UI review and
-artwork capture; actual extension permissions and service-worker behavior still
-require testing the unpacked extension in Chrome.
+Artwork views: `popup`, `manager`, `scope`, `access`, `profiles`, `promo`, `marquee`, `social`.
 
-Browser harnesses and their sample data belong in `tests/fixtures/browser/`.
-Artwork composition sources belong here. Neither directory is packaged into
-the extension upload archive.
+Use harnesses for UI review and artwork. Expect Chrome API stubs and fictional data. Verify real permissions and worker behavior in the unpacked extension.
+
+Keep harnesses/data in `tests/fixtures/browser/`. Keep artwork composition here. Exclude both from upload archives.
