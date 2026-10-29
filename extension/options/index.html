@@ -236,16 +236,16 @@
           </section>
           <form id="backupImportForm" class="backup-section" aria-labelledby="backupImportTitle" novalidate>
             <h3 id="backupImportTitle">Import as new profiles</h3>
-            <p>Existing profiles stay unchanged. Imported rules start paused, even if site access is already granted. Review and turn them on when ready.</p>
+            <p id="backupImportHelp">Existing profiles stay unchanged. Imported rules start paused, even if site access is already granted. Review and turn them on when ready.</p>
             <div class="field">
               <label for="backupFile">ReqKit JSON backup</label>
-              <input id="backupFile" type="file" accept=".json,application/json" aria-describedby="backupFileHelp backupStatus">
+              <input id="backupFile" type="file" accept=".json,application/json" aria-describedby="backupFileHelp backupStatus" aria-controls="backupPreview">
               <p id="backupFileHelp" class="backup-file-help">Maximum 5 MiB. Matching profile names get an “imported” suffix.</p>
             </div>
-            <p id="backupPreview" class="backup-preview" role="status" hidden></p>
-            <button id="importBackupBtn" class="primary-btn" type="submit" disabled>Import profiles</button>
+            <p id="backupPreview" class="backup-preview" role="status" aria-atomic="true" hidden></p>
+            <button id="importBackupBtn" class="primary-btn" type="submit" aria-describedby="backupImportHelp backupPreview backupStatus" disabled>Import profiles</button>
+            <output id="backupStatus" class="backup-status" aria-live="polite" aria-atomic="true"></output>
           </form>
-          <output id="backupStatus" class="backup-status" aria-live="polite"></output>
         </div>
         <footer class="profile-dialog-actions backup-dialog-actions">
           <button id="doneBackupBtn" class="secondary-btn" type="button">Done</button>

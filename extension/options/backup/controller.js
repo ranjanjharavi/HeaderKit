@@ -9,6 +9,10 @@ export function bindBackupEvents({ onChanged }) {
   refreshAll = onChanged;
   const dialog = document.getElementById('backupDialog');
   document.getElementById('backupBtn').addEventListener('click', () => {
+    if (dialog.open) {
+      return;
+    }
+    clearSelection();
     setStatus('');
     setStatus('', '', 'backupExportStatus');
     dialog.showModal();
@@ -28,7 +32,12 @@ export function bindBackupEvents({ onChanged }) {
       event.preventDefault();
     }
   });
-  dialog.addEventListener('close', clearSelection);
+  dialog.addEventListener('close', () => {
+    // A queued close event may arrive after the dialog has reopened.
+    if (!dialog.open) {
+      clearSelection();
+    }
+  });
 }
 
 function closeDialog() {
@@ -62,10 +71,7 @@ async function downloadBackup() {
     setStatus(error.message || 'Could not export a backup. Try again.', 'error', 'backupExportStatus');
   } finally {
     setBusy(null);
-    if (document.getElementById('backupDialog').open) {
-      document.getElementById('exportBackupBtn').focus({ preventScroll: true });
-      document.getElementById('backupExportStatus').scrollIntoView({ block: 'nearest' });
-    }
+    focusBackupResult('exportBackupBtn', 'backupExportStatus');
   }
 }
 
@@ -73,7 +79,8 @@ async function readBackupFile(event) {
   if (busy) {
     return;
   }
-  const file = event.currentTarget.files?.[0];
+  const input = event.currentTarget;
+  const file = input.files?.[0];
   clearSelection({ clearFile: false });
   setStatus('');
   if (!file) {
@@ -81,24 +88,41 @@ async function readBackupFile(event) {
   }
   setBusy('read');
   setStatus('Checking backup…');
+  document.getElementById('backupStatus').scrollIntoView({ block: 'nearest' });
+  let resultId = null;
   try {
     if (file.size > MAX_BACKUP_BYTES) {
       throw new Error('Backups must be 5 MiB or smaller. Choose a smaller ReqKit backup.');
     }
     const text = await file.text();
+    if (!isCurrentBackupFile(file)) {
+      return;
+    }
     const backup = parseBackup(text);
     selectedText = text;
     const preview = document.getElementById('backupPreview');
     preview.textContent = `${describeCounts(backup.profiles.length, backup.rules.length)} ready to import. All imported rules will be paused.`;
     preview.hidden = false;
     setStatus('');
+    resultId = 'importBackupBtn';
   } catch (error) {
-    document.getElementById('backupFile').setAttribute('aria-invalid', 'true');
-    setStatus(error.message || 'Could not read this file. Choose a ReqKit JSON backup.', 'error');
+    if (isCurrentBackupFile(file)) {
+      input.value = '';
+      input.setAttribute('aria-invalid', 'true');
+      setStatus(error.message || 'Could not read this file. Choose a ReqKit JSON backup.', 'error');
+      resultId = 'backupStatus';
+    }
   } finally {
     setBusy(null);
-    document.getElementById('backupFile').focus();
+    if (resultId) {
+      focusBackupResult('backupFile', resultId);
+    }
   }
+}
+
+function isCurrentBackupFile(file) {
+  const input = document.getElementById('backupFile');
+  return document.getElementById('backupDialog').open && input.files?.[0] === file;
 }
 
 async function submitImport(event) {
@@ -108,6 +132,7 @@ async function submitImport(event) {
   }
   setBusy('import');
   setStatus('Importing profiles…');
+  document.getElementById('backupStatus').scrollIntoView({ block: 'nearest' });
   let imported = false;
   try {
     const result = await importBackup(selectedText);
@@ -125,8 +150,16 @@ async function submitImport(event) {
   } finally {
     setBusy(null);
     const focusId = imported ? 'doneBackupBtn' : 'importBackupBtn';
-    document.getElementById(focusId).focus();
+    focusBackupResult(focusId, 'backupStatus');
   }
+}
+
+function focusBackupResult(controlId, resultId) {
+  if (!document.getElementById('backupDialog').open) {
+    return;
+  }
+  document.getElementById(controlId).focus({ preventScroll: true });
+  document.getElementById(resultId).scrollIntoView({ block: 'nearest' });
 }
 
 function clearSelection({ clearFile = true } = {}) {
