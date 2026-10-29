@@ -1,129 +1,323 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Review local storage, request headers, and Chrome permissions.">
-  <meta name="theme-color" content="#eff6ff">
-  <meta property="og:title" content="HeaderKit Privacy Policy">
-  <meta property="og:description" content="Local data, exact-host access, and plaintext header values.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-headers-screenshot.png">
-  <meta property="og:image:alt" content="HeaderKit showing exact-host request-header rules">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
-  <link rel="icon" type="image/png" href="assets/headerkit-128.png">
-  <link rel="stylesheet" href="assets/site.css">
-  <title>Privacy Policy — HeaderKit</title>
-</head>
-<body>
-  <header class="site-header">
-    <nav class="nav-shell" aria-label="Primary navigation">
-      <a class="brand" href="./" aria-label="HeaderKit home">
-        <img src="assets/headerkit-128.png" width="38" height="38" alt="">
-        <span>HeaderKit</span>
-      </a>
-      <div class="nav-links">
-        <a href="./">Home</a>
-        <a href="index.html#features">Features</a>
-        <a aria-current="page" href="privacy-policy.html">Privacy</a>
-        <a class="nav-github" href="https://github.com/ranjanjharavi/HeaderKit">GitHub <span aria-hidden="true">↗</span></a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Review local storage, request headers, and Chrome permissions."
+    />
+    <meta name="theme-color" content="#f4f7fd" />
+    <meta property="og:title" content="HeaderKit Privacy Policy" />
+    <meta
+      property="og:description"
+      content="Local data, exact-host access, and plaintext header values."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html"
+    />
+    <meta
+      property="og:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-headers-screenshot.png"
+    />
+    <meta
+      property="og:image:alt"
+      content="HeaderKit showing exact-host request-header rules"
+    />
+    <link
+      rel="canonical"
+      href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html"
+    />
+    <link rel="icon" type="image/png" href="assets/headerkit-128.png" />
+    <link rel="stylesheet" href="assets/site.css" />
+    <script src="assets/motion.js"></script>
+    <title>Privacy Policy — HeaderKit</title>
+    <meta name="twitter:title" content="Privacy Policy — HeaderKit" />
+    <meta
+      name="twitter:description"
+      content="Review local storage, request headers, and Chrome permissions."
+    />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header" data-motion="intro">
+      <nav class="nav-shell" aria-label="Primary navigation">
+        <a class="brand" href="./" aria-label="HeaderKit home">
+          <img src="./assets/headerkit-128.png" width="34" height="34" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <div class="nav-links">
+          <a class="nav-feature" href="./#features">Features</a>
+          <a href="guides/">Guides</a>
+          <a href="./privacy-policy.html" aria-current="page">Privacy</a>
+          <a
+            class="nav-source"
+            href="https://github.com/ranjanjharavi/HeaderKit"
+          >
+            Source
+            <svg
+              class="open-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <use href="assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+    <main class="privacy-main section-shell" id="main">
+      <section class="privacy-hero">
+        <span class="eyebrow" data-motion="intro">Request-header privacy</span>
+        <h1>
+          <span class="motion-line" data-motion="intro">Local data.</span>
+          <br />
+          <span class="motion-line accent" data-motion="intro"
+            >Exact hosts.</span
+          >
+        </h1>
+        <p data-motion="intro">
+          Keep settings in Chrome. Send active header values only to approved
+          exact HTTPS hosts. No developer uploads.
+        </p>
+      </section>
+      <section class="privacy-highlights" aria-label="Privacy highlights">
+        <article class="privacy-highlight">
+          <strong>No analytics</strong>
+          <span>No telemetry, ads, accounts, or developer API.</span>
+        </article>
+        <article class="privacy-highlight">
+          <strong>Local Chrome storage</strong>
+          <span>
+            Save profiles, rules, activation, and consent in
+            <code>chrome.storage.local</code>
+            .
+          </span>
+        </article>
+        <article class="privacy-highlight">
+          <strong>On-demand site access</strong>
+          <span
+            >Grant exact-host access on demand. No all-site access by
+            default.</span
+          >
+        </article>
+      </section>
+      <div class="privacy-layout">
+        <aside class="article-toc">
+          <strong>On this page</strong>
+          <nav aria-label="Privacy policy sections">
+            <a href="#data-headerkit-handles">Data handled</a>
+            <a href="#how-data-is-used-and-transmitted"
+              >Use &amp; transmission</a
+            >
+            <a href="#retention-and-deletion">Retention</a>
+            <a href="#permissions">Permissions</a>
+            <a href="#security-and-responsible-use">Security</a>
+            <a href="#data-sharing-and-sale">Sharing &amp; sale</a>
+            <a href="#contact">Contact</a>
+          </nav>
+        </aside>
+        <article class="privacy-prose">
+          <p>Last updated: October 29, 2026</p>
+          <p>
+            HeaderKit modifies request headers on exact HTTPS hosts for API and
+            web testing. No analytics, ads, telemetry, remote code,
+            developer-operated API/server, or accounts.
+          </p>
+          <h2 id="data-headerkit-handles">Data HeaderKit handles</h2>
+          <ul>
+            <li>
+              <strong>Active tab URL:</strong>
+              read locally when the popup opens. Match the current host.
+            </li>
+            <li>
+              <strong>Toolbar badge URLs:</strong>
+              compare available tab URLs with rule hosts on navigation, tab
+              selection, and rule, activation, or site-access changes. Access
+              depends on site grants or temporary
+              <code>activeTab</code>
+              access. Never store URLs or send them to the developer.
+            </li>
+            <li>
+              <strong>Profiles and activation:</strong>
+              store names, selected profile, pause state, and timing in
+              <code>chrome.storage.local</code>
+              in the current Chrome profile.
+            </li>
+            <li>
+              <strong>Header rules:</strong>
+              store HTTPS hosts, names, values, path/request-type scopes,
+              profile assignments, and enabled states locally.
+            </li>
+            <li>
+              <strong>Privacy choice:</strong>
+              store disclosure acceptance and version locally. Revised
+              disclosures may require acceptance again. Existing rules and
+              grants stay unchanged.
+            </li>
+          </ul>
+          <p>No page-content reads or retained browsing history.</p>
+          <h2 id="how-data-is-used-and-transmitted">
+            How data is used and transmitted
+          </h2>
+          <p>
+            Chrome sends active header values only to the rule&#039;s exact
+            HTTPS host with site access. Match configured path/request-type
+            scopes. Without optional scoping, match all paths and request types
+            on that host.
+          </p>
+          <p>
+            Destination services follow separate policies. Destination or
+            intermediary logs may retain header values. HeaderKit sends no data
+            to its developer.
+          </p>
+          <p>Export/import behavior:</p>
+          <ul>
+            <li>
+              Export saved profiles and rules to local JSON. Include full,
+              unencrypted values, even when masked in the interface.
+            </li>
+            <li>
+              Exclude activation, timers, site access grants, and privacy
+              consent.
+            </li>
+            <li>
+              Import locally as new profiles with paused rules. Preserve
+              existing profiles. Request no new site access. Repeated imports
+              add copies.
+            </li>
+            <li>Never send backup contents to the developer.</li>
+          </ul>
+          <p>
+            The badge reflects rule and activation state. Use
+            <code>Alt+Shift+X</code>
+            to pause or resume all rules without opening the popup. Keep saved
+            rules and grants unchanged.
+          </p>
+          <h2 id="retention-and-deletion">Retention and deletion</h2>
+          <ul>
+            <li>
+              Retain profiles, rules, activation, and consent until changed,
+              deleted, extension data is cleared, or HeaderKit is uninstalled.
+            </li>
+            <li>Delete a profile to remove its rules.</li>
+            <li>
+              Delete downloaded backups separately. Clearing extension data or
+              uninstalling HeaderKit does not remove those files.
+            </li>
+            <li>
+              Attempt to release unused host-specific grants after the final
+              rule is deleted, moved to another host, or removed with a profile.
+              Broader grants may remain.
+            </li>
+            <li>
+              Review or revoke grants through
+              <strong>Site access</strong>
+              . Keep affected rules saved. Stop applying them unless another
+              grant still covers the host.
+            </li>
+          </ul>
+          <h2 id="permissions">Permissions</h2>
+          <p>
+            <strong>Site access</strong>
+            means permission to apply rules on selected HTTPS hosts.
+          </p>
+          <ul>
+            <li>
+              <code>activeTab</code>
+              : read the active tab URL after invoking HeaderKit. Identify the
+              current host and support badge updates.
+            </li>
+            <li>
+              <code>alarms</code>
+              : stop timed activations with HeaderKit pages closed.
+            </li>
+            <li>
+              <code>storage</code>
+              : save profiles, rules, activation settings, and consent in the
+              current Chrome profile.
+            </li>
+            <li>
+              <code>declarativeNetRequestWithHostAccess</code>
+              : apply request headers on approved HTTPS hosts. No script
+              injection or response-body reads.
+            </li>
+            <li>
+              Optional
+              <code>https://*/*</code>
+              : request exact-host access on save, resume,
+              <strong>Grant</strong>
+              , or profile switch. No all-site access by default. Review or
+              revoke grants through
+              <strong>Site access</strong>
+              .
+            </li>
+          </ul>
+          <h2 id="security-and-responsible-use">
+            Security and responsible use
+          </h2>
+          <p>
+            Use exact HTTPS hosts, optional path/fetch/XHR scopes, and conflict
+            checks for overlapping active rules.
+          </p>
+          <p>
+            Mask sensitive-looking values in popup and manager lists and forms.
+            Detection uses header names suggesting authentication, sessions,
+            passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private
+            data, API keys, tokens, secrets, or cookies. Other names may be
+            missed. Reveal values as needed.
+          </p>
+          <p>
+            Masking is visual only. Local extension storage and backups remain
+            unencrypted. Access to Chrome profile files may expose stored
+            values, settings, and consent.
+          </p>
+          <p>
+            Use authorized systems and data only. Avoid long-lived production
+            credentials.
+          </p>
+          <h2 id="data-sharing-and-sale">Data sharing and sale</h2>
+          <p>
+            No data sale or rental. No transfers to the developer, advertisers,
+            or data brokers. Send configured header values only to selected
+            destinations as described above. No advertising, creditworthiness,
+            or unrelated uses.
+          </p>
+          <p>
+            Information received from Google APIs follows the Chrome Web Store
+            User Data Policy, including Limited Use requirements.
+          </p>
+          <h2 id="contact">Contact</h2>
+          <p>
+            <a href="https://github.com/ranjanjharavi/HeaderKit/issues"
+              >Report a privacy concern or request support</a
+            >
+            .
+          </p>
+        </article>
       </div>
-    </nav>
-  </header>
-
-  <main class="privacy-main section-shell">
-    <section class="privacy-hero">
-      <div class="privacy-hero-copy">
-        <span class="section-kicker">Request-header privacy</span>
-        <h1>Local data. Exact hosts.</h1>
-        <p>Keep settings in Chrome. Send active header values only to approved exact HTTPS hosts. No developer uploads.</p>
-        <span class="purpose-badge">Built for API and web-environment testing</span>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-shell">
+        <a class="brand" href="./">
+          <img src="./assets/headerkit-128.png" width="26" height="26" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <p>Focused tools for API testing.</p>
+        <div class="footer-links">
+          <a href="guides/">Guides</a>
+          <a href="./privacy-policy.html">Privacy</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit/issues"
+            >Support</a
+          >
+          <a href="https://github.com/ranjanjharavi/HeaderKit">Source</a>
+        </div>
       </div>
-      <div class="privacy-hero-mark" aria-hidden="true">
-        <svg viewBox="0 0 64 64"><path d="M32 7 13 15v14c0 13 7.5 22.5 19 28 11.5-5.5 19-15 19-28V15L32 7Z"/><path d="m23 32 6 6 13-15"/></svg>
-      </div>
-    </section>
-
-    <section class="privacy-highlights" aria-label="Privacy highlights">
-      <article class="privacy-highlight"><strong>No analytics</strong><span>No telemetry, ads, accounts, or developer API.</span></article>
-      <article class="privacy-highlight"><strong>Local Chrome storage</strong><span>Save profiles, rules, activation, and consent in <code>chrome.storage.local</code>.</span></article>
-      <article class="privacy-highlight"><strong>On-demand site access</strong><span>Grant exact-host access on demand. No all-site access by default.</span></article>
-    </section>
-
-    <div class="privacy-layout">
-      <aside class="privacy-toc">
-        <strong>On this page</strong>
-        <nav aria-label="Privacy policy sections">
-          <a href="#data-headerkit-handles">Data handled</a>
-          <a href="#how-data-is-used-and-transmitted">Use &amp; transmission</a>
-          <a href="#retention-and-deletion">Retention</a>
-          <a href="#permissions">Permissions</a>
-          <a href="#security-and-responsible-use">Security</a>
-          <a href="#data-sharing-and-sale">Sharing &amp; sale</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </aside>
-      <article class="privacy-prose">
-        <p>Last updated: October 29, 2026</p>
-    <p>HeaderKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.</p>
-    <h2 id="data-headerkit-handles">Data HeaderKit handles</h2>
-    <ul>
-    <li><strong>Active tab URL:</strong> read locally when the popup opens. Match the current host.</li>
-    <li><strong>Toolbar badge URLs:</strong> compare available tab URLs with rule hosts on navigation, tab selection, and rule, activation, or site-access changes. Access depends on site grants or temporary <code>activeTab</code> access. Never store URLs or send them to the developer.</li>
-    <li><strong>Profiles and activation:</strong> store names, selected profile, pause state, and timing in <code>chrome.storage.local</code> in the current Chrome profile.</li>
-    <li><strong>Header rules:</strong> store HTTPS hosts, names, values, path/request-type scopes, profile assignments, and enabled states locally.</li>
-    <li><strong>Privacy choice:</strong> store disclosure acceptance and version locally. Revised disclosures may require acceptance again. Existing rules and grants stay unchanged.</li>
-    </ul>
-    <p>No page-content reads or retained browsing history.</p>
-    <h2 id="how-data-is-used-and-transmitted">How data is used and transmitted</h2>
-    <p>Chrome sends active header values only to the rule&#039;s exact HTTPS host with site access. Match configured path/request-type scopes. Without optional scoping, match all paths and request types on that host.</p>
-    <p>Destination services follow separate policies. Destination or intermediary logs may retain header values. HeaderKit sends no data to its developer.</p>
-    <p>Export/import behavior:</p>
-    <ul>
-    <li>Export saved profiles and rules to local JSON. Include full, unencrypted values, even when masked in the interface.</li>
-    <li>Exclude activation, timers, site access grants, and privacy consent.</li>
-    <li>Import locally as new profiles with paused rules. Preserve existing profiles. Request no new site access. Repeated imports add copies.</li>
-    <li>Never send backup contents to the developer.</li>
-    </ul>
-    <p>The badge reflects rule and activation state. Use <code>Alt+Shift+X</code> to pause or resume all rules without opening the popup. Keep saved rules and grants unchanged.</p>
-    <h2 id="retention-and-deletion">Retention and deletion</h2>
-    <ul>
-    <li>Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or HeaderKit is uninstalled.</li>
-    <li>Delete a profile to remove its rules.</li>
-    <li>Delete downloaded backups separately. Clearing extension data or uninstalling HeaderKit does not remove those files.</li>
-    <li>Attempt to release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile. Broader grants may remain.</li>
-    <li>Review or revoke grants through <strong>Site access</strong>. Keep affected rules saved. Stop applying them unless another grant still covers the host.</li>
-    </ul>
-    <h2 id="permissions">Permissions</h2>
-    <p><strong>Site access</strong> means permission to apply rules on selected HTTPS hosts.</p>
-    <ul>
-    <li><code>activeTab</code>: read the active tab URL after invoking HeaderKit. Identify the current host and support badge updates.</li>
-    <li><code>alarms</code>: stop timed activations with HeaderKit pages closed.</li>
-    <li><code>storage</code>: save profiles, rules, activation settings, and consent in the current Chrome profile.</li>
-    <li><code>declarativeNetRequestWithHostAccess</code>: apply request headers on approved HTTPS hosts. No script injection or response-body reads.</li>
-    <li>Optional <code>https://*/*</code>: request exact-host access on save, resume, <strong>Grant</strong>, or profile switch. No all-site access by default. Review or revoke grants through <strong>Site access</strong>.</li>
-    </ul>
-    <h2 id="security-and-responsible-use">Security and responsible use</h2>
-    <p>Use exact HTTPS hosts, optional path/fetch/XHR scopes, and conflict checks for overlapping active rules.</p>
-    <p>Mask sensitive-looking values in popup and manager lists and forms. Detection uses header names suggesting authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys, tokens, secrets, or cookies. Other names may be missed. Reveal values as needed.</p>
-    <p>Masking is visual only. Local extension storage and backups remain unencrypted. Access to Chrome profile files may expose stored values, settings, and consent.</p>
-    <p>Use authorized systems and data only. Avoid long-lived production credentials.</p>
-    <h2 id="data-sharing-and-sale">Data sharing and sale</h2>
-    <p>No data sale or rental. No transfers to the developer, advertisers, or data brokers. Send configured header values only to selected destinations as described above. No advertising, creditworthiness, or unrelated uses.</p>
-    <p>Information received from Google APIs follows the Chrome Web Store User Data Policy, including Limited Use requirements.</p>
-    <h2 id="contact">Contact</h2>
-    <p><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Report a privacy concern or request support</a>.</p>
-      </article>
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-shell">
-      <a class="brand" href="./"><img src="assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
-      <p>Test API and web environments.</p>
-      <div class="footer-links"><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a><a href="https://github.com/ranjanjharavi/HeaderKit">Source</a></div>
-    </div>
-  </footer>
-</body>
+    </footer>
+  </body>
 </html>

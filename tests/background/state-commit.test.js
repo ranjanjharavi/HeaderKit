@@ -40,14 +40,19 @@ test('profile intents create, rename and duplicate from current state with pause
 
 test('deleting a profile removes its rules and activation references without activating parked rules', () => {
   const state = initialState();
+  const defaultRule = { ...state.rules[0], id: 2, profileId: 'default' };
+  state.rules.push(defaultRule);
+  const originalState = structuredClone(state);
   const deleted = applyProfileIntent({ type: PROFILE_MESSAGE_DELETE, id: 'staging' }, state);
-  assert.equal(deleted.rules.length, 0);
+  assert.deepEqual(deleted.rules, [defaultRule], 'rules in other profiles stay unchanged');
+  assert.deepEqual(state, originalState, 'source state stays unchanged');
   assert.equal(deleted.profiles.length, 1);
   assert.equal(deleted.activation.profileId, 'default');
   assert.equal(deleted.activation.lastProfileId, 'default');
   const parked = applyProfileIntent({ type: PROFILE_MESSAGE_DELETE, id: 'staging' }, {
     ...state, activation: { ...state.activation, profileId: null }
   });
+  assert.deepEqual(parked.rules, [defaultRule]);
   assert.equal(parked.activation.profileId, null);
   assert.equal(parked.activation.lastProfileId, 'default');
   assert.throws(() => applyProfileIntent({ type: PROFILE_MESSAGE_DELETE, id: 'default' }, state), /cannot be deleted/);

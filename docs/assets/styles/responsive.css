@@ -1,179 +1,240 @@
-@media (max-width: 980px) {
-  .hero,
-  .showcase-row,
-  .install-panel {
-    grid-template-columns: 1fr;
+@media (max-width: 1000px) {
+  .nav-shell, .section-shell, .footer-shell {
+    width: calc(100% - 56px);
   }
-
-  .hero {
-    gap: 52px;
-    min-height: auto;
+  .canvas-toolbar {
+    display: block;
   }
-
-  .hero-copy {
-    max-width: 720px;
+  .canvas-label {
+    display: block;
+    margin-bottom: 12px;
   }
-
-  .hero-visual {
-    width: min(760px, 100%);
-    margin-inline: auto;
+  .feature-index {
+    gap: 48px;
   }
-
-  .feature-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .guide-card {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 32px;
   }
-
-  .showcase-row.reverse .showcase-copy,
-  .showcase-row.reverse .product-frame {
-    order: initial;
+  .guide-layout, .privacy-layout {
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 32px;
   }
-
-  .showcase-copy {
-    max-width: 720px;
+  .guide-prose, .privacy-prose {
+    padding: 32px;
   }
-
-  .install-panel {
-    gap: 36px;
+  .footer-shell {
+    flex-wrap: wrap;
+    gap: 16px 32px;
   }
 }
-
 @media (max-width: 720px) {
-  .nav-shell,
-  .section-shell,
-  .footer-shell {
-    width: min(100% - 28px, 1120px);
+  .nav-shell, .section-shell, .footer-shell {
+    width: calc(100% - 40px);
   }
-
   .nav-shell {
-    min-height: 62px;
+    min-height: 76px;
+    gap: 16px;
   }
-
+  .brand {
+    font-size: 19px;
+  }
+  .brand img {
+    width: 30px;
+    height: 30px;
+  }
   .nav-links {
-    gap: 14px;
+    gap: 16px;
+    font-size: 12px;
   }
-
-  .nav-links a:not(.nav-github) {
-    display: none;
+  .nav-feature, .nav-source {
+    display: none !important;
   }
-
   .hero {
-    padding-block: 58px 70px;
+    padding-block: 40px 32px;
+    text-align: left;
   }
-
   .hero h1 {
-    font-size: clamp(40px, 13vw, 58px);
+    font-size: 47px;
   }
-
   .hero-lead {
-    font-size: 16px;
+    margin-inline: 0;
+    font-size: 15px;
   }
-
+  .hero-actions {
+    justify-content: flex-start;
+    gap: 16px 20px;
+  }
+  .button {
+    padding-inline: 16px;
+  }
+  .product-canvas {
+    padding: 16px;
+  }
+  .gallery-nav {
+    gap: 6px;
+  }
+  .gallery-nav button {
+    flex: 1 0 40%;
+    border-color: var(--border);
+  }
+  .gallery-caption {
+    display: block;
+    margin-inline: 0;
+  }
+  .gallery-caption p {
+    font-size: 12px;
+  }
+  .gallery-caption > span {
+    display: block;
+    margin-top: 12px;
+    white-space: normal;
+  }
+  .image-loading {
+    gap: 12px;
+    padding: 16px;
+  }
+  .skeleton-heading {
+    height: 16px;
+  }
+  .skeleton-line {
+    height: 12px;
+  }
+  .evidence {
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding-block: 24px 0;
+    font-size: 10px;
+  }
+  .white-band {
+    margin-top: 40px;
+  }
   .content-section {
-    padding-block: 70px;
+    padding-block: 56px;
   }
-
-  .feature-grid,
-  .steps-grid,
-  .privacy-highlights {
+  .feature-index {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
-
-  .feature-card {
-    min-height: auto;
+  .feature-index article {
+    grid-template-columns: 28px 1fr;
   }
-
-  .showcase-row {
-    gap: 34px;
+  .popup-section {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding-block: 48px;
   }
-
-  .showcase-row + .showcase-row {
-    margin-top: 78px;
+  .popup-section figure {
+    max-width: 330px;
   }
-
-  .privacy-callout {
-    width: min(100% - 28px, 1120px);
+  .privacy-summary, .faq-section {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-bottom: 40px;
+  }
+  .home-guides {
+    padding-block: 24px 48px;
+  }
+  .install-panel {
     flex-direction: column;
     align-items: flex-start;
-    gap: 26px;
-    padding: 32px 26px;
+    gap: 24px;
+    padding: 32px 24px;
+    margin-block: 40px;
   }
-
-  .install-panel {
-    padding: 30px 22px;
+  .install-panel h2 {
+    font-size: 30px;
   }
-
-  .footer-shell {
+  .guide-main, .privacy-main {
+    padding-block: 24px 48px;
+  }
+  .breadcrumb {
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 12px;
+  }
+  .guide-header {
+    margin-bottom: 32px;
+  }
+  .guide-header h1 {
+    font-size: 36px;
+  }
+  .guide-intro, .privacy-hero p {
+    margin-top: 20px;
+    font-size: 16px;
+  }
+  .guide-index-header {
+    padding-block: 16px;
+    text-align: left;
+  }
+  .guide-card {
     grid-template-columns: 1fr;
-    gap: 16px;
-    padding-block: 30px;
+    gap: 24px;
+    padding-block: 28px;
   }
-
-  .footer-links {
-    gap: 18px;
+  .guide-card h2, .guide-card h3 {
+    font-size: 24px;
   }
-
-  .privacy-main {
-    padding-block: 52px 70px;
-  }
-
-  .privacy-hero {
+  .guide-layout, .privacy-layout {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-
-  .privacy-hero-mark {
-    display: none;
-  }
-
-  .privacy-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .privacy-toc {
+  .article-toc {
     position: static;
+    padding: 0;
   }
-
-  .privacy-toc nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .article-toc nav {
+    gap: 0;
   }
-
-  .privacy-prose {
-    padding: 28px 22px;
+  .article-toc a {
+    min-height: 44px;
+    padding-block: 12px;
   }
-}
-
-@media (max-width: 450px) {
-  .hero-actions,
-  .button {
-    width: 100%;
+  .guide-prose, .privacy-prose {
+    padding: 24px 20px;
   }
-
-  .trust-list {
-    display: grid;
+  .guide-prose h2, .privacy-prose h2 {
+    font-size: 24px;
   }
-
-  .preview-window {
-    border-radius: 18px;
-    transform: none;
+  .guide-prose th, .guide-prose td {
+    padding: 12px 8px;
   }
-
-  .preview-bar {
-    height: 32px;
+  .privacy-hero {
+    margin-bottom: 32px;
   }
-
-  .privacy-toc nav {
+  .privacy-hero h1 {
+    font-size: 44px;
+  }
+  .privacy-highlights {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .privacy-highlight {
+    padding: 20px;
+  }
+  .footer-shell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .footer-links {
+    gap: 20px;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+@media (max-width: 380px) {
+  .hero h1 {
+    font-size: 42px;
   }
-
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
+  .gallery-nav button {
+    padding-inline: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+  }
+  button:active, .button:active, .guide-card:hover .guide-arrow {
+    transform: none;
   }
 }

@@ -7,11 +7,9 @@ import {
   countRulesInProfile,
   createDefaultProfiles,
   createProfile,
-  removeRulesFromProfile,
   findProfile,
   getProfileIds,
   getProfileName,
-  hasProfile,
   normalizeProfiles,
   resolveProfileId,
   validateProfileDraft
@@ -53,8 +51,8 @@ test('an empty profile reference resolves to the default profile', () => {
 test('profile lookup helpers agree with each other', () => {
   const profiles = normalizeProfiles([{ id: 'staging', name: 'Staging' }]);
 
-  assert.equal(hasProfile(profiles, 'staging'), true);
-  assert.equal(hasProfile(profiles, 'missing'), false);
+  assert.equal(findProfile(profiles, 'staging'), profiles[1]);
+  assert.equal(findProfile(profiles, 'missing'), null);
   assert.equal(getProfileName(profiles, 'staging'), 'Staging');
   assert.equal(getProfileName(profiles, 'missing'), 'Default');
   assert.deepEqual([...getProfileIds(profiles)].sort(), ['default', 'staging']);
@@ -92,18 +90,6 @@ test('cloning copies only the source profile and renumbers ids', () => {
   assert.deepEqual(cloned.map((rule) => rule.profileId), ['prod', 'prod']);
   assert.deepEqual(cloned.map((rule) => rule.headerValue), ['1', '2']);
   assert.deepEqual(rules.map((rule) => rule.id), [1, 2, 3], 'source rules untouched');
-});
-
-test('deleting a profile removes all of its rules', () => {
-  const rules = [
-    { id: 1, domain: 'a.example.com', headerName: 'X-A', headerValue: '1', enabled: true, profileId: 'staging' },
-    { id: 2, domain: 'b.example.com', headerName: 'X-B', headerValue: '2', enabled: true, profileId: 'default' }
-  ];
-
-  const remaining = removeRulesFromProfile(rules, 'staging');
-
-  assert.deepEqual(remaining, [rules[1]]);
-  assert.equal(remaining[0].enabled, true, 'rules in other profiles are untouched');
 });
 
 test('rules are counted per profile, treating a missing profile as default', () => {

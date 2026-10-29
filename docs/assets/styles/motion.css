@@ -1,0 +1,112 @@
+:root {
+  --motion-enter: cubic-bezier(.16, 1, .3, 1);
+  --motion-resolve: cubic-bezier(.33, 1, .68, 1);
+}
+
+.motion-line {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.motion-enabled [data-motion="intro"] {
+  transition:
+    transform 800ms var(--motion-enter),
+    opacity 600ms var(--motion-resolve),
+    filter 600ms var(--motion-resolve);
+  transition-delay: var(--motion-delay, 0ms);
+}
+
+.motion-enabled:not(.motion-entered) [data-motion="intro"] {
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(6px);
+}
+
+.motion-enabled [data-motion="up"] {
+  transition:
+    transform 1050ms var(--motion-enter),
+    opacity 700ms var(--motion-resolve),
+    filter 700ms var(--motion-resolve);
+  transition-delay: var(--motion-delay, 0ms);
+}
+
+.motion-enabled [data-motion="up"]:not(.is-revealed) {
+  opacity: 0;
+  filter: blur(4px);
+  transform: translateY(10px);
+}
+
+.motion-enabled [data-motion="card"] {
+  overflow: hidden;
+  transition:
+    transform 900ms var(--motion-enter),
+    opacity 600ms var(--motion-resolve),
+    filter 700ms var(--motion-resolve);
+  transition-delay: var(--motion-delay, 0ms);
+}
+
+.motion-enabled [data-motion="card"]:not(.is-revealed) {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(24px) scale(.985);
+}
+
+.motion-image-clip {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.guide-prose .motion-image-clip {
+  border-radius: 6px;
+}
+
+.popup-section .motion-image-clip {
+  border-radius: 8px;
+}
+
+[data-motion="image"]::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 1px;
+  border-radius: inherit;
+  background: #eff6ff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.motion-enabled [data-motion="image"]::after {
+  transition: opacity 700ms var(--motion-resolve);
+  transition-delay: var(--motion-delay, 0ms);
+}
+
+.motion-enabled [data-motion="image"]:not(.is-revealed)::after {
+  opacity: 1;
+}
+
+.motion-enabled [data-motion]:focus-within {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  transition: none;
+}
+
+.motion-enabled [data-motion].motion-instant,
+.motion-enabled [data-motion].motion-instant::after {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-enabled [data-motion] {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .motion-enabled [data-motion="image"]::after {
+    opacity: 0 !important;
+    transition: none !important;
+  }
+}

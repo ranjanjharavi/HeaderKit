@@ -1,237 +1,574 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Modify Chrome request headers for exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.">
-  <meta name="theme-color" content="#eff6ff">
-  <meta property="og:title" content="HeaderKit - Modify Request Headers for Chrome">
-  <meta property="og:description" content="Test APIs with exact-host headers, profiles, and expiry. Keep settings local. No account or telemetry.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/">
-  <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="HeaderKit request-header profiles for Chrome, with an example of its current-site popup">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="HeaderKit - Modify Request Headers for Chrome">
-  <meta name="twitter:description" content="Exact HTTPS hosts. Environment profiles. Temporary test headers that switch off automatically.">
-  <meta name="twitter:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png">
-  <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/">
-  <link rel="icon" type="image/png" href="assets/headerkit-128.png">
-  <link rel="stylesheet" href="assets/site.css">
-  <title>HeaderKit - Modify Request Headers for Chrome</title>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "HeaderKit - Modify Request Headers",
-    "applicationCategory": "DeveloperApplication",
-    "operatingSystem": "Chrome 120 or later",
-    "url": "https://ranjanjharavi.github.io/HeaderKit/",
-    "downloadUrl": "https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj",
-    "description": "Modify Chrome request headers on exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.",
-    "image": "https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png",
-    "screenshot": "https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-rule-manager-screenshot.png"
-  }
-  </script>
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header">
-    <nav class="nav-shell" aria-label="Primary navigation">
-      <a class="brand" href="./" aria-label="HeaderKit home">
-        <img src="assets/headerkit-128.png" width="38" height="38" alt="">
-        <span>HeaderKit</span>
-      </a>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="guides/">Guides</a>
-        <a href="#install">Install</a>
-        <a href="privacy-policy.html">Privacy</a>
-        <a class="nav-github" href="https://github.com/ranjanjharavi/HeaderKit">GitHub <span aria-hidden="true">↗</span></a>
-      </div>
-    </nav>
-  </header>
-
-  <main id="main">
-    <section class="hero section-shell">
-      <div class="hero-copy">
-        <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Request headers · Chrome 120+</span>
-        <h1>Modify request headers.<br><span>Keep testing in control.</span></h1>
-        <p class="hero-lead">Test API headers on exact HTTPS hosts. Switch profiles, scope paths or fetch/XHR calls, and set expiry. Store settings locally.</p>
-        <span class="purpose-badge">Built for API and web-environment testing</span>
-        <div class="hero-actions">
-          <a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a>
-          <a class="button secondary" href="https://github.com/ranjanjharavi/HeaderKit">View source <span aria-hidden="true">↗</span></a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Modify Chrome request headers for exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry."
+    />
+    <meta name="theme-color" content="#f4f7fd" />
+    <meta
+      property="og:title"
+      content="HeaderKit - Modify Request Headers for Chrome"
+    />
+    <meta
+      property="og:description"
+      content="Test APIs with exact-host headers, profiles, and expiry. Keep settings local. No account or telemetry."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://ranjanjharavi.github.io/HeaderKit/"
+    />
+    <meta
+      property="og:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="HeaderKit request-header profiles for Chrome, with an example of its current-site popup"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="HeaderKit - Modify Request Headers for Chrome"
+    />
+    <meta
+      name="twitter:description"
+      content="Exact HTTPS hosts. Environment profiles. Temporary test headers that switch off automatically."
+    />
+    <meta
+      name="twitter:image"
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png"
+    />
+    <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/" />
+    <link rel="icon" type="image/png" href="assets/headerkit-128.png" />
+    <link rel="stylesheet" href="assets/site.css" />
+    <script src="assets/motion.js"></script>
+    <title>HeaderKit - Modify Request Headers for Chrome</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "HeaderKit - Modify Request Headers",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Chrome 120 or later",
+        "url": "https://ranjanjharavi.github.io/HeaderKit/",
+        "downloadUrl": "https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj",
+        "description": "Modify Chrome request headers on exact HTTPS hosts. Use profiles, path/fetch/XHR scopes, and automatic expiry.",
+        "image": "https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png",
+        "screenshot": "https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-rule-manager-screenshot.png"
+      }
+    </script>
+    <script src="assets/home.js" defer=""></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-motion="intro">
+      <nav class="nav-shell" aria-label="Primary navigation">
+        <a
+          class="brand"
+          href="./"
+          aria-label="HeaderKit home"
+          aria-current="page"
+        >
+          <img src="./assets/headerkit-128.png" width="34" height="34" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <div class="nav-links">
+          <a class="nav-feature" href="./#features">Features</a>
+          <a href="guides/">Guides</a>
+          <a href="./privacy-policy.html">Privacy</a>
+          <a
+            class="nav-source"
+            href="https://github.com/ranjanjharavi/HeaderKit"
+          >
+            Source
+            <svg
+              class="open-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <use href="assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
         </div>
-        <ul class="trust-list" aria-label="HeaderKit highlights">
-          <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.1 3.1 3.1L13 4.6"/></svg>Local settings</li>
-          <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.1 3.1 3.1L13 4.6"/></svg>Exact-host site access</li>
-          <li><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.1 3.1 3.1L13 4.6"/></svg>No telemetry</li>
-        </ul>
-      </div>
-      <div class="hero-visual" aria-label="HeaderKit request-header preview">
-        <div class="preview-window">
-          <div class="preview-bar" aria-hidden="true"><span></span><span></span><span></span><strong>HeaderKit</strong></div>
-          <img src="assets/headerkit-popup-preview.png" width="520" height="600" decoding="async" fetchpriority="high" alt="HeaderKit popup with an API-scoped staging header, an enabled debug header, and a paused trace header">
+      </nav>
+    </header>
+    <main id="main">
+      <section class="hero section-shell">
+        <span class="eyebrow" data-motion="intro"
+          >A focused toolkit for Chrome</span
+        >
+        <h1>
+          <span class="motion-line" data-motion="intro">Request headers.</span>
+          <br />
+          <span class="motion-line accent" data-motion="intro"
+            >Exactly where they belong.</span
+          >
+        </h1>
+        <p class="hero-lead" data-motion="intro">
+          Test APIs with exact-host rules, environment profiles, and automatic
+          expiry. All from one small Chrome extension.
+        </p>
+        <div class="hero-actions" data-motion="intro">
+          <a
+            class="button"
+            href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj"
+          >
+            Add to Chrome
+            <svg
+              class="open-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <use href="assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
+          <a class="text-link" href="guides/modify-request-headers-chrome.html">
+            Read the quick start
+            <svg
+              class="open-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <use href="assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
         </div>
-      </div>
-    </section>
-
-    <section id="features" class="content-section section-shell">
-      <div class="section-heading">
-        <span class="section-kicker">Built for focused testing</span>
-        <h2>Scope changes. Keep control.</h2>
-        <p>Keep rules scoped, visible, and reversible.</p>
-      </div>
-
-      <div class="feature-grid">
-        <article class="feature-card">
-          <div class="feature-icon blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5"/></svg></div>
-          <h3>Exact-host headers</h3>
-          <p>Create, edit, pause, or remove headers for approved HTTPS hosts.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon sky"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
-          <h3>Environment profiles</h3>
-          <p>Separate staging and QA rules. Apply one profile.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon indigo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></div>
-          <h3>Automatic expiry</h3>
-          <p>Choose one hour, eight hours, Chrome shutdown, or manual shutoff.</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></div>
-          <h3>Keep settings local</h3>
-          <p>Store settings in Chrome. No analytics, remote code, accounts, or developer server.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="content-section showcase-section">
-      <div class="section-shell">
-        <article class="showcase-row">
-          <div class="showcase-copy">
-            <span class="number-label">Request headers</span>
-            <h2>Manage the current host.</h2>
-            <p>Set exact-host headers. Limit paths or fetch/XHR requests as needed.</p>
-            <ul class="check-list">
-              <li>Optional path-prefix and fetch/XHR-only matching</li>
-              <li>Current-host and all-rule views stay one click apart</li>
-              <li>Sensitive-looking values masked in the popup</li>
-              <li>Review and revoke site access without deleting rules</li>
-            </ul>
+        <p class="hero-meta" data-motion="intro">
+          Free · Chrome 120+ · No account needed
+        </p>
+      </section>
+      <section class="section-shell" aria-label="Explore HeaderKit screenshots">
+        <div class="product-canvas" data-motion-group="product">
+          <div class="canvas-toolbar" data-motion="up">
+            <span class="canvas-label"
+              >Inside HeaderKit / Explore the product</span
+            >
+            <div
+              class="gallery-nav"
+              aria-label="Product screenshot selection"
+              role="group"
+            >
+              <button
+                data-shot="manager"
+                aria-pressed="true"
+                aria-controls="gallery-image"
+              >
+                Rule manager
+              </button>
+              <button
+                data-shot="scope"
+                aria-pressed="false"
+                aria-controls="gallery-image"
+              >
+                Request scope
+              </button>
+              <button
+                data-shot="profiles"
+                aria-pressed="false"
+                aria-controls="gallery-image"
+              >
+                Profiles
+              </button>
+              <button
+                data-shot="access"
+                aria-pressed="false"
+                aria-controls="gallery-image"
+              >
+                Site access
+              </button>
+              <button
+                data-shot="headers"
+                aria-pressed="false"
+                aria-controls="gallery-image"
+              >
+                Current host
+              </button>
+            </div>
           </div>
-          <div class="product-frame">
-            <img src="assets/headerkit-headers-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="HeaderKit showing exact-host request-header rules">
+          <figure class="gallery-image">
+            <div class="image-stage" data-motion="image">
+              <img
+                width="1280"
+                height="800"
+                alt="HeaderKit Rule Manager showing profiles, expiry controls, and request headers grouped by HTTPS host"
+                id="gallery-image"
+                src="assets/headerkit-rule-manager-screenshot.png"
+                fetchpriority="high"
+                decoding="async"
+              />
+              <div
+                class="image-loading"
+                id="image-loading"
+                hidden=""
+                aria-hidden="true"
+              >
+                <span class="skeleton-heading"></span>
+                <span class="skeleton-line"></span>
+                <span class="skeleton-workspace"></span>
+              </div>
+            </div>
+            <figcaption
+              class="gallery-caption"
+              data-motion="up"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <div>
+                <strong id="gallery-title"
+                  >Every environment in one workspace.</strong
+                >
+                <p id="gallery-copy">
+                  Switch profiles, review rules by hostname, and choose when
+                  active rules stop.
+                </p>
+              </div>
+              <span>REAL INTERFACE · EXAMPLE DATA</span>
+            </figcaption>
+          </figure>
+          <div class="gallery-feedback">
+            <p class="gallery-status" id="gallery-status" role="status"></p>
+            <button class="retry-button" id="retry-screenshot" hidden="">
+              Retry screenshot
+            </button>
           </div>
-        </article>
-
-        <article class="showcase-row reverse">
-          <div class="showcase-copy">
-            <span class="number-label">Rule manager</span>
-            <h2>Keep every environment organized.</h2>
-            <p>Review profiles, hosts, active rules, and expiry.</p>
-            <ul class="check-list">
-              <li>Compact profile tabs with rule counts</li>
-              <li>Rules grouped by exact HTTPS hostname</li>
-              <li>One-hour, eight-hour, session, or manual expiry</li>
-            </ul>
+        </div>
+        <div class="evidence">
+          <span>Local settings</span>
+          <span>Exact-host access</span>
+          <span>No telemetry</span>
+        </div>
+      </section>
+      <div class="white-band">
+        <section
+          class="feature-index section-shell content-section"
+          id="features"
+        >
+          <div>
+            <span class="eyebrow">Small tool. Precise controls.</span>
+            <h2>
+              Less setup.
+              <br />
+              More useful testing.
+            </h2>
           </div>
-          <div class="product-frame">
-            <img src="assets/headerkit-rule-manager-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="HeaderKit Rule Manager showing profiles, timing, and request-header rules">
+          <div>
+            <article>
+              <span>01</span>
+              <div>
+                <h3>Switch the environment, keep the context.</h3>
+                <p>
+                  Store staging, QA, and development rules in separate profiles.
+                  Keep one profile active and see its rules grouped by exact
+                  host.
+                </p>
+              </div>
+            </article>
+            <article>
+              <span>02</span>
+              <div>
+                <h3>Choose the requests that change.</h3>
+                <p>
+                  Apply rules to an approved HTTPS host. Narrow them with a path
+                  prefix or fetch/XHR matching.
+                </p>
+              </div>
+            </article>
+            <article>
+              <span>03</span>
+              <div>
+                <h3>Give temporary tests an end time.</h3>
+                <p>
+                  Choose one hour, eight hours, or Chrome shutdown. Pause rules
+                  at any time without deleting the setup.
+                </p>
+              </div>
+            </article>
           </div>
-        </article>
-
-        <article class="showcase-row">
-          <div class="showcase-copy">
-            <span class="number-label">Profiles</span>
-            <h2>Separate rule sets without losing context.</h2>
-            <p>Create, rename, duplicate, or delete profiles. Keep the active setup visible.</p>
-            <ul class="check-list">
-              <li>Active profile clearly highlighted</li>
-              <li>Rule counts visible before switching context</li>
-              <li>Duplicated profiles start with every copied rule paused</li>
-            </ul>
-          </div>
-          <div class="product-frame">
-            <img src="assets/headerkit-manage-profiles-screenshot.png" width="1280" height="800" loading="lazy" decoding="async" alt="HeaderKit profile duplication dialog explaining that copied rules start paused">
-          </div>
-        </article>
+        </section>
       </div>
-    </section>
-
-    <section class="content-section section-shell">
-      <div class="section-heading compact">
-        <span class="section-kicker">A short workflow</span>
-        <h2>Configure, apply, continue.</h2>
-      </div>
-      <div class="steps-grid">
-        <article><span>1</span><h3>Open HeaderKit</h3><p>Review current-host rules in the popup.</p></article>
-        <article><span>2</span><h3>Choose what applies</h3><p>Select a profile and duration. Enable required rules.</p></article>
-        <article><span>3</span><h3>Keep testing</h3><p>Apply matching rules through Chrome. Stop automatically at expiry.</p></article>
-      </div>
-    </section>
-
-    <section class="section-shell privacy-callout">
-      <div>
-        <span class="section-kicker">Inspect privacy</span>
-        <h2>No developer uploads.</h2>
-        <p>Inspect public source, permissions, and privacy policy. Use authorized test data. Destination or intermediary logs may retain header values.</p>
-      </div>
-      <a class="button light" href="privacy-policy.html">Read the privacy policy</a>
-    </section>
-
-    <section id="install" class="content-section section-shell">
-      <div class="install-panel">
+      <section class="popup-section section-shell">
+        <figure data-motion-group="figure">
+          <div class="motion-image-clip" data-motion="image">
+            <img
+              src="assets/headerkit-popup-preview.png"
+              width="520"
+              height="600"
+              loading="lazy"
+              alt="HeaderKit current-host popup with enabled and paused staging rules"
+            />
+          </div>
+          <figcaption data-motion="up" class="image-note">
+            <span>THE CURRENT-HOST POPUP</span>
+            <span>CHROME EXTENSION</span>
+          </figcaption>
+        </figure>
         <div>
-          <h2>Start an API test.</h2>
-          <p>Require Chrome 120 or later. No account. Grant exact-host access when prompted.</p>
-          <div class="hero-actions"><a class="button primary" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">Install from Chrome Web Store</a></div>
+          <span class="eyebrow">Stay in the test</span>
+          <h2>
+            The current host.
+            <br />
+            The controls needed.
+          </h2>
+          <p>
+            Open the popup to review, add, edit, or pause headers for the site
+            being tested. Move to the rule manager when the wider setup needs
+            attention.
+          </p>
+          <a class="text-link" href="guides/modify-request-headers-chrome.html">
+            Create the first rule
+            <svg
+              class="open-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <use href="assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
         </div>
-        <ol class="install-steps">
-          <li><span>1</span><div><strong>Add HeaderKit to Chrome</strong><small>Open the store listing and choose Add to Chrome.</small></div></li>
-          <li><span>2</span><div><strong>Open on a test site</strong><small>Review the privacy notice, then add an exact-host rule.</small></div></li>
-          <li><span>3</span><div><strong>Choose what applies and for how long</strong><small>Use profiles and the auto-off timer in the rule manager.</small></div></li>
-        </ol>
+      </section>
+      <section class="section-shell privacy-summary">
+        <div>
+          <span class="eyebrow">Local by design</span>
+          <h2>Settings stay in Chrome.</h2>
+        </div>
+        <div>
+          <p>
+            No account. No analytics. No developer uploads. Rules and header
+            values stay in the local Chrome profile. Active headers reach
+            matching destinations and may appear in their logs.
+          </p>
+          <a class="text-link" href="privacy-policy.html">
+            Read the privacy policy
+            <svg
+              class="open-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <use href="assets/icons.svg#open-in-new"></use>
+            </svg>
+          </a>
+        </div>
+      </section>
+      <section
+        class="home-guides section-shell"
+        aria-labelledby="guides-heading"
+      >
+        <span class="eyebrow">Practical guides</span>
+        <h2 id="guides-heading">Put the next test in motion.</h2>
+        <div class="guide-list">
+          <a
+            class="guide-card"
+            data-motion="card"
+            href="guides/modify-request-headers-chrome.html"
+          >
+            <div>
+              <span class="eyebrow">01 / First rule</span>
+              <h3>Modify request headers for an HTTPS API in Chrome</h3>
+              <p>
+                Create exact-host rules. Scope API paths or fetch/XHR requests.
+                Verify in DevTools.
+              </p>
+              <span class="guide-arrow" aria-hidden="true">
+                Read guide
+                <svg
+                  class="open-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <use href="assets/icons.svg#open-in-new"></use>
+                </svg>
+              </span>
+            </div>
+            <img
+              src="assets/headerkit-request-scoping-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt=""
+            />
+          </a>
+          <a
+            class="guide-card"
+            data-motion="card"
+            href="guides/request-header-profiles.html"
+          >
+            <div>
+              <span class="eyebrow">02 / Environments</span>
+              <h3>Switch staging and QA request headers with profiles</h3>
+              <p>
+                Separate staging and QA headers. Switch profiles without
+                retyping values.
+              </p>
+              <span class="guide-arrow" aria-hidden="true">
+                Read guide
+                <svg
+                  class="open-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <use href="assets/icons.svg#open-in-new"></use>
+                </svg>
+              </span>
+            </div>
+            <img
+              src="assets/headerkit-rule-manager-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt=""
+            />
+          </a>
+          <a
+            class="guide-card"
+            data-motion="card"
+            href="guides/temporary-request-headers.html"
+          >
+            <div>
+              <span class="eyebrow">03 / Automatic expiry</span>
+              <h3>Automatically turn off temporary test headers in Chrome</h3>
+              <p>
+                Set one-hour, eight-hour, or browser-session expiry. Keep rules
+                saved for later tests.
+              </p>
+              <span class="guide-arrow" aria-hidden="true">
+                Read guide
+                <svg
+                  class="open-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <use href="assets/icons.svg#open-in-new"></use>
+                </svg>
+              </span>
+            </div>
+            <img
+              src="assets/headerkit-site-access-screenshot.png"
+              width="1280"
+              height="800"
+              loading="lazy"
+              alt=""
+            />
+          </a>
+        </div>
+      </section>
+      <section class="section-shell faq-section">
+        <h2 id="faq-heading">A few useful details.</h2>
+        <div>
+          <details>
+            <summary>Which headers can HeaderKit change?</summary>
+            <p>
+              Request headers on approved HTTPS hosts. HeaderKit does not edit
+              response headers, inspect response bodies, or bypass CORS.
+            </p>
+          </details>
+          <details>
+            <summary>Does it need access to every website?</summary>
+            <p>
+              Grant exact-host access when adding a rule. Review and revoke site
+              permissions through Site access.
+            </p>
+          </details>
+          <details>
+            <summary>Can rules turn off automatically?</summary>
+            <p>
+              Choose one hour, eight hours, or Chrome shutdown. Manual shutoff
+              is also available.
+            </p>
+          </details>
+          <details class="source-install">
+            <summary>Load from source</summary>
+            <p>
+              Clone the
+              <a href="https://github.com/ranjanjharavi/HeaderKit"
+                >GitHub repository</a
+              >
+              , open
+              <code>chrome://extensions</code>
+              , enable Developer mode, choose
+              <strong>Load unpacked</strong>
+              , and select the
+              <code>extension</code>
+              directory.
+            </p>
+          </details>
+        </div>
+      </section>
+      <section class="section-shell install-panel" id="install">
+        <div>
+          <span class="eyebrow">Ready when the test is.</span>
+          <h2>Put headers in their place.</h2>
+          <p>Free. Local settings. Chrome 120 or later.</p>
+        </div>
+        <a
+          class="button"
+          href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj"
+        >
+          Add to Chrome
+          <svg
+            class="open-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <use href="assets/icons.svg#open-in-new"></use>
+          </svg>
+        </a>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-shell">
+        <a class="brand" href="./">
+          <img src="./assets/headerkit-128.png" width="26" height="26" alt="" />
+          <span>HeaderKit</span>
+        </a>
+        <p>Focused tools for API testing.</p>
+        <div class="footer-links">
+          <a href="guides/">Guides</a>
+          <a href="./privacy-policy.html">Privacy</a>
+          <a href="https://github.com/ranjanjharavi/HeaderKit/issues"
+            >Support</a
+          >
+          <a href="https://github.com/ranjanjharavi/HeaderKit">Source</a>
+        </div>
       </div>
-      <details class="source-install">
-        <summary>Load from source</summary>
-        <p>Clone the <a href="https://github.com/ranjanjharavi/HeaderKit">GitHub repository</a>, open <code>chrome://extensions</code>, enable Developer mode, choose <strong>Load unpacked</strong>, and select the <code>extension</code> directory.</p>
-      </details>
-    </section>
-
-    <section class="content-section section-shell" aria-labelledby="guides-heading">
-      <div class="section-heading compact">
-        <h2 id="guides-heading">Solve a testing task.</h2>
-        <p>Follow examples. Verify host matching and headers.</p>
-      </div>
-      <div class="guide-list">
-        <a href="guides/modify-request-headers-chrome.html"><h3>Modify request headers for an HTTPS API in Chrome</h3><p>Create a rule, narrow its scope, and verify it in DevTools.</p></a>
-        <a href="guides/request-header-profiles.html"><h3>Switch staging and QA headers with profiles</h3><p>Keep environment settings separate and understand which rules apply.</p></a>
-        <a href="guides/temporary-request-headers.html"><h3>Automatically turn off temporary test headers</h3><p>Choose a timer, pause everything, and resume a saved setup.</p></a>
-      </div>
-    </section>
-
-    <section class="content-section section-shell faq-section" aria-labelledby="faq-heading">
-      <h2 id="faq-heading">Before installing</h2>
-      <h3>Does HeaderKit modify response headers?</h3>
-      <p>HeaderKit manages request headers for exact HTTPS hosts. It does not edit response headers, inspect response bodies, or bypass CORS.</p>
-      <h3>Does it have access to every website?</h3>
-      <p>Request exact-host access on demand. Review exact and broader grants through <strong>Site access</strong>.</p>
-      <h3>Where are rules stored?</h3>
-      <p>Store rules in the current Chrome profile. No accounts, analytics, or developer server. Active values reach matching destinations and may appear in logs. Read the <a href="privacy-policy.html">privacy policy</a>.</p>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-shell">
-      <a class="brand" href="./"><img src="assets/headerkit-128.png" width="32" height="32" alt=""><span>HeaderKit</span></a>
-      <p>Test API and web environments.</p>
-      <div class="footer-links"><a href="guides/">Guides</a><a href="privacy-policy.html">Privacy</a><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a><a href="https://github.com/ranjanjharavi/HeaderKit">Source</a></div>
-    </div>
-  </footer>
-</body>
+    </footer>
+    <noscript>
+      <p class="section-shell">
+        The rule manager screenshot is shown above. Enable JavaScript to switch
+        product views.
+      </p>
+    </noscript>
+  </body>
 </html>

@@ -24,7 +24,7 @@ test('rule manager separates active setup, rules, and profile administration', (
   assert.match(optionsMarkup, /id="headerComposerToggle"[^>]*>\s*<svg[\s\S]*?New rule/);
   assert.match(optionsMarkup, /class="header-fields-row"[\s\S]*?for="headerName"[\s\S]*?for="headerValue"/);
   assert.match(optionsMarkup, /class="helper-text disclosure-text composer-disclosure"/);
-  assert.match(optionsMarkup, /id="siteAccessPreflight"[\s\S]*?No other sites are included in the request/);
+  assert.match(optionsMarkup, /id="siteAccessPreflight"[\s\S]*?Grant HeaderKit site access through Chrome\. Include only this exact HTTPS host/);
   assert.match(optionsMarkup, /id="requestScopeDetails"[\s\S]*?id="pathPrefix"[\s\S]*?id="resourceType"/);
   assert.match(sharedRuleRenderSource, /editPathPrefix/);
   assert.match(sharedRuleRenderSource, /editResourceType/);
@@ -53,7 +53,7 @@ test('site access overview audits grants and revokes without deleting rules', ()
   assert.match(siteAccessControllerSource, /removeOriginPermission\(origin\)/);
   assert.match(siteAccessControllerSource, /confirmDestructiveAction/);
   assert.match(siteAccessControllerSource, /Saved rules were kept/);
-  assert.match(optionsMarkup, /Review HeaderKit's site access grants/);
+  assert.match(optionsMarkup, /Review HeaderKit site access grants/);
   assert.match(siteAccessControllerSource, /Broad site access/);
   assert.match(siteAccessControllerSource, /Can cover rules for any HTTPS host/);
   assert.match(siteAccessControllerSource, /Host-specific site access/);
