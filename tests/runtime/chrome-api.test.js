@@ -9,7 +9,6 @@ import {
   removeOriginPermission,
   requestOriginPermission,
   sendRuntimeMessage,
-  storageAreaRemove,
   storageLocalGet,
   storageLocalSet,
   updateSessionRules
@@ -30,10 +29,6 @@ function createChromeApi() {
         },
         set(value, callback) {
           this.value = value;
-          callback();
-        },
-        remove(keys, callback) {
-          this.removed = keys;
           callback();
         }
       }
@@ -69,8 +64,6 @@ test('Chrome API wrappers resolve callback results', async () => {
   assert.deepEqual(await storageLocalGet(['key'], chromeApi), { query: ['key'] });
   await storageLocalSet({ privacyConsentVersion: 1 }, chromeApi);
   assert.deepEqual(chromeApi.storage.local.value, { privacyConsentVersion: 1 });
-  await storageAreaRemove(chromeApi.storage.local, ['obsolete'], chromeApi);
-  assert.deepEqual(chromeApi.storage.local.removed, ['obsolete']);
   assert.equal(await requestOriginPermission('https://example.com/*', chromeApi), true);
   assert.deepEqual(chromeApi.permissions.requested, { origins: ['https://example.com/*'] });
   assert.equal(await removeOriginPermission('https://example.com/*', chromeApi), true);
@@ -97,6 +90,12 @@ test('Chrome API wrappers reject runtime.lastError', async () => {
   };
 
   await assert.rejects(storageLocalGet(['key'], chromeApi), /Storage unavailable/);
+  chromeApi.storage.local.set = (_value, callback) => {
+    chromeApi.runtime.lastError = { message: 'Storage write failed' };
+    callback();
+    chromeApi.runtime.lastError = null;
+  };
+  await assert.rejects(storageLocalSet({ key: 'value' }, chromeApi), /Storage write failed/);
   chromeApi.tabs.get = (_tabId, callback) => {
     chromeApi.runtime.lastError = { message: 'Tab closed' };
     callback();

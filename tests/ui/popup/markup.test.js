@@ -23,7 +23,7 @@ test('popup keeps profile context in the header and scopes rules with tabs', () 
   assert.doesNotMatch(popupMarkup, /id="profileSelect"/);
   assert.doesNotMatch(popupMarkup, /id="durationSelect"/);
   assert.doesNotMatch(popupMarkup, /header-composer-heading|headerComposerTitle|headerComposerProfile/);
-  assert.match(popupMarkup, /id="siteAccessPreflight"[\s\S]*?Chrome will ask you to grant HeaderKit site access to this exact HTTPS host/);
+  assert.match(popupMarkup, /id="siteAccessPreflight"[\s\S]*?Grant HeaderKit site access through Chrome\. Include only this exact HTTPS host/);
   assert.match(popupMarkup, /id="requestScopeDetails"[\s\S]*?id="pathPrefix"[\s\S]*?id="resourceType"/);
   assert.match(popupMarkup, /id="confirmationDialog"[^>]*aria-labelledby="confirmationTitle"/);
 });
