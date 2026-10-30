@@ -37,8 +37,7 @@ test('keyboard focus and dynamic tab panels expose consistent accessible state',
     /button:focus-visible,[\s\S]*?summary:focus-visible,[\s\S]*?outline:\s*2px solid var\(--primary\)/
   );
   assert.doesNotMatch(`${popupStyles}\n${optionsStyles}`, /\.focus-visible\s*\{[^}]*outline:\s*(?:0|none)/s);
-  assert.match(popupRulesSource, /setAttribute\([\s\S]*?'aria-labelledby',[\s\S]*?state\.headers\.scope === 'all'/);
-  // Profile tab/panel attributes are checked on rendered output in profiles.test.js.
+  // Popup and profile tab/panel attributes are checked behaviorally in their feature tests.
 });
 
 test('obsolete profile filter and clipboard code are removed', () => {

@@ -10,9 +10,16 @@ import {
   confirmDeleteRule
 } from './actions.js';
 import { bindComposerEvents, setHeaderComposerExpanded } from './composer.js';
-import { renderRules } from './view.js';
+import { renderRules as renderRuleView } from './view.js';
+import { getRuleWorkspaceViewModel } from '../view-model.js';
 
-export { renderRules } from './view.js';
+export function renderRules() {
+  const model = getRuleWorkspaceViewModel(state);
+  if (state.searchQuery !== model.searchQuery) {
+    state.searchQuery = model.searchQuery;
+  }
+  renderRuleView(model);
+}
 
 let refreshWorkspace;
 let renderWorkspace;

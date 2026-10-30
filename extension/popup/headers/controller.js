@@ -16,10 +16,10 @@ import {
   grantRuleAccess
 } from './actions.js';
 import { bindComposerEvents, openRuleEditor, openCreateComposer, setHeaderComposerExpanded } from './composer.js';
-import { renderRules, setRuleScope, toggleDomain, toggleRuleValueVisibility } from './view.js';
+import { renderWorkspace } from '../workspace.js';
 
 export function bindHeaderEvents() {
-  configureRuleActions({ onRefresh: refreshFromStorage });
+  configureRuleActions({ onRefresh: refreshFromStorage, onRender: renderWorkspace });
   bindActivationEvents({ onChanged: refreshFromStorage });
   bindComposerEvents({ onAddRule: addRule, onSaveRule: saveEditedRule });
 
@@ -56,7 +56,7 @@ export const { refresh: refreshFromStorage, schedule: scheduleRefresh } = create
   if (state.headers.editingId && !state.headers.rules.some((rule) => rule.id === state.headers.editingId)) {
     setHeaderComposerExpanded(false, { reset: true });
   }
-  renderRules();
+  renderWorkspace();
 });
 
 function openManager() {
@@ -111,6 +111,29 @@ function initializeCurrentSite(activeTab) {
   const tabUrl = activeTab?.url || '';
   state.headers.currentHostname = /^https:\/\//i.test(tabUrl) ? normalizeDomain(tabUrl) : '';
   document.getElementById('domain').value = state.headers.currentHostname;
+}
+
+function setRuleScope(scope) {
+  state.headers.scope = scope === 'all' ? 'all' : 'site';
+  renderWorkspace();
+}
+
+function toggleDomain(domain) {
+  if (state.headers.collapsedDomains.has(domain)) {
+    state.headers.collapsedDomains.delete(domain);
+  } else {
+    state.headers.collapsedDomains.add(domain);
+  }
+  renderWorkspace();
+}
+
+function toggleRuleValueVisibility(id) {
+  if (state.headers.revealedRuleIds.has(id)) {
+    state.headers.revealedRuleIds.delete(id);
+  } else {
+    state.headers.revealedRuleIds.add(id);
+  }
+  renderWorkspace();
 }
 
 function handleScopeTabClick(event) {

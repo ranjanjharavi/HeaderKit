@@ -69,7 +69,7 @@ export function setHeaderComposerExpanded(
   }
   composer.hidden = !expanded;
   toggle.setAttribute('aria-expanded', String(expanded));
-  syncAddRuleActions();
+  syncAddRuleActions(state.composerOpen || state.editingId !== null);
 
   if (reset) {
     clearRuleFormError();

@@ -5,6 +5,7 @@ import { state as optionsState } from '../../../extension/options/state.js';
 import { state as popupState } from '../../../extension/popup/state.js';
 import * as optionsActions from '../../../extension/options/rules/actions.js';
 import * as popupActions from '../../../extension/popup/headers/actions.js';
+import { renderWorkspace as renderPopupWorkspace } from '../../../extension/popup/workspace.js';
 import { bindComposerEvents as bindOptionsComposer } from '../../../extension/options/rules/composer.js';
 import { bindComposerEvents as bindPopupComposer } from '../../../extension/popup/headers/composer.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
@@ -67,7 +68,7 @@ function setup(t, surface, rules = []) {
     optionsActions.configureRuleActions({ onRender() {}, onRefresh: refresh });
     bindOptionsComposer({ onAddRule: actions.addRule });
   } else {
-    popupActions.configureRuleActions({ onRefresh: refresh });
+    popupActions.configureRuleActions({ onRefresh: refresh, onRender: renderPopupWorkspace });
     bindPopupComposer({ onAddRule: actions.addRule, onSaveRule: actions.saveEditedRule });
   }
   function draft(values, id = null) {

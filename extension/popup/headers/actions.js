@@ -4,12 +4,13 @@ import { clearRuleFormError, showRuleFormError } from '../../shared/ui/rule-form
 import { state, getActivation } from '../state.js';
 import { showStatus } from '../../shared/ui/ui.js';
 import { siteAccessPreflight, readCreateDraft } from './composer.js';
-import { renderRules } from './view.js';
 
 let ruleWorkflows;
+let renderWorkspace;
 
-export function configureRuleActions({ onRefresh }) {
+export function configureRuleActions({ onRefresh, onRender }) {
   ruleWorkflows = createRuleWorkflows({ refreshState: onRefresh });
+  renderWorkspace = onRender;
 }
 
 export async function addRule() {
@@ -35,7 +36,7 @@ export async function addRule() {
         if (permission.permissionError) {
           console.error('Could not request site access.', permission.permissionError);
         }
-        renderRules();
+        renderWorkspace();
         showStatus(
           'headerStatus',
           `Rule saved, but HeaderKit still needs site access to https://${newRule.domain} before it can be applied.`,
@@ -83,7 +84,7 @@ export async function saveEditedRule(id) {
       state.headers.grantedOrigins = grantedOrigins;
     }
     state.headers.revealedRuleIds.delete(id);
-    renderRules();
+    renderWorkspace();
     if (permissionResult && !permissionResult.granted) {
       if (permissionResult.permissionError) {
         console.error('Could not request site access.', permissionResult.permissionError);
@@ -123,7 +124,7 @@ export async function toggleRule(id) {
     const { permission, grantedOrigins } = await ruleWorkflows.save(change);
     if (permission) {
       state.headers.grantedOrigins = grantedOrigins;
-      renderRules();
+      renderWorkspace();
       if (!permission.granted) {
         if (permission.permissionError) {
           console.error('Could not request site access.', permission.permissionError);
@@ -192,7 +193,7 @@ export async function grantRuleAccess(id) {
 
   try {
     state.headers.grantedOrigins = await ruleWorkflows.grantAccess(rule, state.headers.grantedOrigins);
-    renderRules();
+    renderWorkspace();
     showStatus('headerStatus', `Site access granted for ${rule.domain}.`, 'success');
   } catch (error) {
     console.error(error);
