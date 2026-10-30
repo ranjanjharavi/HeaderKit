@@ -1,5 +1,5 @@
 import { getLiveRules } from '../shared/domain/activation.js';
-import { buildDynamicRule } from '../shared/domain/rules.js';
+import { buildDynamicRule } from './rule-compiler.js';
 import { filterGrantedRules } from '../shared/domain/site-access.js';
 
 /** Reconciles Chrome's two applied rulesets; persistence and serialization belong to the caller. */

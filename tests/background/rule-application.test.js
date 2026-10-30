@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRuleApplication } from '../../extension/background/rule-application.js';
 import { createDefaultActivation } from '../../extension/shared/domain/activation.js';
-import { buildDynamicRule } from '../../extension/shared/domain/rules.js';
+import { buildDynamicRule } from '../../extension/background/rule-compiler.js';
 
 function rule(id = 1, overrides = {}) {
   return {

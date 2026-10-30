@@ -3,20 +3,6 @@ import { DEFAULT_PROFILE_ID, resolveProfileId } from './profiles.js';
 
 export const RULE_STORAGE_KEY = 'headerRules';
 
-const REQUEST_RESOURCE_TYPES = [
-  'main_frame',
-  'sub_frame',
-  'stylesheet',
-  'script',
-  'image',
-  'font',
-  'object',
-  'xmlhttprequest',
-  'ping',
-  'csp_report',
-  'media',
-  'other'
-];
 const SUPPORTED_RESOURCE_TYPES = new Set(['all', 'xmlhttprequest']);
 const MAX_PATH_PREFIX_LENGTH = 512;
 
@@ -121,7 +107,7 @@ export function getDisplayPathPrefix(value) {
   }
 }
 
-function normalizeResourceType(value) {
+export function normalizeResourceType(value) {
   const resourceType = String(value || 'all')
     .trim()
     .toLowerCase();
@@ -414,36 +400,6 @@ function doScopesOverlap(leftRule, rightRule) {
   return leftPath === rightPath || leftPath.startsWith(`${rightPath}/`) || rightPath.startsWith(`${leftPath}/`);
 }
 
-export function buildDynamicRule(rule) {
-  const pathCondition = normalizePathPrefix(rule.pathPrefix ?? '');
-  const pathRegex = pathCondition ? `${escapeRegex(pathCondition)}(?:/|[?#]|$)` : '(?:[/?#]|$)';
-  const resourceType = normalizeResourceType(rule.resourceType ?? 'all') || 'all';
-
-  return {
-    id: rule.id,
-    priority: 1,
-    action: {
-      type: 'modifyHeaders',
-      requestHeaders: [
-        {
-          header: rule.headerName,
-          operation: 'set',
-          value: rule.headerValue
-        }
-      ]
-    },
-    condition: {
-      resourceTypes: resourceType === 'all' ? REQUEST_RESOURCE_TYPES : [resourceType],
-      isUrlFilterCaseSensitive: true,
-      regexFilter: String.raw`^https:\/\/${escapeRegex(rule.domain)}(?::\d+)?${pathRegex}`
-    }
-  };
-}
-
 export function getRuleOriginPattern(rule) {
   return `https://${rule.domain}/*`;
-}
-
-function escapeRegex(value) {
-  return String(value).replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }

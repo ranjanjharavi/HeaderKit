@@ -3,7 +3,6 @@ import test from 'node:test';
 
 import {
   areRulesConflicting,
-  buildDynamicRule,
   filterRulesByHost,
   filterRulesByProfile,
   findActiveRuleConflict,
@@ -14,6 +13,7 @@ import {
   getRuleOriginPattern,
   normalizeDomain,
   normalizePathPrefix,
+  normalizeResourceType,
   normalizeRules,
   parseHostInput,
   validateRuleDraft
@@ -48,6 +48,17 @@ test('path prefixes normalize to segment prefixes and reject unsafe URL parts', 
   assert.equal(normalizePathPrefix('/api\\\\admin'), null);
   assert.equal(normalizePathPrefix('/api\u0001x'), null);
   assert.equal(normalizePathPrefix(`/${'a'.repeat(513)}`), null);
+});
+
+test('resource types normalize supported business scopes and reject unsupported values', () => {
+  for (const value of [undefined, null, '', 'all', ' ALL ']) {
+    assert.equal(normalizeResourceType(value), 'all');
+  }
+  assert.equal(normalizeResourceType(' XMLHTTPREQUEST '), 'xmlhttprequest');
+  for (const value of ['script', 'image', 'websocket', 'unknown']) {
+    assert.equal(normalizeResourceType(value), null);
+    assert.deepEqual(normalizeRules([{ ...sampleRules[0], resourceType: value }]), []);
+  }
 });
 
 test('normalizeDomain accepts HTTPS hosts and rejects HTTP', () => {
@@ -150,7 +161,7 @@ test('normalizeRules reserves valid IDs before repairing invalid and duplicate e
   );
 });
 
-test('Unicode paths canonicalize for matching, identity and safe display round trips', () => {
+test('Unicode paths canonicalize for identity and safe display round trips', () => {
   const pathPrefix = '/caf\u00e9';
   const canonical = '/caf%C3%A9';
   assert.equal(normalizePathPrefix(pathPrefix), canonical);
@@ -163,9 +174,6 @@ test('Unicode paths canonicalize for matching, identity and safe display round t
     assert.equal(normalizePathPrefix(path), null);
   }
   const rule = { ...sampleRules[0], pathPrefix };
-  const expression = new RegExp(buildDynamicRule(rule).condition.regexFilter);
-  assert.equal(expression.test(new URL('https://api.example.com/caf\u00e9/users').href), true);
-  assert.equal(expression.test('https://api.example.com/caf%C3%A9x'), false);
   assert.equal(validateRuleDraft({ ...rule, pathPrefix: canonical }, [rule]).ok, false);
   assert.equal(normalizeRules([rule])[0].pathPrefix, canonical);
 });
@@ -357,6 +365,7 @@ test('validateRuleDraft rejects duplicate headers even for paused drafts', () =>
 });
 
 test('rule collection helpers preserve exact-host behavior', () => {
+  assert.equal(getRuleOriginPattern(sampleRules[0]), 'https://api.example.com/*');
   assert.equal(getNextRuleId(sampleRules), 3);
   assert.deepEqual(filterRulesByHost(sampleRules, 'https://api.example.com/path'), [sampleRules[0]]);
   assert.deepEqual(groupRulesByDomain(sampleRules), [
@@ -456,50 +465,10 @@ test('profile helpers filter rules', () => {
   assert.deepEqual(filterRulesByProfile([sampleRules[1]], 'default'), [sampleRules[1]]);
 });
 
-test('buildDynamicRule preserves host-wide defaults and applies path/type scopes', () => {
-  const defaultRule = buildDynamicRule(sampleRules[0]);
-  assert.equal(defaultRule.condition.isUrlFilterCaseSensitive, true);
-  assert.deepEqual(defaultRule.condition.resourceTypes, [
-    'main_frame',
-    'sub_frame',
-    'stylesheet',
-    'script',
-    'image',
-    'font',
-    'object',
-    'xmlhttprequest',
-    'ping',
-    'csp_report',
-    'media',
-    'other'
-  ]);
-  assert.match('https://api.example.com/path', new RegExp(defaultRule.condition.regexFilter));
-  assert.doesNotMatch('http://api.example.com/path', new RegExp(defaultRule.condition.regexFilter));
-  assert.doesNotMatch('https://sub.api.example.com/path', new RegExp(defaultRule.condition.regexFilter));
-
-  const scopedRule = buildDynamicRule({
-    ...sampleRules[0],
-    pathPrefix: '/api/v1',
-    resourceType: 'xmlhttprequest'
-  });
-  const scopedPattern = new RegExp(scopedRule.condition.regexFilter);
-  assert.deepEqual(scopedRule.condition.resourceTypes, ['xmlhttprequest']);
-  assert.match('https://api.example.com/api/v1', scopedPattern);
-  assert.match('https://api.example.com/api/v1/users?active=1', scopedPattern);
-  assert.doesNotMatch('https://api.example.com/api/v10/users', scopedPattern);
-  assert.doesNotMatch('https://api.example.com/admin', scopedPattern);
-  assert.equal(getRuleOriginPattern(sampleRules[0]), 'https://api.example.com/*');
-});
-
-test('DNR path case sensitivity agrees with conflict detection', () => {
+test('path conflict detection and draft validation are case sensitive', () => {
   const upperRule = { ...sampleRules[0], pathPrefix: '/API' };
   const lowerRule = { ...sampleRules[0], id: 3, pathPrefix: '/api', headerValue: 'different' };
 
   assert.equal(areRulesConflicting(upperRule, lowerRule), false);
   assert.equal(validateRuleDraft(lowerRule, [upperRule]).ok, true);
-
-  const { condition } = buildDynamicRule(upperRule);
-  const pattern = new RegExp(condition.regexFilter, condition.isUrlFilterCaseSensitive ? '' : 'i');
-  assert.match('https://api.example.com/API/users', pattern);
-  assert.doesNotMatch('https://api.example.com/api/users', pattern);
 });
