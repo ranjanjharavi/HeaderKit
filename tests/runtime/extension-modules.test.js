@@ -9,17 +9,18 @@ function listModules(directory = extensionRoot) {
     const url = new URL(name, directory);
     return statSync(url).isDirectory()
       ? listModules(new URL(`${name}/`, directory))
-      : name.endsWith('.js') ? [url] : [];
+      : name.endsWith('.js')
+        ? [url]
+        : [];
   });
 }
 
 function getDependencies(url) {
   const source = readFileSync(url, 'utf8');
-  return [...source.matchAll(/^import\s+[\s\S]*?\sfrom\s*['"]([^'"]+)['"]/gm)]
-    .map((match) => {
-      assert.ok(match[1].startsWith('.'), `Browser module needs a relative import: ${url}`);
-      return new URL(match[1], url);
-    });
+  return [...source.matchAll(/^import\s+[\s\S]*?\sfrom\s*['"]([^'"]+)['"]/gm)].map((match) => {
+    assert.ok(match[1].startsWith('.'), `Browser module needs a relative import: ${url}`);
+    return new URL(match[1], url);
+  });
 }
 
 test('every browser module dependency exists inside the unpacked extension', () => {
@@ -27,6 +28,15 @@ test('every browser module dependency exists inside the unpacked extension', () 
     for (const dependency of getDependencies(module)) {
       assert.ok(dependency.href.startsWith(extensionRoot.href), `${module} imports outside extension/`);
       assert.ok(statSync(dependency).isFile(), `${module} imports a missing module`);
+    }
+  }
+});
+
+test('domain modules depend only on domain data logic, never worker, runtime, or UI modules', () => {
+  const domainRoot = new URL('shared/domain/', extensionRoot);
+  for (const module of listModules(domainRoot)) {
+    for (const dependency of getDependencies(module)) {
+      assert.ok(dependency.href.startsWith(domainRoot.href), `${module} imports outside shared/domain/`);
     }
   }
 });

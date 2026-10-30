@@ -1,75 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HeaderKit Privacy Policy</title>
-  <style>
-:root{color-scheme:light;--blue:#2563eb;--blue-deep:#1d4ed8;--blue-soft:#eff6ff;--border:#bfdbfe;--ink:#0f172a;--ink-soft:#334155;--muted:#64748b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--blue-soft)}
-*{box-sizing:border-box}body{margin:0;padding:40px 20px;background:linear-gradient(145deg,#eaf3ff,#f8fbff 48%,#eaf2ff)}
-main{max-width:760px;margin:0 auto;padding:40px;border:1px solid var(--border);border-radius:18px;background:#fff;box-shadow:0 24px 70px rgba(30,64,175,.13)}
-header{display:flex;align-items:center;gap:16px;padding-bottom:22px;border-bottom:1px solid #dbeafe;color:var(--muted);font-size:13px}header img{border-radius:14px}
-.eyebrow{display:block;margin-bottom:4px;color:var(--blue);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.purpose-badge{display:inline-flex;margin-top:20px;padding:7px 10px;border:1px solid var(--border);border-radius:12px;background:var(--blue-soft);color:var(--blue-deep);font-size:11px;font-weight:700;line-height:1.35}
-h1{margin:28px 0 4px;font-size:30px;letter-spacing:-.02em}h1+p{margin-top:0;color:#64748b;font-size:13px}h2{margin:30px 0 10px;font-size:18px}
-p,li{color:var(--ink-soft);font-size:15px;line-height:1.65}li+li{margin-top:8px}code{padding:2px 5px;border-radius:5px;background:var(--blue-soft);color:#1e40af;overflow-wrap:anywhere}a{color:var(--blue-deep)}
-@media(max-width:600px){body{padding:0}main{padding:26px 20px;border:0;border-radius:0}}
-</style>
-</head>
-<body>
-  <main>
-    <header><img src="../icons/headerkit-128.png" width="64" height="64" alt="HeaderKit"><div><span class="eyebrow">HeaderKit</span><span>Request-header privacy</span></div></header>
-    <span class="purpose-badge">Built for API and web-environment testing</span>
-    <h1>HeaderKit Privacy Policy</h1>
-    <p>Last updated: October 29, 2026</p>
-    <p>HeaderKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry, remote code, developer-operated API/server, or accounts.</p>
-    <h2 id="data-headerkit-handles">Data HeaderKit handles</h2>
-    <ul>
-    <li><strong>Active tab URL:</strong> read locally when the popup opens. Match the current host.</li>
-    <li><strong>Toolbar badge URLs:</strong> compare available tab URLs with rule hosts on navigation, tab selection, and rule, activation, or site-access changes. Access depends on site grants or temporary <code>activeTab</code> access. Never store URLs or send them to the developer.</li>
-    <li><strong>Profiles and activation:</strong> store names, selected profile, pause state, and timing in <code>chrome.storage.local</code> in the current Chrome profile.</li>
-    <li><strong>Header rules:</strong> store HTTPS hosts, names, values, path/request-type scopes, profile assignments, and enabled states locally.</li>
-    <li><strong>Privacy choice:</strong> store disclosure acceptance and version locally. Revised disclosures may require acceptance again. Existing rules and grants stay unchanged.</li>
-    </ul>
-    <p>No page-content reads or retained browsing history.</p>
-    <h2 id="how-data-is-used-and-transmitted">How data is used and transmitted</h2>
-    <p>Chrome sends active header values only to the rule&#039;s exact HTTPS host with site access. Match configured path/request-type scopes. Without optional scoping, match all paths and request types on that host.</p>
-    <p>Destination services follow separate policies. Destination or intermediary logs may retain header values. HeaderKit sends no data to its developer.</p>
-    <p>Export/import behavior:</p>
-    <ul>
-    <li>Export saved profiles and rules to local JSON. Include full, unencrypted values, even when masked in the interface.</li>
-    <li>Exclude activation, timers, site access grants, and privacy consent.</li>
-    <li>Import locally as new profiles with paused rules. Preserve existing profiles. Request no new site access. Repeated imports add copies.</li>
-    <li>Never send backup contents to the developer.</li>
-    </ul>
-    <p>The badge reflects rule and activation state. Use <code>Alt+Shift+X</code> to pause or resume all rules without opening the popup. Keep saved rules and grants unchanged.</p>
-    <h2 id="retention-and-deletion">Retention and deletion</h2>
-    <ul>
-    <li>Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or HeaderKit is uninstalled.</li>
-    <li>Delete a profile to remove its rules.</li>
-    <li>Delete downloaded backups separately. Clearing extension data or uninstalling HeaderKit does not remove those files.</li>
-    <li>Attempt to release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile. Broader grants may remain.</li>
-    <li>Review or revoke grants through <strong>Site access</strong>. Keep affected rules saved. Stop applying them unless another grant still covers the host.</li>
-    </ul>
-    <h2 id="permissions">Permissions</h2>
-    <p><strong>Site access</strong> means permission to apply rules on selected HTTPS hosts.</p>
-    <ul>
-    <li><code>activeTab</code>: read the active tab URL after invoking HeaderKit. Identify the current host and support badge updates.</li>
-    <li><code>alarms</code>: stop timed activations with HeaderKit pages closed.</li>
-    <li><code>storage</code>: save profiles, rules, activation settings, and consent in the current Chrome profile.</li>
-    <li><code>declarativeNetRequestWithHostAccess</code>: apply request headers on approved HTTPS hosts. No script injection or response-body reads.</li>
-    <li>Optional <code>https://*/*</code>: request exact-host access on save, resume, <strong>Grant</strong>, or profile switch. No all-site access by default. Review or revoke grants through <strong>Site access</strong>.</li>
-    </ul>
-    <h2 id="security-and-responsible-use">Security and responsible use</h2>
-    <p>Use exact HTTPS hosts, optional path/fetch/XHR scopes, and conflict checks for overlapping active rules.</p>
-    <p>Mask sensitive-looking values in popup and manager lists and forms. Detection uses header names suggesting authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys, tokens, secrets, or cookies. Other names may be missed. Reveal values as needed.</p>
-    <p>Masking is visual only. Local extension storage and backups remain unencrypted. Access to Chrome profile files may expose stored values, settings, and consent.</p>
-    <p>Use authorized systems and data only. Avoid long-lived production credentials.</p>
-    <h2 id="data-sharing-and-sale">Data sharing and sale</h2>
-    <p>No data sale or rental. No transfers to the developer, advertisers, or data brokers. Send configured header values only to selected destinations as described above. No advertising, creditworthiness, or unrelated uses.</p>
-    <p>Information received from Google APIs follows the Chrome Web Store User Data Policy, including Limited Use requirements.</p>
-    <h2 id="contact">Contact</h2>
-    <p><a href="https://github.com/ranjanjharavi/HeaderKit/issues">Report a privacy concern or request support</a>.</p>
-  </main>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HeaderKit Privacy Policy</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --blue: #2563eb;
+        --blue-deep: #1d4ed8;
+        --blue-soft: #eff6ff;
+        --border: #bfdbfe;
+        --ink: #0f172a;
+        --ink-soft: #334155;
+        --muted: #64748b;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--ink);
+        background: var(--blue-soft);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 40px 20px;
+        background: linear-gradient(145deg, #eaf3ff, #f8fbff 48%, #eaf2ff);
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 40px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(30, 64, 175, 0.13);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #dbeafe;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      header img {
+        border-radius: 14px;
+      }
+      .eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--blue);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .purpose-badge {
+        display: inline-flex;
+        margin-top: 20px;
+        padding: 7px 10px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--blue-soft);
+        color: var(--blue-deep);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+      h1 {
+        margin: 28px 0 4px;
+        font-size: 30px;
+        letter-spacing: -0.02em;
+      }
+      h1 + p {
+        margin-top: 0;
+        color: #64748b;
+        font-size: 13px;
+      }
+      h2 {
+        margin: 30px 0 10px;
+        font-size: 18px;
+      }
+      p,
+      li {
+        color: var(--ink-soft);
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      li + li {
+        margin-top: 8px;
+      }
+      code {
+        padding: 2px 5px;
+        border-radius: 5px;
+        background: var(--blue-soft);
+        color: #1e40af;
+        overflow-wrap: anywhere;
+      }
+      a {
+        color: var(--blue-deep);
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 0;
+        }
+        main {
+          padding: 26px 20px;
+          border: 0;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="../icons/headerkit-128.png" width="64" height="64" alt="HeaderKit" />
+        <div>
+          <span class="eyebrow">HeaderKit</span>
+          <span>Request-header privacy</span>
+        </div>
+      </header>
+      <span class="purpose-badge">Built for API and web-environment testing</span>
+      <h1>HeaderKit Privacy Policy</h1>
+      <p>Last updated: October 29, 2026</p>
+      <p>
+        HeaderKit modifies request headers on exact HTTPS hosts for API and web testing. No analytics, ads, telemetry,
+        remote code, developer-operated API/server, or accounts.
+      </p>
+      <h2 id="data-headerkit-handles">Data HeaderKit handles</h2>
+      <ul>
+        <li>
+          <strong>Active tab URL:</strong>
+          read locally when the popup opens. Match the current host.
+        </li>
+        <li>
+          <strong>Toolbar badge URLs:</strong>
+          compare available tab URLs with rule hosts on navigation, tab selection, and rule, activation, or site-access
+          changes. Access depends on site grants or temporary
+          <code>activeTab</code>
+          access. Never store URLs or send them to the developer.
+        </li>
+        <li>
+          <strong>Profiles and activation:</strong>
+          store names, selected profile, pause state, and timing in
+          <code>chrome.storage.local</code>
+          in the current Chrome profile.
+        </li>
+        <li>
+          <strong>Header rules:</strong>
+          store HTTPS hosts, names, values, path/request-type scopes, profile assignments, and enabled states locally.
+        </li>
+        <li>
+          <strong>Privacy choice:</strong>
+          store disclosure acceptance and version locally. Revised disclosures may require acceptance again. Existing
+          rules and grants stay unchanged.
+        </li>
+      </ul>
+      <p>No page-content reads or retained browsing history.</p>
+      <h2 id="how-data-is-used-and-transmitted">How data is used and transmitted</h2>
+      <p>
+        Chrome sends active header values only to the rule&#039;s exact HTTPS host with site access. Match configured
+        path/request-type scopes. Without optional scoping, match all paths and request types on that host.
+      </p>
+      <p>
+        Destination services follow separate policies. Destination or intermediary logs may retain header values.
+        HeaderKit sends no data to its developer.
+      </p>
+      <p>Export/import behavior:</p>
+      <ul>
+        <li>
+          Export saved profiles and rules to local JSON. Include full, unencrypted values, even when masked in the
+          interface.
+        </li>
+        <li>Exclude activation, timers, site access grants, and privacy consent.</li>
+        <li>
+          Import locally as new profiles with paused rules. Preserve existing profiles. Request no new site access.
+          Repeated imports add copies.
+        </li>
+        <li>Never send backup contents to the developer.</li>
+      </ul>
+      <p>
+        The badge reflects rule and activation state. Use
+        <code>Alt+Shift+X</code>
+        to pause or resume all rules without opening the popup. Keep saved rules and grants unchanged.
+      </p>
+      <h2 id="retention-and-deletion">Retention and deletion</h2>
+      <ul>
+        <li>
+          Retain profiles, rules, activation, and consent until changed, deleted, extension data is cleared, or
+          HeaderKit is uninstalled.
+        </li>
+        <li>Delete a profile to remove its rules.</li>
+        <li>
+          Delete downloaded backups separately. Clearing extension data or uninstalling HeaderKit does not remove those
+          files.
+        </li>
+        <li>
+          Attempt to release unused host-specific grants after the final rule is deleted, moved to another host, or
+          removed with a profile. Broader grants may remain.
+        </li>
+        <li>
+          Review or revoke grants through
+          <strong>Site access</strong>
+          . Keep affected rules saved. Stop applying them unless another grant still covers the host.
+        </li>
+      </ul>
+      <h2 id="permissions">Permissions</h2>
+      <p>
+        <strong>Site access</strong>
+        means permission to apply rules on selected HTTPS hosts.
+      </p>
+      <ul>
+        <li>
+          <code>activeTab</code>
+          : read the active tab URL after invoking HeaderKit. Identify the current host and support badge updates.
+        </li>
+        <li>
+          <code>alarms</code>
+          : stop timed activations with HeaderKit pages closed.
+        </li>
+        <li>
+          <code>storage</code>
+          : save profiles, rules, activation settings, and consent in the current Chrome profile.
+        </li>
+        <li>
+          <code>declarativeNetRequestWithHostAccess</code>
+          : apply request headers on approved HTTPS hosts. No script injection or response-body reads.
+        </li>
+        <li>
+          Optional
+          <code>https://*/*</code>
+          : request exact-host access on save, resume,
+          <strong>Grant</strong>
+          , or profile switch. No all-site access by default. Review or revoke grants through
+          <strong>Site access</strong>
+          .
+        </li>
+      </ul>
+      <h2 id="security-and-responsible-use">Security and responsible use</h2>
+      <p>Use exact HTTPS hosts, optional path/fetch/XHR scopes, and conflict checks for overlapping active rules.</p>
+      <p>
+        Mask sensitive-looking values in popup and manager lists and forms. Detection uses header names suggesting
+        authentication, sessions, passwords, signatures, CSRF/XSRF, bearer/JWT, credentials, private data, API keys,
+        tokens, secrets, or cookies. Other names may be missed. Reveal values as needed.
+      </p>
+      <p>
+        Masking is visual only. Local extension storage and backups remain unencrypted. Access to Chrome profile files
+        may expose stored values, settings, and consent.
+      </p>
+      <p>Use authorized systems and data only. Avoid long-lived production credentials.</p>
+      <h2 id="data-sharing-and-sale">Data sharing and sale</h2>
+      <p>
+        No data sale or rental. No transfers to the developer, advertisers, or data brokers. Send configured header
+        values only to selected destinations as described above. No advertising, creditworthiness, or unrelated uses.
+      </p>
+      <p>
+        Information received from Google APIs follows the Chrome Web Store User Data Policy, including Limited Use
+        requirements.
+      </p>
+      <h2 id="contact">Contact</h2>
+      <p>
+        <a href="https://github.com/ranjanjharavi/HeaderKit/issues">Report a privacy concern or request support</a>
+        .
+      </p>
+    </main>
+  </body>
 </html>

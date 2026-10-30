@@ -4,7 +4,10 @@ function createEvent() {
   const listeners = [];
   return {
     addListener: (listener) => listeners.push(listener),
-    emit: (...args) => listeners.forEach((listener) => listener(...args))
+    emit: (...args) => listeners.forEach((listener) => listener(...args)),
+    get listenerCount() {
+      return listeners.length;
+    }
   };
 }
 
@@ -31,14 +34,23 @@ export async function installBackgroundHarness(chromeApi) {
   chromeApi.storage.onChanged = storageChanges;
   chromeApi.runtime.id ??= 'headerkit-test';
   chromeApi.runtime.getURL ??= (path) => `chrome-extension://${chromeApi.runtime.id}/${path}`;
-  chromeApi.runtime.onMessage = { addListener: (listener) => messages.push(listener) };
+  chromeApi.runtime.onMessage = {
+    addListener: (listener) => messages.push(listener),
+    get listenerCount() {
+      return messages.length;
+    }
+  };
   chromeApi.runtime.onInstalled = createEvent();
   chromeApi.runtime.onStartup = createEvent();
   chromeApi.runtime.sendMessage = (message, callback) => {
-    sendMessageFrom(message, {
-      id: chromeApi.runtime.id,
-      url: chromeApi.runtime.getURL('popup/index.html')
-    }, callback);
+    sendMessageFrom(
+      message,
+      {
+        id: chromeApi.runtime.id,
+        url: chromeApi.runtime.getURL('popup/index.html')
+      },
+      callback
+    );
   };
   function sendMessageFrom(message, sender, callback) {
     const handled = messages.some((listener) => listener(message, sender, callback));
@@ -48,15 +60,19 @@ export async function installBackgroundHarness(chromeApi) {
   }
   chromeApi.permissions.onAdded = createEvent();
   chromeApi.permissions.onRemoved = createEvent();
-  for (const [method, event] of [['request', 'onAdded'], ['remove', 'onRemoved']]) {
+  for (const [method, event] of [
+    ['request', 'onAdded'],
+    ['remove', 'onRemoved']
+  ]) {
     const original = chromeApi.permissions[method]?.bind(chromeApi.permissions);
     if (original) {
-      chromeApi.permissions[method] = (details, callback) => original(details, (changed) => {
-        callback(changed);
-        if (changed) {
-          chromeApi.permissions[event].emit(details);
-        }
-      });
+      chromeApi.permissions[method] = (details, callback) =>
+        original(details, (changed) => {
+          callback(changed);
+          if (changed) {
+            chromeApi.permissions[event].emit(details);
+          }
+        });
     }
   }
   chromeApi.action = {
@@ -110,7 +126,11 @@ export async function installBackgroundHarness(chromeApi) {
     sendFrom: (message, sender) => new Promise((resolve) => sendMessageFrom(message, sender, resolve)),
     getDynamicRules: () => structuredClone(dynamicRules),
     getSessionRules: () => structuredClone(sessionRules),
-    clearSessionRules: () => { sessionRules = []; },
-    failNextRuleUpdate: (kind) => { failedRuleUpdate = kind; }
+    clearSessionRules: () => {
+      sessionRules = [];
+    },
+    failNextRuleUpdate: (kind) => {
+      failedRuleUpdate = kind;
+    }
   };
 }

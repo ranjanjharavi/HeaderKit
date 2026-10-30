@@ -1,8 +1,5 @@
 import { requirePrivacyConsent } from '../shared/ui/privacy.js';
-import {
-  bindRuleEvents,
-  initializeRules
-} from './rules/controller.js';
+import { bindRuleEvents, initializeRules } from './rules/controller.js';
 import { bindProfileEvents, activateProfile } from './profiles/controller.js';
 import { bindSiteAccessEvents } from './site-access/controller.js';
 import { bindBackupEvents } from './backup/controller.js';
@@ -52,8 +49,9 @@ function focusRequestedSection() {
   globalThis.setTimeout(() => {
     const section = document.getElementById('active-setup');
     section.scrollIntoView({ block: 'start' });
-    const focusTarget = document.querySelector('#durationPills [data-duration][aria-checked="true"]:not(:disabled)')
-      || document.querySelector('#profileTabs [aria-selected="true"]');
+    const focusTarget =
+      document.querySelector('#durationPills [data-duration][aria-checked="true"]:not(:disabled)') ||
+      document.querySelector('#profileTabs [aria-selected="true"]');
     focusTarget?.focus({ preventScroll: true });
   }, 0);
 }

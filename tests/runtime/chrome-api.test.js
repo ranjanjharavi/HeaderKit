@@ -109,7 +109,10 @@ test('session rule adapters resolve results and propagate Chrome errors', async 
   let rules = [{ id: 1 }];
   chromeApi.declarativeNetRequest = {
     getSessionRules: (callback) => callback(rules),
-    updateSessionRules: (details, callback) => { rules = details.addRules; callback(); }
+    updateSessionRules: (details, callback) => {
+      rules = details.addRules;
+      callback();
+    }
   };
   assert.deepEqual(await getSessionRules(chromeApi), [{ id: 1 }]);
   await updateSessionRules({ removeRuleIds: [1], addRules: [{ id: 2 }] }, chromeApi);

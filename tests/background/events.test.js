@@ -1,27 +1,213 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readSource } from '../helpers/source.js';
 import { installBackgroundHarness } from '../helpers/background-harness.js';
 import { createDefaultActivation } from '../../extension/shared/domain/activation.js';
+import { CURRENT_SCHEMA_VERSION } from '../../extension/background/migrate.js';
+import { EXPIRY_ALARM } from '../../extension/background/controller.js';
 
-const backgroundSource = readSource('extension/background.js');
+test('site permission changes immediately rebuild the applied rule set', async (t) => {
+  const harness = await worker(t);
+  const origins = [];
+  chrome.permissions.getAll = (callback) => callback({ origins: [...origins] });
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  assert.equal(added.ok, true);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  const savedRules = structuredClone(harness.storage.headerRules);
 
-test('site permission changes immediately rebuild the applied rule set', () => {
-  assert.match(backgroundSource, /chrome\.permissions\.onAdded\.addListener/);
-  assert.match(backgroundSource, /chrome\.permissions\.onRemoved\.addListener/);
-  assert.match(backgroundSource, /refreshAfterPermissionChange/);
+  origins.push('https://example.com/*');
+  chrome.permissions.onAdded.emit({ origins: [...origins] });
+  await harness.send({ type: 'headerkit:state:get' });
+  assert.deepEqual(
+    harness.getDynamicRules().map((rule) => rule.id),
+    [added.rule.id]
+  );
+
+  origins.length = 0;
+  chrome.permissions.onRemoved.emit({ origins: ['https://example.com/*'] });
+  await harness.send({ type: 'headerkit:state:get' });
+  assert.deepEqual(harness.getDynamicRules(), []);
+  assert.deepEqual(harness.storage.headerRules, savedRules);
 });
 
-test('background state changes and reads share a serial queue', () => {
-  assert.match(backgroundSource, /const enqueueBackgroundTask = createSerialQueue\(\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => handleRuleMessage\(message\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => handleActivationMessage\(message\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => initialize\(\{ newBrowserSession: true \}\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => applyExpiry\(\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => toggleMasterSwitch\(\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshAfterPermissionChange\(\)\)/);
-  assert.doesNotMatch(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshTabBadge/);
-  assert.doesNotMatch(backgroundSource, /chrome\.tabs\.onActivated\.addListener/);
+test('background state changes and reads wait for an in-flight commit in enqueue order', async (t) => {
+  const harness = await worker(t);
+  const set = chrome.storage.local.set.bind(chrome.storage.local);
+  let releaseWrite;
+  let markWriteStarted;
+  const writeStarted = new Promise((resolve) => {
+    markWriteStarted = resolve;
+  });
+  chrome.storage.local.set = (values, callback) => {
+    chrome.storage.local.set = set;
+    releaseWrite = () => set(values, callback);
+    markWriteStarted();
+  };
+  const adding = harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  await writeStarted;
+  let snapshotResolved = false;
+  const snapshot = harness.send({ type: 'headerkit:state:get' }).then((result) => {
+    snapshotResolved = true;
+    return result;
+  });
+  const pausing = harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  try {
+    await new Promise(setImmediate);
+    assert.equal(snapshotResolved, false);
+    assert.deepEqual(harness.storage.headerRules, []);
+    assert.equal(harness.storage.activation.masterEnabled, true);
+    assert.deepEqual(harness.writes, []);
+  } finally {
+    releaseWrite();
+  }
+
+  const [added, read, paused] = await Promise.all([adding, snapshot, pausing]);
+  assert.equal(added.ok, true);
+  assert.equal(read.ok, true);
+  assert.deepEqual(read.rules, added.rules);
+  assert.equal(read.activation.masterEnabled, true);
+  assert.equal(paused.ok, true);
+  assert.equal(paused.activation.masterEnabled, false);
+  assert.equal(harness.storage.activation.masterEnabled, false);
+  assert.deepEqual(harness.getDynamicRules(), []);
+});
+
+test('worker composition registers its listeners without eagerly reading storage', async (t) => {
+  const harness = await worker(t);
+  assert.deepEqual(harness.reads, []);
+  for (const event of [
+    chrome.storage.onChanged,
+    chrome.runtime.onMessage,
+    chrome.runtime.onInstalled,
+    chrome.runtime.onStartup,
+    chrome.permissions.onAdded,
+    chrome.permissions.onRemoved,
+    chrome.alarms.onAlarm,
+    chrome.commands.onCommand,
+    chrome.tabs.onUpdated,
+    chrome.tabs.onRemoved
+  ]) {
+    assert.equal(event.listenerCount, 1);
+  }
+  assert.equal(chrome.tabs.onActivated.listenerCount, 0);
+  chrome.commands.onCommand.emit('unrelated-command');
+  chrome.alarms.onAlarm.emit({ name: 'unrelated-alarm' });
+  await new Promise(setImmediate);
+  assert.deepEqual(harness.reads, []);
+});
+
+test('installation migrates saved data before rebuilding applied rules', async (t) => {
+  const harness = await worker(t, {
+    headerRules: [
+      { id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'default' }
+    ]
+  });
+  chrome.runtime.onInstalled.emit();
+  const state = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(state.ok, true);
+  assert.equal(harness.storage.schemaVersion, CURRENT_SCHEMA_VERSION);
+  assert.deepEqual(
+    harness.getDynamicRules().map((rule) => rule.id),
+    [1]
+  );
+  assert.equal(state.rules[0].enabled, true);
+});
+
+test('keyboard commands wait behind an in-flight activation commit on the shared queue', async (t) => {
+  const harness = await worker(t);
+  await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  const set = chrome.storage.local.set.bind(chrome.storage.local);
+  let releaseWrite;
+  let markStarted;
+  const started = new Promise((resolve) => {
+    markStarted = resolve;
+  });
+  chrome.storage.local.set = (values, callback) => {
+    chrome.storage.local.set = set;
+    releaseWrite = () => set(values, callback);
+    markStarted();
+  };
+  const pausing = harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  await started;
+  chrome.commands.onCommand.emit('toggle-master');
+  const reading = harness.send({ type: 'headerkit:state:get' });
+  try {
+    await new Promise(setImmediate);
+    assert.equal(harness.storage.activation.masterEnabled, true);
+  } finally {
+    releaseWrite();
+  }
+  assert.equal((await pausing).activation.masterEnabled, false);
+  assert.equal((await reading).activation.masterEnabled, true);
+  assert.equal(harness.storage.activation.masterEnabled, true);
+  assert.equal(harness.getDynamicRules().length, 1);
+});
+
+test('an expiry alarm parks activation, clears applied rules, and leaves saved rule flags untouched', async (t) => {
+  let now = 10_000;
+  t.mock.method(Date, 'now', () => now);
+  const harness = await worker(t, {
+    activation: { ...createDefaultActivation(), expiresAt: 20_000, durationMs: 10_000 },
+    headerRules: [
+      { id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'default' }
+    ]
+  });
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(harness.getDynamicRules().length, 1);
+  const alarms = t.mock.method(chrome.alarms, 'clear');
+  now = 21_000;
+  chrome.alarms.onAlarm.emit({ name: EXPIRY_ALARM });
+  const expired = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(expired.activation.profileId, null);
+  assert.equal(harness.storage.activation.expiresAt, null);
+  assert.equal(harness.storage.headerRules[0].enabled, true);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  assert.equal(alarms.mock.calls.at(-1).arguments[0], EXPIRY_ALARM);
+});
+
+test('permission cleanup failures do not turn a durable deletion into a failed request', async (t) => {
+  const harness = await worker(t);
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  chrome.permissions.remove = (_details, callback) => {
+    chrome.runtime.lastError = { message: 'Cannot release grant' };
+    callback();
+    chrome.runtime.lastError = null;
+  };
+  const removed = await harness.send({ type: 'headerkit:rules:delete', id: added.rule.id });
+  assert.equal(removed.ok, true);
+  assert.deepEqual(harness.storage.headerRules, []);
+  assert.deepEqual(harness.getDynamicRules(), []);
+});
+
+test('alarm scheduling failures retain the committed activation and keep the queue usable', async (t) => {
+  const harness = await worker(t);
+  chrome.alarms.clear = (_name, callback) => {
+    chrome.runtime.lastError = { message: 'Alarms unavailable' };
+    callback();
+    chrome.runtime.lastError = null;
+  };
+  const selected = await harness.send({ type: 'headerkit:activation:set-duration', durationMs: 60_000 });
+  assert.equal(selected.ok, true);
+  assert.ok(harness.storage.activation.expiresAt > Date.now());
+  assert.equal(
+    (await harness.send({ type: 'headerkit:state:get' })).activation.expiresAt,
+    selected.activation.expiresAt
+  );
 });
 
 async function worker(t, stored = {}) {
@@ -29,30 +215,39 @@ async function worker(t, stored = {}) {
   const originalError = console.error;
   console.error = () => {};
   const storage = {
-    profiles: [{ id: 'default', name: 'Default' }, { id: 'staging', name: 'Staging' }],
+    profiles: [
+      { id: 'default', name: 'Default' },
+      { id: 'staging', name: 'Staging' }
+    ],
     headerRules: [],
     activation: createDefaultActivation(),
     ...stored
   };
   const origins = ['https://example.com/*', 'https://staging.example.com/*'];
   const removed = [];
+  const reads = [];
   let failWrite = false;
   const chromeApi = {
     runtime: { lastError: null },
-    storage: { local: {
-      get: (keys, callback) => callback(structuredClone(Object.fromEntries(keys.map((key) => [key, storage[key]])))),
-      set: (value, callback) => {
-        if (failWrite) {
-          failWrite = false;
-          chromeApi.runtime.lastError = { message: 'Storage failed' };
+    storage: {
+      local: {
+        get: (keys, callback) => {
+          reads.push([...keys]);
+          callback(structuredClone(Object.fromEntries(keys.map((key) => [key, storage[key]]))));
+        },
+        set: (value, callback) => {
+          if (failWrite) {
+            failWrite = false;
+            chromeApi.runtime.lastError = { message: 'Storage failed' };
+            callback();
+            chromeApi.runtime.lastError = null;
+            return;
+          }
+          Object.assign(storage, structuredClone(value));
           callback();
-          chromeApi.runtime.lastError = null;
-          return;
         }
-        Object.assign(storage, structuredClone(value));
-        callback();
       }
-    } },
+    },
     permissions: {
       getAll: (callback) => callback({ origins }),
       remove: ({ origins: released }, callback) => {
@@ -71,7 +266,10 @@ async function worker(t, stored = {}) {
     ...harness,
     storage,
     removed,
-    failNextWrite: () => { failWrite = true; },
+    reads,
+    failNextWrite: () => {
+      failWrite = true;
+    },
     send: (message) => new Promise((resolve) => chromeApi.runtime.sendMessage(message, resolve))
   };
 }
@@ -81,9 +279,13 @@ test('stalled badge queries do not block commits and navigation bursts avoid bro
   let releaseQuery;
   let markQueryStarted;
   let queries = 0;
-  const queryStarted = new Promise((resolve) => { markQueryStarted = resolve; });
+  const queryStarted = new Promise((resolve) => {
+    markQueryStarted = resolve;
+  });
   const texts = [];
-  chrome.action.setBadgeText = async (details) => { texts.push(details); };
+  chrome.action.setBadgeText = async (details) => {
+    texts.push(details);
+  };
   chrome.tabs.query = (_query, callback) => {
     queries++;
     const tabs = [{ id: 7, url: 'https://example.com/' }];
@@ -97,7 +299,11 @@ test('stalled badge queries do not block commits and navigation bursts avoid bro
   const draft = { domain: 'example.com', headerName: 'X-One', headerValue: 'one' };
   assert.equal((await harness.send({ type: 'headerkit:rules:add', draft, profileId: 'default' })).ok, true);
   await queryStarted;
-  const second = await harness.send({ type: 'headerkit:rules:add', draft: { ...draft, headerName: 'X-Two' }, profileId: 'default' });
+  const second = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { ...draft, headerName: 'X-Two' },
+    profileId: 'default'
+  });
   assert.equal(second.ok, true);
   releaseQuery();
   await new Promise(setImmediate);
@@ -121,14 +327,24 @@ test('worker cache avoids repeated reads and tracks committed writes and externa
   let grantReads = 0;
   const get = chrome.storage.local.get.bind(chrome.storage.local);
   const getAll = chrome.permissions.getAll.bind(chrome.permissions);
-  chrome.storage.local.get = (keys, callback) => { reads++; get(keys, callback); };
-  chrome.permissions.getAll = (callback) => { grantReads++; getAll(callback); };
+  chrome.storage.local.get = (keys, callback) => {
+    reads++;
+    get(keys, callback);
+  };
+  chrome.permissions.getAll = (callback) => {
+    grantReads++;
+    getAll(callback);
+  };
   await harness.send({ type: 'headerkit:state:get' });
   await harness.send({ type: 'headerkit:state:get' });
   assert.equal(reads, 1);
   assert.equal(grantReads, 1);
   const created = await harness.send({ type: 'headerkit:profiles:create', name: 'Cached' });
-  const added = await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: created.profile.id });
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' },
+    profileId: created.profile.id
+  });
   assert.equal(added.ok, true);
   const reorderedRules = harness.storage.headerRules.map((rule) => Object.fromEntries(Object.entries(rule).reverse()));
   chrome.storage.onChanged.emit({ headerRules: { newValue: reorderedRules } }, 'local');
@@ -136,7 +352,12 @@ test('worker cache avoids repeated reads and tracks committed writes and externa
   assert.equal(reads, 1);
   assert.equal(grantReads, 1);
   harness.failNextWrite();
-  const failed = await harness.send({ type: 'headerkit:rules:update', id: added.rule.id, draft: { ...added.rule, headerValue: 'failed' }, profileId: created.profile.id });
+  const failed = await harness.send({
+    type: 'headerkit:rules:update',
+    id: added.rule.id,
+    draft: { ...added.rule, headerValue: 'failed' },
+    profileId: created.profile.id
+  });
   assert.equal(failed.ok, false);
   assert.equal((await harness.send({ type: 'headerkit:state:get' })).rules[0].headerValue, 'one');
   assert.equal(reads, 1);
@@ -177,18 +398,21 @@ test('a storage change during a cold read cannot publish a stale cache', async (
   const harness = await worker(context);
   let releaseRead;
   let markReadStarted;
-  const readStarted = new Promise((resolve) => { markReadStarted = resolve; });
+  const readStarted = new Promise((resolve) => {
+    markReadStarted = resolve;
+  });
   const get = chrome.storage.local.get.bind(chrome.storage.local);
   let firstRead = true;
-  chrome.storage.local.get = (keys, callback) => get(keys, (value) => {
-    if (firstRead) {
-      firstRead = false;
-      releaseRead = () => callback(value);
-      markReadStarted();
-      return;
-    }
-    callback(value);
-  });
+  chrome.storage.local.get = (keys, callback) =>
+    get(keys, (value) => {
+      if (firstRead) {
+        firstRead = false;
+        releaseRead = () => callback(value);
+        markReadStarted();
+        return;
+      }
+      callback(value);
+    });
   const pending = harness.send({ type: 'headerkit:state:get' });
   await readStarted;
   harness.storage.activation.masterEnabled = false;
@@ -224,8 +448,11 @@ test('actual worker rejects untrusted senders before reading or mutating state',
   };
   const before = structuredClone(harness.storage);
   const senders = [
-    undefined, null, {},
-    { id }, { url },
+    undefined,
+    null,
+    {},
+    { id },
+    { url },
     { id: 'another-extension', url },
     { id, url: 'https://example.com/' },
     { id, url: `https://example.com/${url}` },
@@ -264,8 +491,15 @@ test('actual worker merges concurrent rule intents and rejects conflicts and sta
     harness.send({ type: 'headerkit:rules:add', draft: { ...draft, headerName: 'X-Other' }, profileId: 'default' })
   ]);
   assert.ok(results.every((result) => result.ok));
-  assert.deepEqual(results.map((result) => result.rule.id), [1, 2]);
-  const conflict = await harness.send({ type: 'headerkit:rules:add', draft: { ...draft, pathPrefix: '/api', headerValue: 'different' }, profileId: 'default' });
+  assert.deepEqual(
+    results.map((result) => result.rule.id),
+    [1, 2]
+  );
+  const conflict = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { ...draft, pathPrefix: '/api', headerValue: 'different' },
+    profileId: 'default'
+  });
   assert.equal(conflict.ok, false);
   assert.equal(conflict.field, 'headerValue');
   assert.equal(conflict.conflictId, 1);
@@ -273,7 +507,12 @@ test('actual worker merges concurrent rule intents and rejects conflicts and sta
   assert.equal(duplicate.field, 'headerName');
   await Promise.all([
     harness.send({ type: 'headerkit:rules:set-enabled', id: 1, enabled: false }),
-    harness.send({ type: 'headerkit:rules:update', id: 2, draft: { ...draft, headerName: 'X-Other', headerValue: 'updated' }, profileId: 'default' }),
+    harness.send({
+      type: 'headerkit:rules:update',
+      id: 2,
+      draft: { ...draft, headerName: 'X-Other', headerValue: 'updated' },
+      profileId: 'default'
+    }),
     harness.send({ type: 'headerkit:rules:delete', id: 1 })
   ]);
   assert.equal(harness.storage.headerRules.length, 1);
@@ -290,7 +529,16 @@ test('actual worker merges concurrent rule intents and rejects conflicts and sta
 
 test('actual worker profile transactions roll back storage failures and clean up final-host grants', async (t) => {
   const harness = await worker(t, {
-    headerRules: [{ id: 1, domain: 'staging.example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'staging' }],
+    headerRules: [
+      {
+        id: 1,
+        domain: 'staging.example.com',
+        headerName: 'X-Test',
+        headerValue: 'one',
+        enabled: true,
+        profileId: 'staging'
+      }
+    ],
     activation: { ...createDefaultActivation(), profileId: 'staging', lastProfileId: 'staging' }
   });
   await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
@@ -312,7 +560,11 @@ test('actual worker profile transactions roll back storage failures and clean up
   assert.deepEqual(harness.removed, []);
   const [deleted, stale] = await Promise.all([
     harness.send({ type: 'headerkit:profiles:delete', id: 'staging' }),
-    harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'old' }, profileId: 'staging' })
+    harness.send({
+      type: 'headerkit:rules:add',
+      draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'old' },
+      profileId: 'staging'
+    })
   ]);
   assert.equal(deleted.ok, true);
   assert.equal(deleted.activation.profileId, 'default');
@@ -339,9 +591,53 @@ test('actual worker resolves expired snapshots and applies activation intents to
   assert.deepEqual(harness.storage, before);
 });
 
+test('worker writes compile canonical scoped rules identically for dynamic and session application', async (t) => {
+  const harness = await worker(t);
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: {
+      domain: 'https://EXAMPLE.com/',
+      headerName: ' X-Scoped ',
+      headerValue: ' one ',
+      pathPrefix: '/caf\u00e9/API/',
+      resourceType: ' XMLHTTPREQUEST '
+    }
+  });
+  assert.equal(added.ok, true);
+  assert.equal(added.rule.pathPrefix, '/caf%C3%A9/API');
+  assert.equal(added.rule.resourceType, 'xmlhttprequest');
+  const expected = [
+    {
+      id: added.rule.id,
+      priority: 1,
+      action: { type: 'modifyHeaders', requestHeaders: [{ header: 'X-Scoped', operation: 'set', value: 'one' }] },
+      condition: {
+        resourceTypes: ['xmlhttprequest'],
+        isUrlFilterCaseSensitive: true,
+        regexFilter: String.raw`^https:\/\/example\.com(?::\d+)?/caf%C3%A9/API(?:/|[?#]|$)`
+      }
+    }
+  ];
+  assert.deepEqual(harness.getDynamicRules(), expected);
+  assert.deepEqual(harness.getSessionRules(), []);
+  const session = await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
+  assert.equal(session.ok, true);
+  assert.deepEqual(harness.getSessionRules(), expected);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  const dynamic = await harness.send({ type: 'headerkit:activation:set-duration', durationMs: 60_000 });
+  assert.equal(dynamic.ok, true);
+  assert.deepEqual(harness.getDynamicRules(), expected);
+  assert.deepEqual(harness.getSessionRules(), []);
+});
+
 test('until-browser-close activation uses only session rules and Chrome clears them before startup', async (t) => {
   const harness = await worker(t);
-  await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' },
+    profileId: 'default'
+  });
   assert.equal(harness.getDynamicRules().length, 1);
   await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
   assert.equal(harness.getDynamicRules().length, 0);
@@ -357,7 +653,11 @@ test('until-browser-close activation uses only session rules and Chrome clears t
 
 test('switching between session and dynamic rules restores the prior set on API or storage failure', async (t) => {
   const harness = await worker(t);
-  await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' },
+    profileId: 'default'
+  });
   const dynamicBefore = harness.getDynamicRules();
   for (const failure of ['api', 'storage']) {
     if (failure === 'api') {
@@ -392,10 +692,18 @@ test('switching between session and dynamic rules restores the prior set on API 
 test('regex quota is checked before changing either applied ruleset', async (t) => {
   const harness = await worker(t);
   chrome.declarativeNetRequest.MAX_NUMBER_OF_REGEX_RULES = 1;
-  await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' }, profileId: 'default' });
+  await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' },
+    profileId: 'default'
+  });
   await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
   const before = harness.getSessionRules();
-  const rejected = await harness.send({ type: 'headerkit:rules:add', draft: { domain: 'example.com', headerName: 'X-Two', headerValue: 'two' }, profileId: 'default' });
+  const rejected = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-Two', headerValue: 'two' },
+    profileId: 'default'
+  });
   assert.equal(rejected.ok, false);
   assert.match(rejected.error, /at most 1 active header rules/);
   assert.deepEqual(harness.getSessionRules(), before);

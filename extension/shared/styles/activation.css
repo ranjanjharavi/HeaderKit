@@ -17,7 +17,9 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 0.18s ease, color 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .master-switch:hover {
@@ -45,15 +47,15 @@
   transition: transform 0.18s ease;
 }
 
-.master-switch[aria-checked="true"] {
+.master-switch[aria-checked='true'] {
   color: var(--primary);
 }
 
-.master-switch[aria-checked="true"] .master-switch-track {
+.master-switch[aria-checked='true'] .master-switch-track {
   background: var(--primary);
 }
 
-.master-switch[aria-checked="true"] .master-switch-thumb {
+.master-switch[aria-checked='true'] .master-switch-thumb {
   transform: translateX(11px);
 }
 

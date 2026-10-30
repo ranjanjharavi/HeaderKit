@@ -51,7 +51,7 @@ export function applyProfileIntent(message, state) {
     const profile = { ...source, name: validation.profile.name };
     return {
       ...state,
-      profiles: state.profiles.map((candidate) => candidate.id === source.id ? profile : candidate),
+      profiles: state.profiles.map((candidate) => (candidate.id === source.id ? profile : candidate)),
       profile
     };
   }
@@ -61,8 +61,10 @@ export function applyProfileIntent(message, state) {
   }
   let rules = state.rules;
   if (message.type === PROFILE_MESSAGE_DUPLICATE) {
-    const clonedRules = cloneRulesIntoProfile(rules, message.id, profile.id, getNextRuleId(rules))
-      .map((rule) => ({ ...rule, enabled: false }));
+    const clonedRules = cloneRulesIntoProfile(rules, message.id, profile.id, getNextRuleId(rules)).map((rule) => ({
+      ...rule,
+      enabled: false
+    }));
     rules = [...rules, ...clonedRules];
   }
   return { ...state, profiles: [...state.profiles, profile], rules, profile };

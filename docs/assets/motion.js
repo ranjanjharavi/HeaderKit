@@ -74,16 +74,19 @@
   function initialize() {
     if (!enabled) return;
     try {
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting || entry.intersectionRatio < .3) return;
-          if (entry.target.hasAttribute('data-motion-group')) {
-            revealGroup(entry.target);
-            return;
-          }
-          reveal(entry.target);
-        });
-      }, { threshold: .3 });
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.intersectionRatio < 0.3) return;
+            if (entry.target.hasAttribute('data-motion-group')) {
+              revealGroup(entry.target);
+              return;
+            }
+            reveal(entry.target);
+          });
+        },
+        { threshold: 0.3 }
+      );
 
       const intro = document.querySelectorAll('[data-motion="intro"]');
       intro.forEach((element, index) => {

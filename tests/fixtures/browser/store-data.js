@@ -17,12 +17,56 @@ export function createStoreData() {
       untilBrowserClose: false
     },
     headerRules: [
-      { id: 1, domain: 'api.example.com', headerName: 'X-Environment', headerValue: 'staging', pathPrefix: '/api/v1', resourceType: 'xmlhttprequest', enabled: true, profileId: 'default' },
-      { id: 2, domain: 'api.example.com', headerName: 'X-Debug-Mode', headerValue: 'enabled', enabled: true, profileId: 'default' },
-      { id: 3, domain: 'api.example.com', headerName: 'X-Trace', headerValue: 'verbose', enabled: false, profileId: 'default' },
-      { id: 4, domain: 'qa.example.com', headerName: 'X-Environment', headerValue: 'qa', enabled: true, profileId: 'qa' },
-      { id: 5, domain: 'qa.example.com', headerName: 'X-Debug-Mode', headerValue: 'enabled', enabled: false, profileId: 'qa' },
-      { id: 6, domain: 'localhost', headerName: 'X-Debug-Mode', headerValue: 'enabled', enabled: false, profileId: 'development' }
+      {
+        id: 1,
+        domain: 'api.example.com',
+        headerName: 'X-Environment',
+        headerValue: 'staging',
+        pathPrefix: '/api/v1',
+        resourceType: 'xmlhttprequest',
+        enabled: true,
+        profileId: 'default'
+      },
+      {
+        id: 2,
+        domain: 'api.example.com',
+        headerName: 'X-Debug-Mode',
+        headerValue: 'enabled',
+        enabled: true,
+        profileId: 'default'
+      },
+      {
+        id: 3,
+        domain: 'api.example.com',
+        headerName: 'X-Trace',
+        headerValue: 'verbose',
+        enabled: false,
+        profileId: 'default'
+      },
+      {
+        id: 4,
+        domain: 'qa.example.com',
+        headerName: 'X-Environment',
+        headerValue: 'qa',
+        enabled: true,
+        profileId: 'qa'
+      },
+      {
+        id: 5,
+        domain: 'qa.example.com',
+        headerName: 'X-Debug-Mode',
+        headerValue: 'enabled',
+        enabled: false,
+        profileId: 'qa'
+      },
+      {
+        id: 6,
+        domain: 'localhost',
+        headerName: 'X-Debug-Mode',
+        headerValue: 'enabled',
+        enabled: false,
+        profileId: 'development'
+      }
     ]
   };
 }

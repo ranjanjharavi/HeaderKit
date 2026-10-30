@@ -17,7 +17,9 @@ function initialState() {
   return {
     profiles: [createDefaultProfile(), { id: 'staging', name: 'Staging' }],
     profileIds: new Set(['default', 'staging']),
-    rules: [{ id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'staging' }],
+    rules: [
+      { id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'staging' }
+    ],
     activation: { ...createDefaultActivation(), profileId: 'staging', lastProfileId: 'staging' }
   };
 }
@@ -34,7 +36,10 @@ test('profile intents create, rename and duplicate from current state with pause
   assert.equal(copied.rules[1].enabled, false);
   assert.equal(copied.rules[1].profileId, copied.profile.id);
   assert.deepEqual(copied.activation, state.activation);
-  assert.throws(() => applyProfileIntent({ type: PROFILE_MESSAGE_RENAME, id: 'missing', name: 'Lost' }, state), /no longer exists/);
+  assert.throws(
+    () => applyProfileIntent({ type: PROFILE_MESSAGE_RENAME, id: 'missing', name: 'Lost' }, state),
+    /no longer exists/
+  );
   assert.throws(() => applyProfileIntent({ type: PROFILE_MESSAGE_CREATE, name: 'Staging' }, state), /already exists/);
 });
 
@@ -49,9 +54,13 @@ test('deleting a profile removes its rules and activation references without act
   assert.equal(deleted.profiles.length, 1);
   assert.equal(deleted.activation.profileId, 'default');
   assert.equal(deleted.activation.lastProfileId, 'default');
-  const parked = applyProfileIntent({ type: PROFILE_MESSAGE_DELETE, id: 'staging' }, {
-    ...state, activation: { ...state.activation, profileId: null }
-  });
+  const parked = applyProfileIntent(
+    { type: PROFILE_MESSAGE_DELETE, id: 'staging' },
+    {
+      ...state,
+      activation: { ...state.activation, profileId: null }
+    }
+  );
   assert.deepEqual(parked.rules, [defaultRule]);
   assert.equal(parked.activation.profileId, null);
   assert.equal(parked.activation.lastProfileId, 'default');
@@ -63,10 +72,16 @@ test('state commit applies before one atomic storage write and restores DNR on s
   for (const type of [PROFILE_MESSAGE_DELETE, PROFILE_MESSAGE_DUPLICATE]) {
     const nextState = applyProfileIntent({ type, id: 'staging', name: 'Copy' }, state);
     const events = [];
-    await assert.rejects(commitState(nextState, state, {
-      applyState: async (value) => events.push(value),
-      storeState: async (value) => { events.push(value); throw new Error('Storage failed'); }
-    }), /Storage failed/);
+    await assert.rejects(
+      commitState(nextState, state, {
+        applyState: async (value) => events.push(value),
+        storeState: async (value) => {
+          events.push(value);
+          throw new Error('Storage failed');
+        }
+      }),
+      /Storage failed/
+    );
     assert.deepEqual(events, [nextState, nextState, state]);
     const writes = [];
     await commitState(nextState, state, {
@@ -87,17 +102,30 @@ test('activation intents preserve current master state and reject stale profile 
   assert.equal(timed.masterEnabled, false);
   assert.equal(timed.profileId, 'staging');
   assert.equal(timed.durationMs, 60_000);
-  const resumed = applyActivationIntent({ type: ACTIVATION_MESSAGE_SET_MASTER, enabled: true }, { ...state, activation: timed });
+  const resumed = applyActivationIntent(
+    { type: ACTIVATION_MESSAGE_SET_MASTER, enabled: true },
+    { ...state, activation: timed }
+  );
   assert.equal(resumed.expiresAt, timed.expiresAt);
-  assert.throws(() => applyActivationIntent({ type: ACTIVATION_MESSAGE_SET_PROFILE, profileId: 'missing' }, state), /no longer exists/);
+  assert.throws(
+    () => applyActivationIntent({ type: ACTIVATION_MESSAGE_SET_PROFILE, profileId: 'missing' }, state),
+    /no longer exists/
+  );
 });
 
 test('state commit does not write storage when applying DNR fails', async () => {
   const state = initialState();
   let stored = false;
-  await assert.rejects(commitState(state, state, {
-    applyState: async () => { throw new Error('DNR failed'); },
-    storeState: async () => { stored = true; }
-  }), /DNR failed/);
+  await assert.rejects(
+    commitState(state, state, {
+      applyState: async () => {
+        throw new Error('DNR failed');
+      },
+      storeState: async () => {
+        stored = true;
+      }
+    }),
+    /DNR failed/
+  );
   assert.equal(stored, false);
 });

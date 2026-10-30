@@ -1,9 +1,9 @@
 /* Shared extension foundations and components. Page layouts load afterward. */
-@import url("./tokens.css");
-@import url("./base.css");
-@import url("./privacy.css");
-@import url("./controls.css");
-@import url("./composer.css");
-@import url("./rules.css");
-@import url("./dialogs.css");
-@import url("./activation.css");
+@import url('./tokens.css');
+@import url('./base.css');
+@import url('./privacy.css');
+@import url('./controls.css');
+@import url('./composer.css');
+@import url('./rules.css');
+@import url('./dialogs.css');
+@import url('./activation.css');

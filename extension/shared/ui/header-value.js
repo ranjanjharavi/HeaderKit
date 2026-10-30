@@ -1,4 +1,5 @@
-import { isSensitiveHeaderName, renderValueVisibilityIcon } from './rule-render.js';
+import { renderValueVisibilityIcon } from './rule-render.js';
+import { isSensitiveHeaderName } from './rule-view-model.js';
 
 export function syncHeaderValueField(form, { revealed = false } = {}) {
   const nameInput = form.querySelector('[data-header-name]');

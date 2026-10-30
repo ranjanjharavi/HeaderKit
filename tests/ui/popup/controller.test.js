@@ -13,12 +13,13 @@ test('popup startup extracts HTTPS hosts without throwing on credentials or malf
     onRemoved: { addListener() {} }
   };
   chrome.storage = { onChanged: { addListener() {} } };
-  chrome.runtime.sendMessage = (_message, callback) => callback({
-    ok: true,
-    rules: [],
-    profiles: [{ id: 'default', name: 'Default' }],
-    activation: createDefaultActivation()
-  });
+  chrome.runtime.sendMessage = (_message, callback) =>
+    callback({
+      ok: true,
+      rules: [],
+      profiles: [{ id: 'default', name: 'Default' }],
+      activation: createDefaultActivation()
+    });
   bindHeaderEvents();
   for (const [url, hostname] of [
     ['https://user:pass@example.com/', 'example.com'],

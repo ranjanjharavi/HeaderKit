@@ -4,12 +4,7 @@ import { RULE_STORAGE_KEY, normalizeRules } from '../shared/domain/rules.js';
 
 export const SCHEMA_VERSION_KEY = 'schemaVersion';
 
-export const MIGRATED_KEYS = [
-  SCHEMA_VERSION_KEY,
-  PROFILE_STORAGE_KEY,
-  RULE_STORAGE_KEY,
-  ACTIVATION_STORAGE_KEY
-];
+export const MIGRATED_KEYS = [SCHEMA_VERSION_KEY, PROFILE_STORAGE_KEY, RULE_STORAGE_KEY, ACTIVATION_STORAGE_KEY];
 
 /**
  * Ordered, additive steps. Later work adds a step rather than editing an
@@ -86,8 +81,8 @@ export async function ensureMigrated({ get, set }) {
     });
     await set({ [SCHEMA_VERSION_KEY]: state[SCHEMA_VERSION_KEY] });
 
-    const removedCount = (Array.isArray(stored[RULE_STORAGE_KEY]) ? stored[RULE_STORAGE_KEY].length : 0)
-      - state[RULE_STORAGE_KEY].length;
+    const removedCount =
+      (Array.isArray(stored[RULE_STORAGE_KEY]) ? stored[RULE_STORAGE_KEY].length : 0) - state[RULE_STORAGE_KEY].length;
     if (removedCount > 0) {
       console.warn(`Removed ${removedCount} invalid saved header rule(s) during migration.`);
     }

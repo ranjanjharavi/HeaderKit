@@ -29,8 +29,12 @@ function element(motion) {
     removeAttribute(name) {
       if (name === 'data-motion') delete this.dataset.motion;
     },
-    querySelector() { return this.image || null; },
-    querySelectorAll() { return this.children; },
+    querySelector() {
+      return this.image || null;
+    },
+    querySelectorAll() {
+      return this.children;
+    },
     closest(selector) {
       let node = this;
       while (node) {
@@ -44,7 +48,9 @@ function element(motion) {
       if (!listeners.has(name)) listeners.set(name, new Set());
       listeners.get(name).add(callback);
     },
-    removeEventListener(name, callback) { listeners.get(name)?.delete(callback); },
+    removeEventListener(name, callback) {
+      listeners.get(name)?.delete(callback);
+    },
     dispatch(name, event = {}) {
       for (const callback of [...(listeners.get(name) || [])]) {
         callback({ target: this, currentTarget: this, ...event });
@@ -68,7 +74,9 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
   const frame = element('image');
   frame.image = image;
   group.children = [element('up'), frame, element('up')];
-  group.children.forEach((child) => { child.parent = group; });
+  group.children.forEach((child) => {
+    child.parent = group;
+  });
   const frames = [];
   let observer;
   class Observer {
@@ -80,10 +88,18 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
       this.removed = new Set();
       observer = this;
     }
-    observe(target) { this.targets.add(target); }
-    unobserve(target) { this.targets.delete(target); this.removed.add(target); }
-    disconnect() { this.targets.clear(); this.disconnected = true; }
-    enter(target, ratio = .3) {
+    observe(target) {
+      this.targets.add(target);
+    }
+    unobserve(target) {
+      this.targets.delete(target);
+      this.removed.add(target);
+    }
+    disconnect() {
+      this.targets.clear();
+      this.disconnected = true;
+    }
+    enter(target, ratio = 0.3) {
       this.callback([{ target, isIntersecting: true, intersectionRatio: ratio }]);
     }
   }
@@ -109,10 +125,24 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
   };
   runInNewContext(source, context);
   return {
-    root, document, preference, intro, cards, group, frame, image, frames,
-    initialize() { document.dispatch('DOMContentLoaded'); },
-    getObserver() { return observer; },
-    tick() { frames.shift()?.(); }
+    root,
+    document,
+    preference,
+    intro,
+    cards,
+    group,
+    frame,
+    image,
+    frames,
+    initialize() {
+      document.dispatch('DOMContentLoaded');
+    },
+    getObserver() {
+      return observer;
+    },
+    tick() {
+      frames.shift()?.();
+    }
   };
 }
 
@@ -139,10 +169,10 @@ test('visual sections reveal once at thirty percent with local stagger', () => {
   const view = setup();
   view.initialize();
   const observer = view.getObserver();
-  assert.equal(observer.options.threshold, .3);
+  assert.equal(observer.options.threshold, 0.3);
   assert.equal(view.cards[0].style.getPropertyValue('--motion-delay'), '0ms');
   assert.equal(view.cards[2].style.getPropertyValue('--motion-delay'), '170ms');
-  observer.enter(view.cards[0], .1);
+  observer.enter(view.cards[0], 0.1);
   assert.equal(view.cards[0].classList.contains('is-revealed'), false);
   observer.enter(view.cards[0]);
   assert.ok(view.cards[0].classList.contains('is-revealed'));

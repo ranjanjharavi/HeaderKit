@@ -22,9 +22,7 @@ function createStorageStub(initial = {}) {
   return {
     data,
     writes,
-    get: async (keys) => Object.fromEntries(
-      keys.filter((key) => key in data).map((key) => [key, data[key]])
-    ),
+    get: async (keys) => Object.fromEntries(keys.filter((key) => key in data).map((key) => [key, data[key]])),
     set: async (value) => {
       writes.push(value);
       Object.assign(data, value);
@@ -39,10 +37,22 @@ test('a 1.0 profile keeps every rule exactly as it was', () => {
   assert.equal(fromVersion, 0);
   assert.equal(state[SCHEMA_VERSION_KEY], CURRENT_SCHEMA_VERSION);
 
-  assert.deepEqual(state.headerRules.map((rule) => rule.enabled), [true, false]);
-  assert.deepEqual(state.headerRules.map((rule) => rule.id), [1, 2]);
-  assert.deepEqual(state.headerRules.map((rule) => rule.headerValue), ['one', 'two']);
-  assert.deepEqual(state.headerRules.map((rule) => rule.profileId), ['default', 'default']);
+  assert.deepEqual(
+    state.headerRules.map((rule) => rule.enabled),
+    [true, false]
+  );
+  assert.deepEqual(
+    state.headerRules.map((rule) => rule.id),
+    [1, 2]
+  );
+  assert.deepEqual(
+    state.headerRules.map((rule) => rule.headerValue),
+    ['one', 'two']
+  );
+  assert.deepEqual(
+    state.headerRules.map((rule) => rule.profileId),
+    ['default', 'default']
+  );
 });
 
 test('migration leaves the extension switched on', () => {
@@ -51,7 +61,10 @@ test('migration leaves the extension switched on', () => {
   assert.equal(state.activation.masterEnabled, true);
   assert.equal(state.activation.profileId, 'default');
   assert.equal(state.activation.expiresAt, null);
-  assert.deepEqual(state.profiles.map((profile) => profile.id), ['default']);
+  assert.deepEqual(
+    state.profiles.map((profile) => profile.id),
+    ['default']
+  );
 });
 
 test('a fresh install seeds the default profile', () => {
@@ -59,7 +72,10 @@ test('a fresh install seeds the default profile', () => {
 
   assert.equal(changed, true);
   assert.deepEqual(state.headerRules, []);
-  assert.deepEqual(state.profiles.map((profile) => profile.name), ['Default']);
+  assert.deepEqual(
+    state.profiles.map((profile) => profile.name),
+    ['Default']
+  );
   assert.equal(state.activation.profileId, 'default');
 });
 
@@ -105,7 +121,13 @@ test('an already-migrated profile is left untouched', () => {
     [SCHEMA_VERSION_KEY]: CURRENT_SCHEMA_VERSION,
     profiles: [{ id: 'staging', name: 'Staging', createdAt: 5, defaultDurationMs: null }],
     headerRules: [],
-    activation: { masterEnabled: false, profileId: 'staging', lastProfileId: 'staging', expiresAt: null, untilBrowserClose: false }
+    activation: {
+      masterEnabled: false,
+      profileId: 'staging',
+      lastProfileId: 'staging',
+      expiresAt: null,
+      untilBrowserClose: false
+    }
   };
 
   const { state, changed } = migrateState(migrated);
@@ -148,7 +170,10 @@ test('a failure before the version marker re-runs cleanly', async () => {
 
   await ensureMigrated(storage);
   assert.equal(storage.data[SCHEMA_VERSION_KEY], CURRENT_SCHEMA_VERSION);
-  assert.deepEqual(storage.data.headerRules.map((rule) => rule.enabled), [true, false]);
+  assert.deepEqual(
+    storage.data.headerRules.map((rule) => rule.enabled),
+    [true, false]
+  );
 });
 
 test('ensureMigrated skips writing when nothing changed', async () => {

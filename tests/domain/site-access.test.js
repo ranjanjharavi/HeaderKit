@@ -20,10 +20,7 @@ const rules = [
 ];
 
 test('a profile needs one origin per distinct host', () => {
-  assert.deepEqual(getProfileOrigins(rules, 'default'), [
-    'https://api.example.com/*',
-    'https://cdn.example.net/*'
-  ]);
+  assert.deepEqual(getProfileOrigins(rules, 'default'), ['https://api.example.com/*', 'https://cdn.example.net/*']);
   assert.deepEqual(getProfileOrigins(rules, 'staging'), ['https://staging.acme.io/*']);
   assert.deepEqual(getProfileOrigins(rules, 'missing'), []);
 });
@@ -43,7 +40,9 @@ test('nothing is requested when everything is already granted', () => {
 test('exact grant checks use the Set lookup without copying or iteration', () => {
   const origin = 'https://api.example.com/*';
   const granted = new Set([origin]);
-  granted[Symbol.iterator] = () => { throw new Error('Unexpected grant iteration'); };
+  granted[Symbol.iterator] = () => {
+    throw new Error('Unexpected grant iteration');
+  };
   assert.equal(isOriginGranted(origin, granted), true);
 });
 
@@ -54,7 +53,10 @@ test('a broad grant covers every host', () => {
 });
 
 test('host-specific grants cover only the matching host rules', () => {
-  assert.deepEqual(getRulesForOriginGrant(rules, 'https://api.example.com/*').map((rule) => rule.id), [1, 2]);
+  assert.deepEqual(
+    getRulesForOriginGrant(rules, 'https://api.example.com/*').map((rule) => rule.id),
+    [1, 2]
+  );
   assert.deepEqual(getRulesForOriginGrant(rules, 'https://unused.example.com/*'), []);
 });
 
@@ -96,8 +98,14 @@ test('site access search matches patterns, hosts, and broad grant labels', () =>
 });
 
 test('broad and wildcard grants report every host they cover', () => {
-  assert.deepEqual(getRulesForOriginGrant(rules, 'https://*/*').map((rule) => rule.id), [1, 2, 3, 4]);
-  assert.deepEqual(getRulesForOriginGrant(rules, '<all_urls>').map((rule) => rule.id), [1, 2, 3, 4]);
+  assert.deepEqual(
+    getRulesForOriginGrant(rules, 'https://*/*').map((rule) => rule.id),
+    [1, 2, 3, 4]
+  );
+  assert.deepEqual(
+    getRulesForOriginGrant(rules, '<all_urls>').map((rule) => rule.id),
+    [1, 2, 3, 4]
+  );
   assert.deepEqual(
     getRulesForOriginGrant(rules, 'https://*.example.com/*').map((rule) => rule.id),
     [1, 2]
@@ -117,7 +125,10 @@ test('a rule is granted only when its own host is', () => {
 test('filtering keeps only rules HeaderKit can actually apply', () => {
   const granted = new Set(['https://api.example.com/*']);
 
-  assert.deepEqual(filterGrantedRules(rules, granted).map((rule) => rule.id), [1, 2]);
+  assert.deepEqual(
+    filterGrantedRules(rules, granted).map((rule) => rule.id),
+    [1, 2]
+  );
   assert.deepEqual(filterGrantedRules(rules, new Set()), []);
 });
 

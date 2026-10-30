@@ -4,80 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Request-header testing guides for Chrome | HeaderKit</title>
-    <meta
-      name="description"
-      content="Modify headers, switch profiles, and set automatic expiry."
-    />
+    <meta name="description" content="Modify headers, switch profiles, and set automatic expiry." />
     <meta name="theme-color" content="#f4f7fd" />
-    <link
-      rel="canonical"
-      href="https://ranjanjharavi.github.io/HeaderKit/guides/"
-    />
+    <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/guides/" />
     <meta property="og:type" content="website" />
-    <meta
-      property="og:title"
-      content="Request-header testing guides for Chrome | HeaderKit"
-    />
-    <meta
-      property="og:description"
-      content="Modify headers, switch profiles, and set automatic expiry."
-    />
-    <meta
-      property="og:url"
-      content="https://ranjanjharavi.github.io/HeaderKit/guides/"
-    />
+    <meta property="og:title" content="Request-header testing guides for Chrome | HeaderKit" />
+    <meta property="og:description" content="Modify headers, switch profiles, and set automatic expiry." />
+    <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/guides/" />
     <meta
       property="og:image"
-      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png"
-    />
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/img/headerkit-social-1200x630.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:image"
-      content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-social-1200x630.png"
-    />
-    <link rel="icon" type="image/png" href="../assets/headerkit-128.png" />
+      content="https://ranjanjharavi.github.io/HeaderKit/assets/img/headerkit-social-1200x630.png" />
+    <link rel="icon" type="image/png" href="../assets/img/headerkit-128.png" />
     <link rel="stylesheet" href="../assets/site.css" />
     <script src="../assets/motion.js"></script>
-    <meta
-      name="twitter:title"
-      content="Request-header testing guides for Chrome | HeaderKit"
-    />
-    <meta
-      name="twitter:description"
-      content="Modify headers, switch profiles, and set automatic expiry."
-    />
+    <meta name="twitter:title" content="Request-header testing guides for Chrome | HeaderKit" />
+    <meta name="twitter:description" content="Modify headers, switch profiles, and set automatic expiry." />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header" data-motion="intro">
       <nav class="nav-shell" aria-label="Primary navigation">
         <a class="brand" href="../" aria-label="HeaderKit home">
-          <img
-            src="../assets/headerkit-128.png"
-            width="34"
-            height="34"
-            alt=""
-          />
+          <img src="../assets/img/headerkit-128.png" width="34" height="34" alt="" />
           <span>HeaderKit</span>
         </a>
         <div class="nav-links">
           <a class="nav-feature" href="../#features">Features</a>
           <a href="./" aria-current="page">Guides</a>
           <a href="../privacy-policy.html">Privacy</a>
-          <a
-            class="nav-source"
-            href="https://github.com/ranjanjharavi/HeaderKit"
-          >
+          <a class="nav-source" href="https://github.com/ranjanjharavi/HeaderKit">
             Source
-            <svg
-              class="open-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <use href="../assets/icons.svg#open-in-new"></use>
+            <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <use href="../assets/img/icons.svg#open-in-new"></use>
             </svg>
           </a>
         </div>
@@ -87,112 +49,65 @@
       <header class="guide-header guide-index-header">
         <span class="eyebrow" data-motion="intro">HeaderKit guides</span>
         <h1 data-motion="intro">Request-header testing guides for Chrome</h1>
-        <p class="guide-intro" data-motion="intro">
-          Modify headers, switch profiles, and set automatic expiry.
-        </p>
+        <p class="guide-intro" data-motion="intro">Modify headers, switch profiles, and set automatic expiry.</p>
       </header>
       <div class="guide-list">
-        <a
-          class="guide-card"
-          data-motion="card"
-          href="modify-request-headers-chrome.html"
-        >
+        <a class="guide-card" data-motion="card" href="modify-request-headers-chrome.html">
           <div>
             <span class="eyebrow">01 / First rule</span>
             <h2>Modify request headers for an HTTPS API in Chrome</h2>
-            <p>
-              Create exact-host rules. Scope API paths or fetch/XHR requests.
-              Verify in DevTools.
-            </p>
+            <p>Create exact-host rules. Scope API paths or fetch/XHR requests. Verify in DevTools.</p>
             <span class="guide-arrow" aria-hidden="true">
               Read guide
-              <svg
-                class="open-icon"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <use href="../assets/icons.svg#open-in-new"></use>
+              <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <use href="../assets/img/icons.svg#open-in-new"></use>
               </svg>
             </span>
           </div>
           <img
-            src="../assets/headerkit-request-scoping-screenshot.png"
+            src="../assets/img/headerkit-request-scoping-screenshot.png"
             width="1280"
             height="800"
             loading="lazy"
-            alt=""
-          />
+            alt="" />
         </a>
-        <a
-          class="guide-card"
-          data-motion="card"
-          href="request-header-profiles.html"
-        >
+        <a class="guide-card" data-motion="card" href="request-header-profiles.html">
           <div>
             <span class="eyebrow">02 / Environments</span>
             <h2>Switch staging and QA request headers with profiles</h2>
-            <p>
-              Separate staging and QA headers. Switch profiles without retyping
-              values.
-            </p>
+            <p>Separate staging and QA headers. Switch profiles without retyping values.</p>
             <span class="guide-arrow" aria-hidden="true">
               Read guide
-              <svg
-                class="open-icon"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <use href="../assets/icons.svg#open-in-new"></use>
+              <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <use href="../assets/img/icons.svg#open-in-new"></use>
               </svg>
             </span>
           </div>
           <img
-            src="../assets/headerkit-rule-manager-screenshot.png"
+            src="../assets/img/headerkit-rule-manager-screenshot.png"
             width="1280"
             height="800"
             loading="lazy"
-            alt=""
-          />
+            alt="" />
         </a>
-        <a
-          class="guide-card"
-          data-motion="card"
-          href="temporary-request-headers.html"
-        >
+        <a class="guide-card" data-motion="card" href="temporary-request-headers.html">
           <div>
             <span class="eyebrow">03 / Automatic expiry</span>
             <h2>Automatically turn off temporary test headers in Chrome</h2>
-            <p>
-              Set one-hour, eight-hour, or browser-session expiry. Keep rules
-              saved for later tests.
-            </p>
+            <p>Set one-hour, eight-hour, or browser-session expiry. Keep rules saved for later tests.</p>
             <span class="guide-arrow" aria-hidden="true">
               Read guide
-              <svg
-                class="open-icon"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <use href="../assets/icons.svg#open-in-new"></use>
+              <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <use href="../assets/img/icons.svg#open-in-new"></use>
               </svg>
             </span>
           </div>
           <img
-            src="../assets/headerkit-site-access-screenshot.png"
+            src="../assets/img/headerkit-site-access-screenshot.png"
             width="1280"
             height="800"
             loading="lazy"
-            alt=""
-          />
+            alt="" />
         </a>
       </div>
       <section class="install-panel" aria-label="Install HeaderKit">
@@ -200,20 +115,10 @@
           <h2>Ready for the next API test.</h2>
           <p>Free. Local settings. Chrome 120 or later.</p>
         </div>
-        <a
-          class="button"
-          href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj"
-        >
+        <a class="button" href="https://chromewebstore.google.com/detail/headerkit/lobcjikkmbbfkjifaknfnandpapbbfkj">
           Add to Chrome
-          <svg
-            class="open-icon"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <use href="../assets/icons.svg#open-in-new"></use>
+          <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <use href="../assets/img/icons.svg#open-in-new"></use>
           </svg>
         </a>
       </section>
@@ -221,21 +126,14 @@
     <footer class="site-footer">
       <div class="footer-shell">
         <a class="brand" href="../">
-          <img
-            src="../assets/headerkit-128.png"
-            width="26"
-            height="26"
-            alt=""
-          />
+          <img src="../assets/img/headerkit-128.png" width="26" height="26" alt="" />
           <span>HeaderKit</span>
         </a>
         <p>Focused tools for API testing.</p>
         <div class="footer-links">
           <a href="./">Guides</a>
           <a href="../privacy-policy.html">Privacy</a>
-          <a href="https://github.com/ranjanjharavi/HeaderKit/issues"
-            >Support</a
-          >
+          <a href="https://github.com/ranjanjharavi/HeaderKit/issues">Support</a>
           <a href="https://github.com/ranjanjharavi/HeaderKit">Source</a>
         </div>
       </div>

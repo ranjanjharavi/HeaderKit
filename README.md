@@ -114,7 +114,7 @@ Use browser-native JavaScript modules. No runtime dependencies.
 ```text
 extension/
   background.js       Worker entry point
-  background/         Commits, migrations, badges
+  background/         Worker workflows, routing, storage, applied rules, badges
   options/            Rule manager
   popup/              Current-host controls
   shared/domain/      Pure data logic
@@ -129,6 +129,7 @@ store-assets/         Release artwork
 ```
 
 Keep domain logic pure. Bridge Chrome through runtime adapters. Commit applied state through the worker. Preserve stylesheet import order, with responsive overrides last.
+
 
 - Run checks: `npm test`.
 - Regenerate privacy pages: `npm run build:privacy`.

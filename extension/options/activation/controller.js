@@ -27,10 +27,7 @@ export function bindActivationEvents(callbacks) {
 async function toggleMaster(forceOn = false) {
   const activation = getActivation();
   const nextEnabled = forceOn || !activation.masterEnabled;
-  const controls = [
-    document.getElementById('masterSwitch'),
-    document.getElementById('resumeMasterBtn')
-  ];
+  const controls = [document.getElementById('masterSwitch'), document.getElementById('resumeMasterBtn')];
 
   controls.forEach((control) => {
     control.disabled = true;
@@ -39,11 +36,7 @@ async function toggleMaster(forceOn = false) {
   try {
     await setMasterEnabled(nextEnabled);
     await onChanged();
-    showStatus(
-      'headerStatus',
-      nextEnabled ? 'Header rules resumed.' : 'All header rules paused.',
-      'success'
-    );
+    showStatus('headerStatus', nextEnabled ? 'Header rules resumed.' : 'All header rules paused.', 'success');
   } catch (error) {
     console.error(error);
     showStatus('headerStatus', error.message || 'Could not change the HeaderKit switch.', 'error');
@@ -133,9 +126,7 @@ function getDurationValue(activation) {
     return 'indefinite';
   }
 
-  return DURATION_OPTIONS.has(activation.durationMs)
-    ? String(activation.durationMs)
-    : 'indefinite';
+  return DURATION_OPTIONS.has(activation.durationMs) ? String(activation.durationMs) : 'indefinite';
 }
 
 async function selectDuration(value) {

@@ -4,7 +4,12 @@
   "type": "module",
   "scripts": {
     "build:privacy": "node scripts/build-privacy.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "node --test",
     "package": "./scripts/package-extension.sh"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
   }
 }

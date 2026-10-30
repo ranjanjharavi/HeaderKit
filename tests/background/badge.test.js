@@ -24,22 +24,35 @@ test('badge jobs coalesce per tab and use targeted reads when no tab is supplied
   const calls = [];
   const controller = createBadgeController({
     getState: async () => ({ rules, activation: on, grantedOrigins: new Set(['https://api.example.com/*']) }),
-    queryTabs: async () => { throw new Error('Unexpected query'); },
-    getTab: async (tabId) => { calls.push(['get', tabId]); return { id: tabId, url: 'https://api.example.com/' }; },
+    queryTabs: async () => {
+      throw new Error('Unexpected query');
+    },
+    getTab: async (tabId) => {
+      calls.push(['get', tabId]);
+      return { id: tabId, url: 'https://api.example.com/' };
+    },
     action: {
       setBadgeText: async (details) => calls.push(['text', details]),
       setBadgeBackgroundColor: async () => {}
     },
-    onError: (error) => { throw error; }
+    onError: (error) => {
+      throw error;
+    }
   });
   controller.refreshTab(7, { url: 'https://api.example.com/' });
   controller.refreshTab(7, { url: 'https://unrelated.example.org/' });
   await controller.whenIdle();
-  assert.deepEqual(calls.filter(([, details]) => details?.tabId === 7), [['text', { tabId: 7, text: '' }]]);
+  assert.deepEqual(
+    calls.filter(([, details]) => details?.tabId === 7),
+    [['text', { tabId: 7, text: '' }]]
+  );
   const count = calls.length;
   controller.refreshTab(8);
   await controller.whenIdle();
-  assert.deepEqual(calls.slice(count), [['get', 8], ['text', { tabId: 8, text: '2' }]]);
+  assert.deepEqual(calls.slice(count), [
+    ['get', 8],
+    ['text', { tabId: 8, text: '2' }]
+  ]);
 });
 
 test('unchanged badges are skipped and unreadable tabs inherit the changing default', async () => {
@@ -55,11 +68,20 @@ test('unchanged badges are skipped and unreadable tabs inherit the changing defa
       setBadgeText: async (details) => texts.push(details),
       setBadgeBackgroundColor: async (details) => colors.push(details)
     },
-    onError: (error) => { throw error; }
+    onError: (error) => {
+      throw error;
+    }
   });
   await controller.refresh();
   await controller.whenIdle();
-  assert.deepEqual(new Map(texts.map(({ tabId, text }) => [tabId, text])), new Map([[undefined, 'on'], [7, '2'], [8, null]]));
+  assert.deepEqual(
+    new Map(texts.map(({ tabId, text }) => [tabId, text])),
+    new Map([
+      [undefined, 'on'],
+      [7, '2'],
+      [8, null]
+    ])
+  );
   assert.deepEqual(colors, [{ color: BADGE_ACTIVE_COLOR }]);
   texts.length = 0;
   colors.length = 0;
@@ -70,7 +92,13 @@ test('unchanged badges are skipped and unreadable tabs inherit the changing defa
   activation = paused;
   await controller.refresh();
   await controller.whenIdle();
-  assert.deepEqual(new Map(texts.map(({ tabId, text }) => [tabId, text])), new Map([[undefined, 'off'], [7, 'off']]));
+  assert.deepEqual(
+    new Map(texts.map(({ tabId, text }) => [tabId, text])),
+    new Map([
+      [undefined, 'off'],
+      [7, 'off']
+    ])
+  );
   assert.deepEqual(colors, [{ color: BADGE_PAUSED_COLOR }]);
   tabs = [{ id: 7 }, { id: 8 }];
   texts.length = 0;
@@ -86,34 +114,44 @@ test('unchanged badges are skipped and unreadable tabs inherit the changing defa
 test('a delayed sweep cannot repaint a stale URL over a newer navigation', async () => {
   let releaseQuery;
   let markQueryStarted;
-  const queryStarted = new Promise((resolve) => { markQueryStarted = resolve; });
+  const queryStarted = new Promise((resolve) => {
+    markQueryStarted = resolve;
+  });
   const texts = [];
   const controller = createBadgeController({
     getState: async () => ({ rules, activation: on, grantedOrigins: new Set(['https://api.example.com/*']) }),
-    queryTabs: () => new Promise((resolve) => {
-      releaseQuery = () => resolve([{ id: 7, url: 'https://api.example.com/' }]);
-      markQueryStarted();
-    }),
+    queryTabs: () =>
+      new Promise((resolve) => {
+        releaseQuery = () => resolve([{ id: 7, url: 'https://api.example.com/' }]);
+        markQueryStarted();
+      }),
     getTab: async () => null,
     action: {
       setBadgeText: async (details) => texts.push(details),
       setBadgeBackgroundColor: async () => {}
     },
-    onError: (error) => { throw error; }
+    onError: (error) => {
+      throw error;
+    }
   });
   controller.refresh();
   await queryStarted;
   await controller.refreshTab(7, { url: 'https://unrelated.example.net/' });
   releaseQuery();
   await controller.whenIdle();
-  assert.deepEqual(texts.filter(({ tabId }) => tabId === 7), [{ tabId: 7, text: '' }]);
+  assert.deepEqual(
+    texts.filter(({ tabId }) => tabId === 7),
+    [{ tabId: 7, text: '' }]
+  );
 });
 
 test('badge refresh returns without waiting for a stalled paint and converges on newer state', async () => {
   let activation = on;
   let releasePaint;
   let markPaintStarted;
-  const paintStarted = new Promise((resolve) => { markPaintStarted = resolve; });
+  const paintStarted = new Promise((resolve) => {
+    markPaintStarted = resolve;
+  });
   const texts = [];
   const controller = createBadgeController({
     getState: async () => ({ rules, activation, grantedOrigins: new Set(['https://api.example.com/*']) }),
@@ -124,11 +162,16 @@ test('badge refresh returns without waiting for a stalled paint and converges on
       setBadgeText: async ({ tabId, text }) => {
         texts.push([tabId, text]);
         if (tabId === 7 && !releasePaint) {
-          await new Promise((resolve) => { releasePaint = resolve; markPaintStarted(); });
+          await new Promise((resolve) => {
+            releasePaint = resolve;
+            markPaintStarted();
+          });
         }
       }
     },
-    onError: (error) => { throw error; }
+    onError: (error) => {
+      throw error;
+    }
   });
   await controller.refresh();
   await paintStarted;
@@ -143,16 +186,19 @@ test('closing a tab cancels pending paints and failed paints stay retryable', as
   let releaseTab;
   let markReadStarted;
   let failPaint = true;
-  const readStarted = new Promise((resolve) => { markReadStarted = resolve; });
+  const readStarted = new Promise((resolve) => {
+    markReadStarted = resolve;
+  });
   const texts = [];
   const errors = [];
   const controller = createBadgeController({
     getState: async () => ({ rules, activation: on, grantedOrigins: new Set(['https://api.example.com/*']) }),
     queryTabs: async () => [],
-    getTab: () => new Promise((resolve) => {
-      releaseTab = () => resolve({ id: 7, url: 'https://api.example.com/' });
-      markReadStarted();
-    }),
+    getTab: () =>
+      new Promise((resolve) => {
+        releaseTab = () => resolve({ id: 7, url: 'https://api.example.com/' });
+        markReadStarted();
+      }),
     action: {
       setBadgeBackgroundColor: async () => {},
       setBadgeText: async (details) => {
@@ -163,7 +209,9 @@ test('closing a tab cancels pending paints and failed paints stay retryable', as
         texts.push(details);
       }
     },
-    onError: (error) => { errors.push(error.message); }
+    onError: (error) => {
+      errors.push(error.message);
+    }
   });
   const pending = controller.refreshTab(7);
   await readStarted;
@@ -171,13 +219,19 @@ test('closing a tab cancels pending paints and failed paints stay retryable', as
   releaseTab();
   await pending;
   await controller.whenIdle();
-  assert.deepEqual(texts.filter(({ tabId }) => tabId === 7), []);
+  assert.deepEqual(
+    texts.filter(({ tabId }) => tabId === 7),
+    []
+  );
   assert.deepEqual(errors, []);
   await controller.refreshTab(7, { url: 'https://api.example.com/' });
   assert.deepEqual(errors, ['Paint failed']);
   await controller.refreshTab(7, { url: 'https://api.example.com/' });
   await controller.whenIdle();
-  assert.deepEqual(texts.filter(({ tabId }) => tabId === 7), [{ tabId: 7, text: '2' }]);
+  assert.deepEqual(
+    texts.filter(({ tabId }) => tabId === 7),
+    [{ tabId: 7, text: '2' }]
+  );
 });
 
 test('a readable tab gets the count for that host only', () => {
@@ -248,8 +302,13 @@ test('pausing stays quiet where there was nothing to apply', () => {
 });
 
 test('a host whose only rules are already off stays quiet when paused', () => {
-  const onlyDisabled = [{ id: 9, domain: 'quiet.example.com', headerName: 'X-A', headerValue: 'v', enabled: false, profileId: 'default' }];
+  const onlyDisabled = [
+    { id: 9, domain: 'quiet.example.com', headerName: 'X-A', headerValue: 'v', enabled: false, profileId: 'default' }
+  ];
 
   assert.deepEqual(resolveBadge(onlyDisabled, on, { url: 'https://quiet.example.com/' }), { text: '', color: null });
-  assert.deepEqual(resolveBadge(onlyDisabled, paused, { url: 'https://quiet.example.com/' }), { text: '', color: null });
+  assert.deepEqual(resolveBadge(onlyDisabled, paused, { url: 'https://quiet.example.com/' }), {
+    text: '',
+    color: null
+  });
 });

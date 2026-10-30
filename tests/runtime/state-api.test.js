@@ -19,7 +19,10 @@ test('snapshot refresh applies only the latest result when reads finish out of o
   assert.equal(await newer, true);
   replies[0]({ ok: true, rules: [{ id: 1 }], profiles: [], activation: {} });
   assert.equal(await older, false);
-  assert.deepEqual(applied.map((snapshot) => snapshot.rules), [[{ id: 2 }]]);
+  assert.deepEqual(
+    applied.map((snapshot) => snapshot.rules),
+    [[{ id: 2 }]]
+  );
 });
 
 test('storage refresh scheduling coalesces a burst and invalidates an older pending read', async (t) => {
@@ -46,10 +49,13 @@ test('a failed snapshot read leaves current page state intact and a later refres
   chrome.runtime.sendMessage = (_message, callback) => callback({ ok: false, error: 'Read failed' });
   const original = { rules: [{ id: 1 }] };
   let current = original;
-  const { refresh } = createStateRefresh((snapshot) => { current = snapshot; });
+  const { refresh } = createStateRefresh((snapshot) => {
+    current = snapshot;
+  });
   await assert.rejects(refresh(), /Read failed/);
   assert.equal(current, original);
-  chrome.runtime.sendMessage = (_message, callback) => callback({ ok: true, rules: [{ id: 2 }], profiles: [], activation: {} });
+  chrome.runtime.sendMessage = (_message, callback) =>
+    callback({ ok: true, rules: [{ id: 2 }], profiles: [], activation: {} });
   await refresh();
   assert.deepEqual(current.rules, [{ id: 2 }]);
 });

@@ -3,7 +3,10 @@ export function createSerialQueue() {
 
   return function enqueue(task) {
     const result = tail.then(task);
-    tail = result.then(() => undefined, () => undefined);
+    tail = result.then(
+      () => undefined,
+      () => undefined
+    );
     return result;
   };
 }

@@ -58,10 +58,16 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
         if (!handlers.has(name)) handlers.set(name, new Map());
         handlers.get(name).set(handler, options);
       },
-      removeEventListener(name, handler) { handlers.get(name)?.delete(handler); },
-      closest: (selector) => selector === 'details' ? null : node,
-      focus() { globalThis.document.activeElement = node; },
-      showModal() { node.open = true; },
+      removeEventListener(name, handler) {
+        handlers.get(name)?.delete(handler);
+      },
+      closest: (selector) => (selector === 'details' ? null : node),
+      focus() {
+        globalThis.document.activeElement = node;
+      },
+      showModal() {
+        node.open = true;
+      },
       close(value = '') {
         node.open = false;
         node.returnValue = value;

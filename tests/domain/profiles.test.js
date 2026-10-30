@@ -24,7 +24,10 @@ test('an empty or invalid profile list always yields the default profile', () =>
 test('the default profile is restored when a stored list omits it', () => {
   const profiles = normalizeProfiles([{ id: 'staging', name: 'Staging' }]);
 
-  assert.deepEqual(profiles.map((profile) => profile.id), [DEFAULT_PROFILE_ID, 'staging']);
+  assert.deepEqual(
+    profiles.map((profile) => profile.id),
+    [DEFAULT_PROFILE_ID, 'staging']
+  );
 });
 
 test('normalizeProfiles drops duplicates and repairs fields', () => {
@@ -35,7 +38,10 @@ test('normalizeProfiles drops duplicates and repairs fields', () => {
     { id: 'qa', name: 'QA', defaultDurationMs: 3600000 }
   ]);
 
-  assert.deepEqual(profiles.map((profile) => profile.id), [DEFAULT_PROFILE_ID, 'staging', 'prod', 'qa']);
+  assert.deepEqual(
+    profiles.map((profile) => profile.id),
+    [DEFAULT_PROFILE_ID, 'staging', 'prod', 'qa']
+  );
   assert.equal(findProfile(profiles, 'staging').name, 'Staging');
   assert.equal(findProfile(profiles, 'prod').name, 'prod');
   assert.equal(findProfile(profiles, 'prod').defaultDurationMs, null);
@@ -86,18 +92,27 @@ test('cloning copies only the source profile and renumbers ids', () => {
 
   const cloned = cloneRulesIntoProfile(rules, 'staging', 'prod', 4);
 
-  assert.deepEqual(cloned.map((rule) => rule.id), [4, 5]);
-  assert.deepEqual(cloned.map((rule) => rule.profileId), ['prod', 'prod']);
-  assert.deepEqual(cloned.map((rule) => rule.headerValue), ['1', '2']);
-  assert.deepEqual(rules.map((rule) => rule.id), [1, 2, 3], 'source rules untouched');
+  assert.deepEqual(
+    cloned.map((rule) => rule.id),
+    [4, 5]
+  );
+  assert.deepEqual(
+    cloned.map((rule) => rule.profileId),
+    ['prod', 'prod']
+  );
+  assert.deepEqual(
+    cloned.map((rule) => rule.headerValue),
+    ['1', '2']
+  );
+  assert.deepEqual(
+    rules.map((rule) => rule.id),
+    [1, 2, 3],
+    'source rules untouched'
+  );
 });
 
 test('rules are counted per profile, treating a missing profile as default', () => {
-  const rules = [
-    { id: 1, profileId: 'staging' },
-    { id: 2, profileId: 'default' },
-    { id: 3 }
-  ];
+  const rules = [{ id: 1, profileId: 'staging' }, { id: 2, profileId: 'default' }, { id: 3 }];
 
   assert.equal(countRulesInProfile(rules, 'staging'), 1);
   assert.equal(countRulesInProfile(rules, 'default'), 2);

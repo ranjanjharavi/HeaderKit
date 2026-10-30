@@ -416,7 +416,10 @@
   background: transparent;
   color: #64748b;
   cursor: pointer;
-  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .rule-action-btn:hover,

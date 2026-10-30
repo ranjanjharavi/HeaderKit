@@ -5,7 +5,9 @@
   border: 1px solid var(--focus-border);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08), var(--shadow-sm);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.08),
+    var(--shadow-sm);
 }
 
 .header-composer[hidden] {

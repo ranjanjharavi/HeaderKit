@@ -1,10 +1,5 @@
 import { RULE_STORAGE_KEY, normalizeDomain } from '../../shared/domain/rules.js';
-import {
-  createTab,
-  getExtensionUrl,
-  onStorageChanged,
-  openOptionsPage
-} from '../../shared/runtime/chrome-api.js';
+import { createTab, getExtensionUrl, onStorageChanged, openOptionsPage } from '../../shared/runtime/chrome-api.js';
 import { ACTIVATION_STORAGE_KEY } from '../../shared/domain/activation.js';
 import { PROFILE_STORAGE_KEY } from '../../shared/domain/profiles.js';
 import { createStateRefresh } from '../../shared/runtime/state-api.js';
@@ -12,17 +7,19 @@ import { state } from '../state.js';
 import { getNextTabIndex } from '../../shared/ui/ui.js';
 import { bindActivationEvents } from '../activation/controller.js';
 import { getManagerPath } from '../view-model.js';
-import { configureRuleActions, addRule, saveEditedRule, toggleRule, confirmDeleteRule, grantRuleAccess } from './actions.js';
 import {
-  bindComposerEvents,
-  openRuleEditor,
-  openCreateComposer,
-  setHeaderComposerExpanded
-} from './composer.js';
-import { renderRules, setRuleScope, toggleDomain, toggleRuleValueVisibility } from './view.js';
+  configureRuleActions,
+  addRule,
+  saveEditedRule,
+  toggleRule,
+  confirmDeleteRule,
+  grantRuleAccess
+} from './actions.js';
+import { bindComposerEvents, openRuleEditor, openCreateComposer, setHeaderComposerExpanded } from './composer.js';
+import { renderWorkspace } from '../workspace.js';
 
 export function bindHeaderEvents() {
-  configureRuleActions({ onRefresh: refreshFromStorage });
+  configureRuleActions({ onRefresh: refreshFromStorage, onRender: renderWorkspace });
   bindActivationEvents({ onChanged: refreshFromStorage });
   bindComposerEvents({ onAddRule: addRule, onSaveRule: saveEditedRule });
 
@@ -40,9 +37,8 @@ export function bindHeaderEvents() {
   chrome.permissions.onRemoved.addListener(scheduleRefresh);
 
   onStorageChanged((changes) => {
-    const touchesRules = RULE_STORAGE_KEY in changes
-      || ACTIVATION_STORAGE_KEY in changes
-      || PROFILE_STORAGE_KEY in changes;
+    const touchesRules =
+      RULE_STORAGE_KEY in changes || ACTIVATION_STORAGE_KEY in changes || PROFILE_STORAGE_KEY in changes;
 
     if (touchesRules) {
       scheduleRefresh();
@@ -60,7 +56,7 @@ export const { refresh: refreshFromStorage, schedule: scheduleRefresh } = create
   if (state.headers.editingId && !state.headers.rules.some((rule) => rule.id === state.headers.editingId)) {
     setHeaderComposerExpanded(false, { reset: true });
   }
-  renderRules();
+  renderWorkspace();
 });
 
 function openManager() {
@@ -115,6 +111,29 @@ function initializeCurrentSite(activeTab) {
   const tabUrl = activeTab?.url || '';
   state.headers.currentHostname = /^https:\/\//i.test(tabUrl) ? normalizeDomain(tabUrl) : '';
   document.getElementById('domain').value = state.headers.currentHostname;
+}
+
+function setRuleScope(scope) {
+  state.headers.scope = scope === 'all' ? 'all' : 'site';
+  renderWorkspace();
+}
+
+function toggleDomain(domain) {
+  if (state.headers.collapsedDomains.has(domain)) {
+    state.headers.collapsedDomains.delete(domain);
+  } else {
+    state.headers.collapsedDomains.add(domain);
+  }
+  renderWorkspace();
+}
+
+function toggleRuleValueVisibility(id) {
+  if (state.headers.revealedRuleIds.has(id)) {
+    state.headers.revealedRuleIds.delete(id);
+  } else {
+    state.headers.revealedRuleIds.add(id);
+  }
+  renderWorkspace();
 }
 
 function handleScopeTabClick(event) {

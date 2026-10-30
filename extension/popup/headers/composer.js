@@ -12,9 +12,12 @@ let saveEditedRule;
 export function bindComposerEvents({ onAddRule, onSaveRule }) {
   addRule = onAddRule;
   saveEditedRule = onSaveRule;
-  Object.assign(siteAccessPreflight, createSiteAccessPreflight({
-    getDefaultSubmitLabel: () => state.headers.editingId ? 'Update rule' : 'Add rule'
-  }));
+  Object.assign(
+    siteAccessPreflight,
+    createSiteAccessPreflight({
+      getDefaultSubmitLabel: () => (state.headers.editingId ? 'Update rule' : 'Add rule')
+    })
+  );
   document.getElementById('headerComposerToggle').addEventListener('click', toggleHeaderComposer);
   document.getElementById('cancelHeaderComposerBtn').addEventListener('click', cancelHeaderComposer);
   const form = document.getElementById('headerComposerForm');
@@ -39,7 +42,8 @@ export function openRuleEditor(id) {
   document.getElementById('headerValue').value = rule.headerValue;
   document.getElementById('pathPrefix').value = getDisplayPathPrefix(rule.pathPrefix);
   document.getElementById('resourceType').value = rule.resourceType || 'all';
-  document.getElementById('requestScopeDetails').open = Boolean(rule.pathPrefix) || rule.resourceType === 'xmlhttprequest';
+  document.getElementById('requestScopeDetails').open =
+    Boolean(rule.pathPrefix) || rule.resourceType === 'xmlhttprequest';
   syncHeaderValueField(document.getElementById('headerComposerForm'));
   configureComposer();
   setHeaderComposerExpanded(true, { focusFirstField: true });
@@ -56,9 +60,7 @@ async function handleComposerSubmit(event) {
   addButton.textContent = state.headers.editingId ? 'Updating…' : 'Adding…';
 
   try {
-    const saved = state.headers.editingId
-      ? await saveEditedRule(state.headers.editingId)
-      : await addRule();
+    const saved = state.headers.editingId ? await saveEditedRule(state.headers.editingId) : await addRule();
     if (saved) {
       setHeaderComposerExpanded(false, { reset: true, returnFocus: true });
     }
@@ -99,11 +101,10 @@ export function openCreateComposer() {
   setHeaderComposerExpanded(true, { focusFirstField: true });
 }
 
-export function setHeaderComposerExpanded(expanded, {
-  focusFirstField = false,
-  reset = false,
-  returnFocus = false
-} = {}) {
+export function setHeaderComposerExpanded(
+  expanded,
+  { focusFirstField = false, reset = false, returnFocus = false } = {}
+) {
   const composer = document.getElementById('headerComposer');
   const toggle = document.getElementById('headerComposerToggle');
 
@@ -122,9 +123,7 @@ export function setHeaderComposerExpanded(expanded, {
 
   if (focusFirstField && expanded) {
     const domainInput = document.getElementById('domain');
-    const firstField = domainInput.value.trim()
-      ? document.getElementById('headerName')
-      : domainInput;
+    const firstField = domainInput.value.trim() ? document.getElementById('headerName') : domainInput;
     composer.scrollTop = 0;
     firstField.focus({ preventScroll: true });
   } else if (returnFocus && !expanded) {
