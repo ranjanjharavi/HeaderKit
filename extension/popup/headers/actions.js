@@ -1,70 +1,39 @@
-import {
-  findActiveRuleConflict,
-  getRuleOriginPattern,
-  getRuleConflictMessage,
-  validateRuleDraft
-} from '../../shared/domain/rules.js';
-import { requestOriginPermission } from '../../shared/runtime/chrome-api.js';
-import { getTargetProfileId } from '../../shared/domain/activation.js';
-import { isRuleGranted } from '../../shared/domain/site-access.js';
-import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
-import { sendRuleIntent } from '../../shared/runtime/rule-api.js';
-import {
-  RULE_MESSAGE_ADD,
-  RULE_MESSAGE_UPDATE,
-  RULE_MESSAGE_SET_ENABLED,
-  RULE_MESSAGE_DELETE
-} from '../../shared/runtime/messages.js';
+import { createRuleWorkflows } from '../../shared/runtime/rule-workflows.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { clearRuleFormError, showRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getActivation } from '../state.js';
-import { readGrantedOrigins, ensureRulePermission } from '../../shared/runtime/site-access-api.js';
 import { showStatus } from '../../shared/ui/ui.js';
 import { siteAccessPreflight, readCreateDraft } from './composer.js';
 import { renderRules } from './view.js';
 
-let refreshState;
+let ruleWorkflows;
 
 export function configureRuleActions({ onRefresh }) {
-  refreshState = onRefresh;
+  ruleWorkflows = createRuleWorkflows({ refreshState: onRefresh });
 }
 
 export async function addRule() {
   clearRuleFormError();
-  const activation = getActivation();
-  const profileId = getTargetProfileId(activation);
-  const validation = validateRuleDraft(readCreateDraft(), state.headers.rules, {
-    activation,
-    profileId
-  });
-  if (!validation.ok) {
-    showRuleFormError(validation);
+  const change = ruleWorkflows.prepareAdd(readCreateDraft(), getRuleContext());
+  if (!change.ok) {
+    showRuleFormError(change);
     return false;
   }
 
-  const newRule = {
-    ...validation.rule,
-    enabled: true,
-    profileId
-  };
-  const intent = { type: RULE_MESSAGE_ADD, draft: validation.rule, profileId };
-
-  const needsAccess = !isRuleGranted(newRule, state.headers.grantedOrigins);
+  const { rule: newRule, needsAccess } = change;
   if (needsAccess && !siteAccessPreflight.isReadyFor(newRule)) {
     siteAccessPreflight.show(newRule);
     return false;
   }
 
   try {
-    if (needsAccess) {
-      const result = await saveRuleBeforePermissionPrompt(newRule, () => persistRule(intent), {
-        requestPermission: requestOriginPermission
-      });
-      state.headers.grantedOrigins = await readGrantedOrigins();
+    const { permission, grantedOrigins } = await ruleWorkflows.save(change);
+    if (permission) {
+      state.headers.grantedOrigins = grantedOrigins;
 
-      if (!result.granted) {
-        if (result.permissionError) {
-          console.error('Could not request site access.', result.permissionError);
+      if (!permission.granted) {
+        if (permission.permissionError) {
+          console.error('Could not request site access.', permission.permissionError);
         }
         renderRules();
         showStatus(
@@ -74,8 +43,6 @@ export async function addRule() {
         );
         return true;
       }
-    } else {
-      await persistRule(intent);
     }
 
     showStatus('headerStatus', needsAccess ? 'Site access granted and rule added.' : 'Header rule added.', 'success');
@@ -98,35 +65,22 @@ export async function saveEditedRule(id) {
     return false;
   }
 
-  const profileId = currentRule.profileId;
-  const validation = validateRuleDraft(readCreateDraft(), state.headers.rules, {
-    excludeId: id,
-    enabled: currentRule.enabled,
-    activation: getActivation(),
-    profileId
-  });
-  if (!validation.ok) {
-    showRuleFormError(validation);
+  const change = ruleWorkflows.prepareUpdate(currentRule, readCreateDraft(), getRuleContext());
+  if (!change.ok) {
+    showRuleFormError(change);
     return false;
   }
 
-  const updatedRule = { ...currentRule, ...validation.rule, profileId };
-  const intent = { type: RULE_MESSAGE_UPDATE, id, draft: validation.rule, profileId };
-  const needsAccess = updatedRule.enabled && !isRuleGranted(updatedRule, state.headers.grantedOrigins);
+  const { rule: updatedRule, needsAccess } = change;
   if (needsAccess && !siteAccessPreflight.isReadyFor(updatedRule)) {
     siteAccessPreflight.show(updatedRule);
     return false;
   }
 
   try {
-    let permissionResult = null;
-    if (needsAccess) {
-      permissionResult = await saveRuleBeforePermissionPrompt(updatedRule, () => persistRule(intent), {
-        requestPermission: requestOriginPermission
-      });
-      state.headers.grantedOrigins = await readGrantedOrigins();
-    } else {
-      await persistRule(intent);
+    const { permission: permissionResult, grantedOrigins } = await ruleWorkflows.save(change);
+    if (permissionResult) {
+      state.headers.grantedOrigins = grantedOrigins;
     }
     state.headers.revealedRuleIds.delete(id);
     renderRules();
@@ -159,30 +113,20 @@ export async function toggleRule(id) {
     return;
   }
 
-  if (!currentRule.enabled) {
-    const conflictingRule = findActiveRuleConflict({ ...currentRule, enabled: true }, state.headers.rules, {
-      excludeId: id,
-      activation: getActivation()
-    });
-    if (conflictingRule) {
-      showStatus('headerStatus', getRuleConflictMessage(conflictingRule), 'error');
-      return;
-    }
+  const change = ruleWorkflows.prepareToggle(currentRule, getRuleContext());
+  if (!change.ok) {
+    showStatus('headerStatus', change.error, 'error');
+    return;
   }
 
-  const intent = { type: RULE_MESSAGE_SET_ENABLED, id, enabled: !currentRule.enabled };
-  const needsAccess = !currentRule.enabled && !isRuleGranted(currentRule, state.headers.grantedOrigins);
-
   try {
-    if (needsAccess) {
-      const result = await saveRuleBeforePermissionPrompt(currentRule, () => persistRule(intent), {
-        requestPermission: requestOriginPermission
-      });
-      state.headers.grantedOrigins = await readGrantedOrigins();
+    const { permission, grantedOrigins } = await ruleWorkflows.save(change);
+    if (permission) {
+      state.headers.grantedOrigins = grantedOrigins;
       renderRules();
-      if (!result.granted) {
-        if (result.permissionError) {
-          console.error('Could not request site access.', result.permissionError);
+      if (!permission.granted) {
+        if (permission.permissionError) {
+          console.error('Could not request site access.', permission.permissionError);
         }
         showStatus(
           'headerStatus',
@@ -191,8 +135,6 @@ export async function toggleRule(id) {
         );
         return;
       }
-    } else {
-      await persistRule(intent);
     }
     const toggledRule = state.headers.rules.find((rule) => rule.id === id);
     showStatus('headerStatus', toggledRule?.enabled ? 'Rule resumed.' : 'Rule paused.', 'success');
@@ -219,9 +161,7 @@ export async function confirmDeleteRule(id) {
 }
 
 function getDeleteMessage(rule) {
-  const releasesAccess =
-    state.headers.grantedOrigins?.has(getRuleOriginPattern(rule)) &&
-    !state.headers.rules.some((candidate) => candidate.id !== rule.id && candidate.domain === rule.domain);
+  const releasesAccess = ruleWorkflows.willReleaseHostAccess(rule, getRuleContext());
   return `The rule for ${rule.domain} will be permanently removed.${
     releasesAccess
       ? ' This is the last rule for this host, so its host-specific site access grant will also be removed.'
@@ -235,7 +175,7 @@ async function deleteRule(id) {
   }
 
   try {
-    await persistRule({ type: RULE_MESSAGE_DELETE, id });
+    await ruleWorkflows.remove(id);
     state.headers.revealedRuleIds.delete(id);
     showStatus('headerStatus', 'Rule removed.', 'success');
   } catch (error) {
@@ -251,7 +191,7 @@ export async function grantRuleAccess(id) {
   }
 
   try {
-    state.headers.grantedOrigins = await ensureRulePermission(rule, state.headers.grantedOrigins);
+    state.headers.grantedOrigins = await ruleWorkflows.grantAccess(rule, state.headers.grantedOrigins);
     renderRules();
     showStatus('headerStatus', `Site access granted for ${rule.domain}.`, 'success');
   } catch (error) {
@@ -260,7 +200,6 @@ export async function grantRuleAccess(id) {
   }
 }
 
-async function persistRule(intent) {
-  await sendRuleIntent(intent);
-  await refreshState();
+function getRuleContext() {
+  return { rules: state.headers.rules, activation: getActivation(), grantedOrigins: state.headers.grantedOrigins };
 }

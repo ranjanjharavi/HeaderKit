@@ -28,10 +28,15 @@ function setup(t, surface, rules = []) {
     currentHostname: 'api.example.com'
   });
   const calls = [];
+  const messages = [];
   let storedRules = rules;
   globalThis.chrome.runtime.sendMessage = (message, callback) => {
     calls.push('commit');
-    const result = applyRuleIntent(message, { ...state, profileIds: new Set(['default']) });
+    messages.push(message);
+    const result = applyRuleIntent(message, {
+      ...state,
+      profileIds: new Set(state.profiles.map((profile) => profile.id))
+    });
     storedRules = result.rules;
     callback({ ok: true, ...result });
   };
@@ -76,7 +81,8 @@ function setup(t, surface, rules = []) {
       ...values
     };
     for (const [field, value] of Object.entries(fields)) {
-      const elementId = id === null ? field : `edit${field[0].toUpperCase()}${field.slice(1)}-${id}`;
+      const editField = field === 'profileId' ? 'Profile' : `${field[0].toUpperCase()}${field.slice(1)}`;
+      const elementId = id === null ? field : `edit${editField}-${id}`;
       harness.element(elementId).value = value;
     }
   }
@@ -85,6 +91,7 @@ function setup(t, surface, rules = []) {
     state,
     actions,
     calls,
+    messages,
     draft,
     storeRules: (value) => {
       storedRules = value;
@@ -329,7 +336,188 @@ for (const surface of ['options', 'popup']) {
     assert.match(harness.element('headerStatus').textContent, /Rule saved.*needs site access/);
   });
 
-  for (const action of ['edit', 'resume']) {
+  test(`${surface} approved-host creation normalizes scope and targets the last profile while parked`, async (t) => {
+    const harness = setup(t, surface);
+    harness.state.profiles.push({ id: 'qa', name: 'QA' });
+    harness.state.activation = {
+      ...createDefaultActivation(),
+      profileId: null,
+      lastProfileId: 'qa'
+    };
+    harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
+    harness.draft({ domain: 'HTTPS://API.EXAMPLE.COM/', pathPrefix: '/café/', resourceType: 'xmlhttprequest' });
+    assert.equal(await harness.actions.addRule(), true);
+    assert.deepEqual(harness.calls, ['commit']);
+    assert.equal(harness.messages[0].profileId, 'qa');
+    assert.equal(harness.state.rules[0].profileId, 'qa');
+    assert.equal(harness.state.rules[0].pathPrefix, '/caf%C3%A9');
+    assert.equal(harness.state.rules[0].resourceType, 'xmlhttprequest');
+    assert.equal(harness.element('headerStatus').textContent, 'Header rule added.');
+  });
+
+  test(`${surface} editing preserves its profile policy and page-specific completion behavior`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.state.profiles.push({ id: 'qa', name: 'QA' });
+    harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
+    harness.state.editingId = 1;
+    harness.state.revealedRuleIds.add(1);
+    harness.draft({ headerValue: 'updated', profileId: 'qa' }, surface === 'options' ? 1 : null);
+    const result = await harness.actions.saveEditedRule(1);
+    assert.equal(harness.state.rules[0].profileId, surface === 'options' ? 'qa' : 'default');
+    assert.equal(harness.messages[0].profileId, surface === 'options' ? 'qa' : 'default');
+    assert.equal(harness.state.rules[0].headerValue, 'updated');
+    assert.equal(harness.state.revealedRuleIds.has(1), false);
+    assert.equal(harness.state.editingId, surface === 'options' ? null : 1);
+    assert.equal(result, surface === 'options' ? undefined : true);
+    assert.equal(harness.element('headerStatus').textContent, 'Header rule updated.');
+  });
+
+  test(`${surface} conflicting resumes are rejected before saving or requesting access`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      pathPrefix: '/api',
+      enabled: false,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [
+      rule,
+      { ...rule, id: 2, pathPrefix: '', enabled: true, headerValue: 'different' }
+    ]);
+    await harness.actions.toggleRule(1);
+    assert.deepEqual(harness.calls, []);
+    assert.equal(harness.state.rules[0].enabled, false);
+    assert.match(harness.element('headerStatus').textContent, /Conflicts with the active X-Test rule/);
+  });
+
+  test(`${surface} a permission API error still retains a saved rule and reports missing access`, async (t) => {
+    const harness = setup(t, surface);
+    harness.draft({});
+    assert.equal(await harness.actions.addRule(), false);
+    chrome.permissions.request = (_details, callback) => {
+      harness.calls.push('request');
+      chrome.runtime.lastError = { message: 'Permission surface closed' };
+      callback();
+      delete chrome.runtime.lastError;
+    };
+    assert.equal(await harness.actions.addRule(), true);
+    assert.deepEqual(harness.calls, ['commit', 'request']);
+    assert.equal(harness.state.rules.length, 1);
+    assert.match(harness.element('headerStatus').textContent, /Rule saved.*needs site access/);
+  });
+
+  test(`${surface} a rejected new-rule commit preserves its draft even if the permission prompt succeeds`, async (t) => {
+    const harness = setup(t, surface);
+    harness.draft({ headerValue: 'draft-secret' });
+    assert.equal(await harness.actions.addRule(), false);
+    chrome.runtime.sendMessage = (_message, callback) => {
+      harness.calls.push('commit');
+      callback({ ok: false, error: 'Newer rule conflicts.', field: 'headerValue', conflictId: 2 });
+    };
+    chrome.permissions.request = (_details, callback) => {
+      harness.calls.push('request');
+      callback(true);
+    };
+    assert.equal(await harness.actions.addRule(), false);
+    assert.deepEqual(harness.calls, ['commit', 'request']);
+    assert.deepEqual(harness.state.rules, []);
+    assert.equal(harness.element('headerValue').value, 'draft-secret');
+    assert.equal(harness.element('headerValue').getAttribute('aria-invalid'), 'true');
+    assert.equal(harness.element('ruleComposerError').textContent, 'Newer rule conflicts.');
+  });
+
+  test(`${surface} explicit access grants reuse cached coverage and report denial without changing rules`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.state.grantedOrigins = new Set(['https://*.example.com/*']);
+    await harness.actions.grantRuleAccess(1);
+    assert.deepEqual(harness.calls, []);
+    assert.equal(harness.element('headerStatus').textContent, 'Site access granted for api.example.com.');
+
+    harness.state.grantedOrigins = new Set();
+    await harness.actions.grantRuleAccess(1);
+    assert.deepEqual(harness.calls, ['request']);
+    assert.deepEqual(harness.state.rules, [rule]);
+    assert.match(harness.element('headerStatus').textContent, /Site access.*required to resume/);
+  });
+
+  test(`${surface} delete failures retain the rule and its reveal state`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.state.revealedRuleIds.add(1);
+    chrome.runtime.sendMessage = (_message, callback) => {
+      harness.calls.push('commit');
+      callback({ ok: false, error: 'Could not save deletion.' });
+    };
+    const deleting = harness.actions.confirmDeleteRule(1);
+    await harness.element('confirmationConfirmBtn').dispatch('click');
+    await deleting;
+    assert.deepEqual(harness.calls, ['commit']);
+    assert.deepEqual(harness.state.rules, [rule]);
+    assert.equal(harness.state.revealedRuleIds.has(1), true);
+    assert.equal(harness.element('headerStatus').textContent, 'Could not save deletion.');
+  });
+
+  test(`${surface} deleting a rule shared with another profile does not promise to revoke its host grant`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule, { ...rule, id: 2, profileId: 'qa' }]);
+    harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
+    const deleting = harness.actions.confirmDeleteRule(1);
+    assert.doesNotMatch(harness.element('confirmationMessage').textContent, /grant will also be removed/);
+    await harness.element('confirmationCancelBtn').dispatch('click');
+    await deleting;
+    assert.deepEqual(harness.calls, []);
+  });
+
+  test(`${surface} a rule removed while confirmation is open is not deleted again`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    const deleting = harness.actions.confirmDeleteRule(1);
+    harness.state.rules = [];
+    await harness.element('confirmationConfirmBtn').dispatch('click');
+    await deleting;
+    assert.deepEqual(harness.calls, []);
+  });
+
+  for (const action of ['create', 'edit', 'resume']) {
     test(`${surface} ${action} starts saving synchronously even if the permission prompt never responds`, async (t) => {
       const rule = {
         id: 1,
@@ -339,11 +527,16 @@ for (const surface of ['options', 'popup']) {
         enabled: action === 'edit',
         profileId: 'default'
       };
-      const harness = setup(t, surface, [rule]);
+      const harness = setup(t, surface, action === 'create' ? [] : [rule]);
       harness.state.editingId = action === 'edit' ? 1 : null;
-      harness.draft({ domain: 'qa.example.com', headerValue: 'new' }, surface === 'options' ? 1 : null);
+      harness.draft(
+        { domain: 'qa.example.com', headerValue: 'new' },
+        surface === 'options' && action === 'edit' ? 1 : null
+      );
       if (action === 'edit') {
         await harness.actions.saveEditedRule(1);
+      } else if (action === 'create') {
+        assert.equal(await harness.actions.addRule(), false);
       }
       globalThis.chrome.runtime.sendMessage = (message, callback) => {
         harness.calls.push('commit');
@@ -357,13 +550,15 @@ for (const surface of ['options', 'popup']) {
 
       if (action === 'edit') {
         harness.actions.saveEditedRule(1);
+      } else if (action === 'create') {
+        harness.actions.addRule();
       } else {
         harness.actions.toggleRule(1);
       }
       assert.deepEqual(harness.calls, ['commit', 'request']);
       await new Promise((resolve) => setImmediate(resolve));
       assert.equal(harness.state.rules[0].enabled, true);
-      assert.equal(harness.state.rules[0].headerValue, action === 'edit' ? 'new' : 'old');
+      assert.equal(harness.state.rules[0].headerValue, action === 'resume' ? 'old' : 'new');
     });
   }
 }
