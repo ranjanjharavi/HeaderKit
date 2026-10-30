@@ -32,6 +32,15 @@ test('every browser module dependency exists inside the unpacked extension', () 
   }
 });
 
+test('domain modules depend only on domain data logic, never worker, runtime, or UI modules', () => {
+  const domainRoot = new URL('shared/domain/', extensionRoot);
+  for (const module of listModules(domainRoot)) {
+    for (const dependency of getDependencies(module)) {
+      assert.ok(dependency.href.startsWith(domainRoot.href), `${module} imports outside shared/domain/`);
+    }
+  }
+});
+
 test('extension modules have no circular imports', () => {
   const visited = new Set();
   const visiting = new Set();

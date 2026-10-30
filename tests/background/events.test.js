@@ -591,6 +591,46 @@ test('actual worker resolves expired snapshots and applies activation intents to
   assert.deepEqual(harness.storage, before);
 });
 
+test('worker writes compile canonical scoped rules identically for dynamic and session application', async (t) => {
+  const harness = await worker(t);
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: {
+      domain: 'https://EXAMPLE.com/',
+      headerName: ' X-Scoped ',
+      headerValue: ' one ',
+      pathPrefix: '/caf\u00e9/API/',
+      resourceType: ' XMLHTTPREQUEST '
+    }
+  });
+  assert.equal(added.ok, true);
+  assert.equal(added.rule.pathPrefix, '/caf%C3%A9/API');
+  assert.equal(added.rule.resourceType, 'xmlhttprequest');
+  const expected = [
+    {
+      id: added.rule.id,
+      priority: 1,
+      action: { type: 'modifyHeaders', requestHeaders: [{ header: 'X-Scoped', operation: 'set', value: 'one' }] },
+      condition: {
+        resourceTypes: ['xmlhttprequest'],
+        isUrlFilterCaseSensitive: true,
+        regexFilter: String.raw`^https:\/\/example\.com(?::\d+)?/caf%C3%A9/API(?:/|[?#]|$)`
+      }
+    }
+  ];
+  assert.deepEqual(harness.getDynamicRules(), expected);
+  assert.deepEqual(harness.getSessionRules(), []);
+  const session = await harness.send({ type: 'headerkit:activation:set-duration', untilBrowserClose: true });
+  assert.equal(session.ok, true);
+  assert.deepEqual(harness.getSessionRules(), expected);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  const dynamic = await harness.send({ type: 'headerkit:activation:set-duration', durationMs: 60_000 });
+  assert.equal(dynamic.ok, true);
+  assert.deepEqual(harness.getDynamicRules(), expected);
+  assert.deepEqual(harness.getSessionRules(), []);
+});
+
 test('until-browser-close activation uses only session rules and Chrome clears them before startup', async (t) => {
   const harness = await worker(t);
   await harness.send({
