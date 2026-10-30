@@ -16,7 +16,6 @@ const optionsRulesSource =
   readSource('extension/options/rules/view.js') +
   readSource('extension/options/rules/actions.js') +
   readSource('extension/options/activation/controller.js');
-const optionsProfilesSource = readSource('extension/options/profiles/controller.js');
 const sharedRuleRenderSource = readSource('extension/shared/ui/rule-render.js');
 const optionsStateSource = readSource('extension/options/state.js');
 const sharedUiSource = readSource('extension/shared/ui/ui.js');
@@ -39,8 +38,7 @@ test('keyboard focus and dynamic tab panels expose consistent accessible state',
   );
   assert.doesNotMatch(`${popupStyles}\n${optionsStyles}`, /\.focus-visible\s*\{[^}]*outline:\s*(?:0|none)/s);
   assert.match(popupRulesSource, /setAttribute\([\s\S]*?'aria-labelledby',[\s\S]*?state\.headers\.scope === 'all'/);
-  assert.match(optionsProfilesSource, /id="profileTab-\$\{index\}"[\s\S]*?aria-controls="profilePanel"/);
-  assert.match(optionsProfilesSource, /setAttribute\('aria-labelledby', `profileTab-\$\{selectedTabIndex\}`\)/);
+  // Profile tab/panel attributes are checked on rendered output in profiles.test.js.
 });
 
 test('obsolete profile filter and clipboard code are removed', () => {
@@ -56,8 +54,8 @@ test('rule editor keeps header inputs together and the disclosure on its own row
   assert.match(sharedRuleRenderSource, /rule-edit-disclosure/);
 });
 
-test('destructive actions use the HeaderKit confirmation dialog', () => {
-  [popupRulesSource, optionsRulesSource, optionsProfilesSource].forEach((source) => {
+test('rule destructive actions use the HeaderKit confirmation dialog', () => {
+  [popupRulesSource, optionsRulesSource].forEach((source) => {
     assert.match(source, /confirmDestructiveAction/);
     assert.doesNotMatch(source, /globalThis\.confirm/);
   });

@@ -16,8 +16,6 @@ const optionsRulesSource =
   readSource('extension/options/rules/view.js') +
   readSource('extension/options/rules/actions.js') +
   readSource('extension/options/activation/controller.js');
-const optionsProfilesSource = readSource('extension/options/profiles/controller.js');
-const siteAccessControllerSource = readSource('extension/options/site-access/controller.js');
 const sharedRuleRenderSource = readSource('extension/shared/ui/rule-render.js');
 
 test('rule manager separates active setup, rules, and profile administration', () => {
@@ -47,9 +45,6 @@ test('rule manager separates active setup, rules, and profile administration', (
   assert.match(optionsMarkup, /id="profileNameInput"[^>]*maxlength="40"[^>]*required/);
   assert.match(optionsMarkup, /id="profileEditorError"[^>]*role="alert"/);
   assert.match(optionsMarkup, /id="cancelProfileEditorBtn"/);
-  assert.doesNotMatch(optionsProfilesSource, /globalThis\.prompt/);
-  assert.match(optionsProfilesSource, /validateProfileDraft/);
-  assert.match(optionsProfilesSource, /Copied rules start paused and remain editable/);
   assert.match(popupRulesSource, /Your rules stay saved and editable/);
   assert.match(optionsRulesSource, /Your rules stay saved and editable/);
   assert.doesNotMatch(optionsMarkup, /class="product-kicker"|class="workspace-kicker"/);
@@ -66,34 +61,15 @@ test('site access overview audits grants and revokes without deleting rules', ()
     optionsMarkup,
     /class="site-access-search"[^>]*hidden[\s\S]*?id="siteAccessSearch" type="search"[\s\S]*?aria-controls="siteAccessList"/
   );
-  assert.match(siteAccessControllerSource, /filterOriginGrants\(origins, search\.value\)/);
-  assert.match(siteAccessControllerSource, /getRulesForOriginGrant/);
-  assert.match(siteAccessControllerSource, /removeOriginPermission\(origin\)/);
-  assert.match(siteAccessControllerSource, /confirmDestructiveAction/);
-  assert.match(siteAccessControllerSource, /Saved rules were kept/);
   assert.match(optionsMarkup, /Review HeaderKit site access grants/);
-  assert.match(siteAccessControllerSource, /Broad site access/);
-  assert.match(siteAccessControllerSource, /Can cover rules for any HTTPS host/);
-  assert.match(siteAccessControllerSource, /Host-specific site access/);
-  assert.match(siteAccessControllerSource, /\.site-access-rules\[open\]/);
-  assert.match(siteAccessControllerSource, /expandedOrigins\.has\(origin\) \? ' open' : ''/);
-  assert.match(
-    siteAccessControllerSource,
-    /<summary data-site-access-action="rules" data-origin="\$\{escapeHtml\(origin\)\}">\$\{rules\.length} saved/
-  );
-  assert.match(siteAccessControllerSource, /list\.scrollTop = scrollTop/);
-  assert.doesNotMatch(
-    siteAccessControllerSource,
-    /No site permissions|Loading site permissions|Broad grant|Host grant/
-  );
+  // Grant coverage, confirmation, filtering, privacy, and focus preservation
+  // are exercised behaviorally in site-access.test.js rather than by source text.
   assert.match(optionsStyles, /\.site-access-row\.is-broad/);
   assert.match(optionsStyles, /\.site-access-row\[hidden\]/);
   assert.match(optionsStyles, /\.site-access-search input\s*\{\s*min-height: 44px/);
   assert.match(optionsStyles, /\.site-access-revoke-btn\s*\{\s*min-height: 44px/);
   assert.match(optionsStyles, /\.site-access-dialog-actions \.primary-btn,[\s\S]*?min-height: 44px/);
   assert.match(optionsStyles, /\.site-access-row-heading\s*\{\s*align-items: flex-start;\s*flex-direction: column/);
-  assert.match(siteAccessControllerSource, /Number\(isBroadOrigin\(right\)\)/);
-  assert.doesNotMatch(siteAccessControllerSource, /headerValue/);
 });
 
 test('rule-manager privacy links stay in the same extension tab', () => {
