@@ -64,10 +64,11 @@
   margin: 40px 0 16px;
   font-size: 26px;
   line-height: 1.25;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
   scroll-margin-top: 32px;
 }
-.privacy-prose p, .privacy-prose li {
+.privacy-prose p,
+.privacy-prose li {
   color: var(--ink-soft);
   font-size: 15px;
   line-height: 1.75;

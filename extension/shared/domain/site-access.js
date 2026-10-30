@@ -6,9 +6,9 @@ const BROAD_ORIGIN_PATTERNS = new Set(['https://*/*', '<all_urls>']);
  * Every origin a profile needs in order to apply all of its rules.
  */
 export function getProfileOrigins(rules, profileId) {
-  return [...new Set(
-    filterRulesByProfile(rules, profileId).map((rule) => getRuleOriginPattern(rule))
-  )].sort((left, right) => left.localeCompare(right));
+  return [...new Set(filterRulesByProfile(rules, profileId).map((rule) => getRuleOriginPattern(rule)))].sort(
+    (left, right) => left.localeCompare(right)
+  );
 }
 
 export function isOriginGranted(origin, grantedOrigins) {
@@ -34,7 +34,11 @@ export function isBroadOrigin(origin) {
 }
 
 export function filterOriginGrants(origins, query) {
-  const terms = String(query || '').trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const terms = String(query || '')
+    .trim()
+    .toLocaleLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
   const grants = Array.isArray(origins) ? origins : [];
 
   if (!terms.length) {
@@ -52,8 +56,10 @@ export function filterOriginGrants(origins, query) {
       label = 'all https sites';
     }
     const searchableText = `${pattern} ${host} ${label}`.toLocaleLowerCase();
-    return terms.every((term) => searchableText.includes(term))
-      || (requestedOrigin && originPatternCovers(pattern, requestedOrigin));
+    return (
+      terms.every((term) => searchableText.includes(term)) ||
+      (requestedOrigin && originPatternCovers(pattern, requestedOrigin))
+    );
   });
 }
 
@@ -83,8 +89,7 @@ export function isRuleGranted(rule, grantedOrigins) {
  * into permissions.request without an await in between.
  */
 export function getMissingProfileOrigins(rules, profileId, grantedOrigins) {
-  return getProfileOrigins(rules, profileId)
-    .filter((origin) => !isOriginGranted(origin, grantedOrigins));
+  return getProfileOrigins(rules, profileId).filter((origin) => !isOriginGranted(origin, grantedOrigins));
 }
 
 /**

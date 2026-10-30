@@ -49,9 +49,12 @@ export function renderRules() {
   configureComposer();
 
   const scopedRules = getScopedRules();
-  const visibleRules = state.headers.scope === 'all'
-    ? scopedRules
-    : (currentHostname ? filterRulesByHost(scopedRules, currentHostname) : []);
+  const visibleRules =
+    state.headers.scope === 'all'
+      ? scopedRules
+      : currentHostname
+        ? filterRulesByHost(scopedRules, currentHostname)
+        : [];
   container.classList.toggle('is-empty', !visibleRules.length);
   if (!visibleRules.length) {
     container.innerHTML = getEmptyRulesMessage();
@@ -59,34 +62,34 @@ export function renderRules() {
   }
 
   if (state.headers.scope === 'all') {
-    const groups = sortDomainGroups(
-      groupRulesByDomain(visibleRules),
-      conflictingIds,
-      currentHostname
-    );
-    container.innerHTML = `<div class="all-rule-groups">${groups.map((group, index) => renderDomainGroup(
-      group.domain,
-      group.rules,
-      {
-        index,
-        conflictMap,
-        collapsed: state.headers.collapsedDomains.has(group.domain),
-        currentHostname,
-        revealedRuleIds: state.headers.revealedRuleIds,
-        describeRule
-      }
-    )).join('')}</div>`;
+    const groups = sortDomainGroups(groupRulesByDomain(visibleRules), conflictingIds, currentHostname);
+    container.innerHTML = `<div class="all-rule-groups">${groups
+      .map((group, index) =>
+        renderDomainGroup(group.domain, group.rules, {
+          index,
+          conflictMap,
+          collapsed: state.headers.collapsedDomains.has(group.domain),
+          currentHostname,
+          revealedRuleIds: state.headers.revealedRuleIds,
+          describeRule
+        })
+      )
+      .join('')}</div>`;
     return;
   }
 
   const sortedRules = sortRulesForDisplay(visibleRules, conflictingIds);
   container.innerHTML = `
     <div class="current-rule-list" aria-label="Rules for ${escapeHtml(currentHostname)}">
-      ${sortedRules.map((rule) => renderRuleRow(rule, {
-    conflictingRules: conflictMap.get(rule.id) || [],
-    revealed: state.headers.revealedRuleIds.has(rule.id),
-    ...describeRule(rule)
-  })).join('')}
+      ${sortedRules
+        .map((rule) =>
+          renderRuleRow(rule, {
+            conflictingRules: conflictMap.get(rule.id) || [],
+            revealed: state.headers.revealedRuleIds.has(rule.id),
+            ...describeRule(rule)
+          })
+        )
+        .join('')}
     </div>
   `;
 }
@@ -95,9 +98,7 @@ function updateCurrentSiteControls() {
   const { rules, currentHostname } = state.headers;
   const currentSiteHost = document.getElementById('currentSiteHost');
   const scopedRules = getScopedRules();
-  const currentSiteCount = currentHostname
-    ? filterRulesByHost(scopedRules, currentHostname).length
-    : 0;
+  const currentSiteCount = currentHostname ? filterRulesByHost(scopedRules, currentHostname).length : 0;
   const currentSiteTab = document.getElementById('currentSiteTab');
 
   currentSiteHost.textContent = currentHostname || 'Current site unavailable';
@@ -115,10 +116,9 @@ function updateCurrentSiteControls() {
     tab.setAttribute('aria-selected', String(selected));
     tab.tabIndex = selected ? 0 : -1;
   });
-  document.getElementById('ruleListContainer').setAttribute(
-    'aria-labelledby',
-    state.headers.scope === 'all' ? 'allRulesTab' : 'currentSiteTab'
-  );
+  document
+    .getElementById('ruleListContainer')
+    .setAttribute('aria-labelledby', state.headers.scope === 'all' ? 'allRulesTab' : 'currentSiteTab');
 
   document.getElementById('headerComposerToggle').disabled = !currentHostname || state.headers.composerOpen;
 

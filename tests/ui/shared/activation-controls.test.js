@@ -38,13 +38,17 @@ test('UI dispatch snapshots listeners and removes one-time handlers before calli
   const calls = [];
   const second = () => calls.push('second');
   const added = () => calls.push('added');
-  node.addEventListener('change', async () => {
-    calls.push('first');
-    node.removeEventListener('change', second);
-    node.addEventListener('change', added);
-    await Promise.resolve();
-    calls.push('first-finished');
-  }, { once: true });
+  node.addEventListener(
+    'change',
+    async () => {
+      calls.push('first');
+      node.removeEventListener('change', second);
+      node.addEventListener('change', added);
+      await Promise.resolve();
+      calls.push('first-finished');
+    },
+    { once: true }
+  );
   node.addEventListener('change', second);
   await node.dispatch('change');
   assert.deepEqual(calls, ['first', 'first-finished', 'second']);
@@ -57,7 +61,11 @@ test('options pause commits activation and leaves saved rule flags intact', asyn
   const harness = createUiHarness(t);
   let renders = 0;
   bindOptionsActivation({
-    onChanged() { optionsState.activation = harness.getActivation(); renders++; renderOptionsSwitch(); },
+    onChanged() {
+      optionsState.activation = harness.getActivation();
+      renders++;
+      renderOptionsSwitch();
+    },
     onResumeProfile() {}
   });
   await harness.element('masterSwitch').dispatch('click');
@@ -72,7 +80,10 @@ test('options timer selection commits browser-session scope and refreshes radio 
   resetState();
   const harness = createUiHarness(t);
   bindOptionsActivation({
-    onChanged() { optionsState.activation = harness.getActivation(); renderDurationField(); },
+    onChanged() {
+      optionsState.activation = harness.getActivation();
+      renderDurationField();
+    },
     onResumeProfile() {}
   });
   harness.pills[3].checked = true;
@@ -88,7 +99,9 @@ test('duration radios reject extra changes while committing and unlock after suc
   resetState();
   const harness = createUiHarness(t, { holdCommit: true });
   bindOptionsActivation({
-    onChanged() { optionsState.activation = harness.getActivation(); },
+    onChanged() {
+      optionsState.activation = harness.getActivation();
+    },
     onResumeProfile() {}
   });
   renderDurationField();
@@ -110,8 +123,15 @@ test('a rejected duration change restores the saved radio selection', async (t) 
   const harness = createUiHarness(t, { failCommit: true });
   const originalError = console.error;
   console.error = () => {};
-  t.after(() => { console.error = originalError; });
-  bindOptionsActivation({ onChanged() { assert.fail('Rejected changes must not refresh state'); }, onResumeProfile() {} });
+  t.after(() => {
+    console.error = originalError;
+  });
+  bindOptionsActivation({
+    onChanged() {
+      assert.fail('Rejected changes must not refresh state');
+    },
+    onResumeProfile() {}
+  });
   renderDurationField();
   harness.pills[0].checked = false;
   harness.pills[1].checked = true;
@@ -127,7 +147,12 @@ test('options resume delegates a parked profile to profile activation', async (t
   const harness = createUiHarness(t);
   optionsState.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'qa' };
   let resumedProfile;
-  bindOptionsActivation({ onChanged() {}, onResumeProfile(id) { resumedProfile = id; } });
+  bindOptionsActivation({
+    onChanged() {},
+    onResumeProfile(id) {
+      resumedProfile = id;
+    }
+  });
   await harness.element('resumeMasterBtn').dispatch('click');
   assert.equal(resumedProfile, 'qa');
   assert.equal(harness.requests.length, 0);
@@ -149,7 +174,12 @@ test('activation controls remain disabled until the worker commit finishes', asy
 test('popup pause refreshes the switch after a successful worker commit', async (t) => {
   resetState();
   const harness = createUiHarness(t);
-  bindPopupActivation({ onChanged() { popupState.headers.activation = harness.getActivation(); renderPopupSwitch(); } });
+  bindPopupActivation({
+    onChanged() {
+      popupState.headers.activation = harness.getActivation();
+      renderPopupSwitch();
+    }
+  });
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(popupState.headers.activation.masterEnabled, false);
   assert.equal(harness.element('masterSwitch').getAttribute('aria-checked'), 'false');
@@ -161,7 +191,9 @@ test('a rejected popup commit preserves activation and restores usable controls'
   const harness = createUiHarness(t, { failCommit: true });
   const originalError = console.error;
   console.error = () => {};
-  t.after(() => { console.error = originalError; });
+  t.after(() => {
+    console.error = originalError;
+  });
   bindPopupActivation({ onChanged: renderPopupSwitch });
   await harness.element('masterSwitch').dispatch('click');
   assert.equal(popupState.headers.activation.masterEnabled, true);

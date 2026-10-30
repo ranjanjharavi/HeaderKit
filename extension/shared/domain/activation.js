@@ -20,8 +20,8 @@ export function normalizeActivation(rawActivation, { profileIds = null } = {}) {
   }
 
   const profileId = normalizeProfileReference(rawActivation.profileId, profileIds, fallback.profileId);
-  const lastProfileId = normalizeProfileReference(rawActivation.lastProfileId, profileIds, DEFAULT_PROFILE_ID)
-    || DEFAULT_PROFILE_ID;
+  const lastProfileId =
+    normalizeProfileReference(rawActivation.lastProfileId, profileIds, DEFAULT_PROFILE_ID) || DEFAULT_PROFILE_ID;
   const rawExpiresAt = Number(rawActivation.expiresAt);
   const rawDurationMs = Number(rawActivation.durationMs);
   const expiresAt = Number.isFinite(rawExpiresAt) && rawExpiresAt > 0 ? rawExpiresAt : null;
@@ -122,11 +122,10 @@ export function getRemainingMs(activation, now = Date.now()) {
  * Arms or disarms the timer without touching which profile is selected.
  * A parked activation has nothing to time, so it is left alone.
  */
-export function setActivationDuration(activation, {
-  durationMs = null,
-  untilBrowserClose = false,
-  now = Date.now()
-} = {}) {
+export function setActivationDuration(
+  activation,
+  { durationMs = null, untilBrowserClose = false, now = Date.now() } = {}
+) {
   const normalizedActivation = normalizeActivation(activation);
   if (!normalizedActivation.profileId) {
     return normalizedActivation;
@@ -204,9 +203,7 @@ export function setMasterEnabled(activation, enabled) {
     return {
       ...normalizedActivation,
       masterEnabled: true,
-      profileId: normalizedActivation.profileId
-        || normalizedActivation.lastProfileId
-        || DEFAULT_PROFILE_ID
+      profileId: normalizedActivation.profileId || normalizedActivation.lastProfileId || DEFAULT_PROFILE_ID
     };
   }
 
@@ -217,11 +214,11 @@ export function setMasterEnabled(activation, enabled) {
  * Selecting a profile always disarms any running timer and arms a fresh one, so
  * a duration belongs to the activation rather than to the profile.
  */
-export function setActiveProfile(activation, profileId, {
-  durationMs = null,
-  untilBrowserClose = false,
-  now = Date.now()
-} = {}) {
+export function setActiveProfile(
+  activation,
+  profileId,
+  { durationMs = null, untilBrowserClose = false, now = Date.now() } = {}
+) {
   const normalizedActivation = normalizeActivation(activation);
   const nextProfileId = profileId === null ? null : resolveProfileId(profileId);
   const duration = Number(durationMs);

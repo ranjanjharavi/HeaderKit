@@ -13,23 +13,29 @@ test('rule workspace summary describes an empty view', () => {
 });
 
 test('rule workspace summary handles host grammar and enabled counts', () => {
-  assert.deepEqual(getRuleWorkspaceSummary([
-    { domain: 'api.example.com', enabled: true },
-    { domain: 'api.example.com', enabled: false }
-  ]), {
-    totalRules: 2,
-    activeRules: 1,
-    hostCount: 1,
-    detail: '2 rules applying to 1 host'
-  });
+  assert.deepEqual(
+    getRuleWorkspaceSummary([
+      { domain: 'api.example.com', enabled: true },
+      { domain: 'api.example.com', enabled: false }
+    ]),
+    {
+      totalRules: 2,
+      activeRules: 1,
+      hostCount: 1,
+      detail: '2 rules applying to 1 host'
+    }
+  );
 
-  assert.deepEqual(getRuleWorkspaceSummary([
-    { domain: 'api.example.com', enabled: true },
-    { domain: 'staging.example.com', enabled: true }
-  ]), {
-    totalRules: 2,
-    activeRules: 2,
-    hostCount: 2,
-    detail: '2 rules applying to 2 hosts'
-  });
+  assert.deepEqual(
+    getRuleWorkspaceSummary([
+      { domain: 'api.example.com', enabled: true },
+      { domain: 'staging.example.com', enabled: true }
+    ]),
+    {
+      totalRules: 2,
+      activeRules: 2,
+      hostCount: 2,
+      detail: '2 rules applying to 2 hosts'
+    }
+  );
 });

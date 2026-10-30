@@ -1,8 +1,4 @@
-import {
-  filterRulesByProfile,
-  getActiveRuleConflicts,
-  groupRulesByDomain
-} from '../../shared/domain/rules.js';
+import { filterRulesByProfile, getActiveRuleConflicts, groupRulesByDomain } from '../../shared/domain/rules.js';
 import { getTargetProfileId } from '../../shared/domain/activation.js';
 import { isRuleGranted } from '../../shared/domain/site-access.js';
 import { createConflictMap, renderDomainGroup, sortDomainGroups } from '../../shared/ui/rule-render.js';
@@ -48,20 +44,20 @@ export function renderRules() {
   }
 
   const groups = sortDomainGroups(groupRulesByDomain(visibleRules), conflictingIds, '');
-  container.innerHTML = groups.map(({ domain, rules: domainRules }, index) => renderDomainGroup(
-    domain,
-    domainRules,
-    {
-      index,
-      conflictMap,
-      collapsed: state.collapsedDomains.has(domain),
-      editingId: state.editingId,
-      revealedRuleIds: state.revealedRuleIds,
-      editProfiles: state.profiles,
-      managerView: true,
-      describeRule
-    }
-  )).join('');
+  container.innerHTML = groups
+    .map(({ domain, rules: domainRules }, index) =>
+      renderDomainGroup(domain, domainRules, {
+        index,
+        conflictMap,
+        collapsed: state.collapsedDomains.has(domain),
+        editingId: state.editingId,
+        revealedRuleIds: state.revealedRuleIds,
+        editProfiles: state.profiles,
+        managerView: true,
+        describeRule
+      })
+    )
+    .join('');
   const replacement = container.querySelector('.rule-edit-form');
   if (preservedForm && replacement) {
     replacement.replaceWith(preservedForm);
@@ -104,14 +100,16 @@ function updateSummary() {
 }
 
 function filterRulesBySearch(rules, query) {
-  const normalizedQuery = String(query || '').trim().toLowerCase();
+  const normalizedQuery = String(query || '')
+    .trim()
+    .toLowerCase();
   if (!normalizedQuery) {
     return rules;
   }
 
-  return rules.filter((rule) => [rule.domain, rule.headerName].some((value) => (
-    String(value).toLowerCase().includes(normalizedQuery)
-  )));
+  return rules.filter((rule) =>
+    [rule.domain, rule.headerName].some((value) => String(value).toLowerCase().includes(normalizedQuery))
+  );
 }
 
 function getEmptyRulesMessage() {

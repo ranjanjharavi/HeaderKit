@@ -38,7 +38,6 @@ export function bindRuleEvents({ onRefresh, onRender }) {
     }
   });
   document.getElementById('ruleSearchInput').addEventListener('input', handleRuleSearchInput);
-
 }
 
 export async function initializeRules({ editRuleId = null } = {}) {

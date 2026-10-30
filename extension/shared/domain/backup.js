@@ -13,11 +13,21 @@ export function serializeBackup({ profiles, rules }, { now = new Date() } = {}) 
     version: BACKUP_VERSION,
     exportedAt: now.toISOString(),
     profiles: profiles.map(({ id, name, createdAt, defaultDurationMs }) => ({
-      id, name, createdAt, defaultDurationMs
+      id,
+      name,
+      createdAt,
+      defaultDurationMs
     })),
-    rules: rules.map(({
-      id, profileId, domain, headerName, headerValue, pathPrefix, resourceType, enabled
-    }) => ({ id, profileId, domain, headerName, headerValue, pathPrefix, resourceType, enabled }))
+    rules: rules.map(({ id, profileId, domain, headerName, headerValue, pathPrefix, resourceType, enabled }) => ({
+      id,
+      profileId,
+      domain,
+      headerName,
+      headerValue,
+      pathPrefix,
+      resourceType,
+      enabled
+    }))
   };
   const text = `${JSON.stringify(backup, null, 2)}\n`;
   // Export only backups that this version can read back without losing data.
@@ -56,9 +66,15 @@ export function parseBackup(text) {
   const profileNames = new Set();
   const profiles = backup.profiles.map((profile, index) => {
     const label = `Profile ${index + 1}`;
-    if (!isRecord(profile) || typeof profile.id !== 'string' || !profile.id.trim()
-      || profile.id !== profile.id.trim() || profile.id.length > 200
-      || /[\u0000-\u001f\u007f]/.test(profile.id) || profileIds.has(profile.id)) {
+    if (
+      !isRecord(profile) ||
+      typeof profile.id !== 'string' ||
+      !profile.id.trim() ||
+      profile.id !== profile.id.trim() ||
+      profile.id.length > 200 ||
+      /[\u0000-\u001f\u007f]/.test(profile.id) ||
+      profileIds.has(profile.id)
+    ) {
       throw new Error(`${label} has an invalid or duplicate ID.`);
     }
     if (typeof profile.name !== 'string') {
@@ -72,9 +88,12 @@ export function parseBackup(text) {
     if (profileNames.has(name.toLowerCase())) {
       throw new Error(`${label} needs a unique name.`);
     }
-    if (!Number.isFinite(profile.createdAt) || profile.createdAt < 0
-      || (profile.defaultDurationMs !== null
-        && (!Number.isFinite(profile.defaultDurationMs) || profile.defaultDurationMs <= 0))) {
+    if (
+      !Number.isFinite(profile.createdAt) ||
+      profile.createdAt < 0 ||
+      (profile.defaultDurationMs !== null &&
+        (!Number.isFinite(profile.defaultDurationMs) || profile.defaultDurationMs <= 0))
+    ) {
       throw new Error(`${label} has invalid timing metadata.`);
     }
     profileIds.add(profile.id);
@@ -86,8 +105,7 @@ export function parseBackup(text) {
   const identities = new Set();
   const rules = backup.rules.map((rule, index) => {
     const label = `Rule ${index + 1}`;
-    if (!isRecord(rule) || !Number.isInteger(rule.id) || rule.id < 1 || rule.id > MAX_RULE_ID
-      || ruleIds.has(rule.id)) {
+    if (!isRecord(rule) || !Number.isInteger(rule.id) || rule.id < 1 || rule.id > MAX_RULE_ID || ruleIds.has(rule.id)) {
       throw new Error(`${label} has an invalid or duplicate ID.`);
     }
     if (typeof rule.profileId !== 'string' || !profileIds.has(rule.profileId)) {

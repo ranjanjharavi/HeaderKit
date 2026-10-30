@@ -10,8 +10,7 @@ export function readStyles(path) {
 }
 
 function expandStyles(sourceUrl) {
-  return readFileSync(sourceUrl, 'utf8').replace(
-    /@import\s+url\(["']([^"']+)["']\);/g,
-    (_match, path) => expandStyles(new URL(path, sourceUrl))
+  return readFileSync(sourceUrl, 'utf8').replace(/@import\s+url\(["']([^"']+)["']\);/g, (_match, path) =>
+    expandStyles(new URL(path, sourceUrl))
   );
 }

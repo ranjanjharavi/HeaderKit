@@ -36,16 +36,28 @@ function setup(t, surface, rules = []) {
     callback({ ok: true, ...result });
   };
   globalThis.chrome.permissions = {
-    request(_details, callback) { calls.push('request'); callback(false); },
-    getAll(callback) { callback({ origins: [] }); },
-    remove(_details, callback) { calls.push('remove'); callback(true); }
+    request(_details, callback) {
+      calls.push('request');
+      callback(false);
+    },
+    getAll(callback) {
+      callback({ origins: [] });
+    },
+    remove(_details, callback) {
+      calls.push('remove');
+      callback(true);
+    }
   };
   const originalError = console.error;
   console.error = () => {};
-  t.after(() => { console.error = originalError; });
+  t.after(() => {
+    console.error = originalError;
+  });
 
   const actions = surface === 'options' ? optionsActions : popupActions;
-  const refresh = async () => { state.rules = storedRules; };
+  const refresh = async () => {
+    state.rules = storedRules;
+  };
   if (surface === 'options') {
     optionsActions.configureRuleActions({ onRender() {}, onRefresh: refresh });
     bindOptionsComposer({ onAddRule: actions.addRule });
@@ -55,15 +67,29 @@ function setup(t, surface, rules = []) {
   }
   function draft(values, id = null) {
     const fields = {
-      domain: 'api.example.com', headerName: 'X-Test', headerValue: 'enabled',
-      pathPrefix: '', resourceType: 'all', profileId: 'default', ...values
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'enabled',
+      pathPrefix: '',
+      resourceType: 'all',
+      profileId: 'default',
+      ...values
     };
     for (const [field, value] of Object.entries(fields)) {
       const elementId = id === null ? field : `edit${field[0].toUpperCase()}${field.slice(1)}-${id}`;
       harness.element(elementId).value = value;
     }
   }
-  return { ...harness, state, actions, calls, draft, storeRules: (value) => { storedRules = value; } };
+  return {
+    ...harness,
+    state,
+    actions,
+    calls,
+    draft,
+    storeRules: (value) => {
+      storedRules = value;
+    }
+  };
 }
 
 test('rule form errors tolerate missing forms and missing individual fields', (t) => {
@@ -72,7 +98,7 @@ test('rule form errors tolerate missing forms and missing individual fields', (t
   assert.doesNotThrow(() => clearRuleFormError(1));
   assert.equal(showRuleFormError({ error: 'Rejected', field: 'headerValue' }, 1), false);
   const error = harness.element('ruleEditError-1');
-  document.getElementById = (id) => id === 'ruleEditError-1' ? error : null;
+  document.getElementById = (id) => (id === 'ruleEditError-1' ? error : null);
   assert.equal(showRuleFormError({ error: 'Rejected', field: 'headerValue' }, 1), true);
   assert.equal(error.textContent, 'Rejected');
 });
@@ -96,8 +122,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} editing an approved host commits without requesting access`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: true, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
@@ -110,14 +140,19 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} worker validation errors preserve the draft and target the rejected field`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: true, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
     harness.state.editingId = 1;
     harness.draft({ headerValue: 'draft value' }, surface === 'options' ? 1 : null);
-    chrome.runtime.sendMessage = (_message, callback) => callback({ ok: false, error: 'Conflicts with a newer rule.', field: 'headerValue', conflictId: 2 });
+    chrome.runtime.sendMessage = (_message, callback) =>
+      callback({ ok: false, error: 'Conflicts with a newer rule.', field: 'headerValue', conflictId: 2 });
     await harness.actions.saveEditedRule(1);
     const fieldId = surface === 'options' ? 'editHeaderValue-1' : 'headerValue';
     assert.equal(harness.element(fieldId).value, 'draft value');
@@ -128,8 +163,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} worker errors fall back to status after a form disappears`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: true, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
@@ -137,7 +176,7 @@ for (const surface of ['options', 'popup']) {
     harness.draft({ headerValue: 'draft value' }, surface === 'options' ? 1 : null);
     const getElement = document.getElementById.bind(document);
     chrome.runtime.sendMessage = (_message, callback) => {
-      document.getElementById = (id) => id === 'headerStatus' ? getElement(id) : null;
+      document.getElementById = (id) => (id === 'headerStatus' ? getElement(id) : null);
       callback({ ok: false, error: 'Rule changed elsewhere.', field: 'headerValue' });
     };
     await harness.actions.saveEditedRule(1);
@@ -147,8 +186,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} broad and wildcard grants cover resume without another request`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: false, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: false,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     for (const origin of ['https://*/*', 'https://*.example.com/*']) {
@@ -162,8 +205,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} newly granted access is reused when the rule is paused and resumed`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: false, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: false,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     globalThis.chrome.permissions.request = (_details, callback) => {
@@ -180,14 +227,21 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} deletion waits for HeaderKit confirmation and explains removal of the final grant`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: true, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     harness.state.grantedOrigins = new Set(['https://api.example.com/*']);
     const cancelled = harness.actions.confirmDeleteRule(1);
     assert.equal(harness.element('confirmationDialog').open, true);
-    assert.match(harness.element('confirmationMessage').textContent, /last rule.*site access grant will also be removed/);
+    assert.match(
+      harness.element('confirmationMessage').textContent,
+      /last rule.*site access grant will also be removed/
+    );
     assert.deepEqual(harness.calls, []);
     await harness.element('confirmationCancelBtn').dispatch('click');
     await cancelled;
@@ -217,8 +271,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} paused-rule edits save before releasing the unused old host grant`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: false, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: false,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     harness.state.editingId = 1;
@@ -232,8 +290,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} denied site access reports the rule state accurately`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: false, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: false,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     await harness.actions.toggleRule(1);
@@ -244,8 +306,12 @@ for (const surface of ['options', 'popup']) {
 
   test(`${surface} host edits require preflight and save before requesting new access`, async (t) => {
     const rule = {
-      id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-      enabled: true, profileId: 'default'
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      enabled: true,
+      profileId: 'default'
     };
     const harness = setup(t, surface, [rule]);
     harness.state.editingId = 1;
@@ -266,8 +332,12 @@ for (const surface of ['options', 'popup']) {
   for (const action of ['edit', 'resume']) {
     test(`${surface} ${action} starts saving synchronously even if the permission prompt never responds`, async (t) => {
       const rule = {
-        id: 1, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'old',
-        enabled: action === 'edit', profileId: 'default'
+        id: 1,
+        domain: 'api.example.com',
+        headerName: 'X-Test',
+        headerValue: 'old',
+        enabled: action === 'edit',
+        profileId: 'default'
       };
       const harness = setup(t, surface, [rule]);
       harness.state.editingId = action === 'edit' ? 1 : null;
@@ -281,7 +351,9 @@ for (const surface of ['options', 'popup']) {
         harness.storeRules(result.rules);
         queueMicrotask(() => callback({ ok: true, ...result }));
       };
-      globalThis.chrome.permissions.request = () => { harness.calls.push('request'); };
+      globalThis.chrome.permissions.request = () => {
+        harness.calls.push('request');
+      };
 
       if (action === 'edit') {
         harness.actions.saveEditedRule(1);

@@ -121,7 +121,10 @@ test('normalizeRules repairs identifiers and normalizes fields', () => {
   ]);
 
   assert.equal(normalized.length, 2);
-  assert.deepEqual(normalized.map((rule) => rule.id), [1, 2]);
+  assert.deepEqual(
+    normalized.map((rule) => rule.id),
+    [1, 2]
+  );
   assert.equal(normalized[0].domain, 'api.example.com');
   assert.equal(normalized[1].enabled, false);
 });
@@ -136,9 +139,15 @@ test('normalizeRules reserves valid IDs before repairing invalid and duplicate e
     { ...sampleRules[0], id: '3' }
   ];
   const normalized = normalizeRules(rules);
-  assert.deepEqual(normalized.map((rule) => rule.id), [10, 1, 11, 9, 12, 3]);
+  assert.deepEqual(
+    normalized.map((rule) => rule.id),
+    [10, 1, 11, 9, 12, 3]
+  );
   assert.deepEqual(normalizeRules(normalized), normalized);
-  assert.deepEqual(rules.map((rule) => rule.id), [null, 1, 1, 9, -2, '3']);
+  assert.deepEqual(
+    rules.map((rule) => rule.id),
+    [null, 1, 1, 9, -2, '3']
+  );
 });
 
 test('Unicode paths canonicalize for matching, identity and safe display round trips', () => {
@@ -162,11 +171,14 @@ test('Unicode paths canonicalize for matching, identity and safe display round t
 });
 
 test('validateRuleDraft normalizes host and optional request scope', () => {
-  const result = validateRuleDraft({
-    domain: 'https://API.example.com/',
-    headerName: ' X-Test ',
-    headerValue: ' value '
-  }, []);
+  const result = validateRuleDraft(
+    {
+      domain: 'https://API.example.com/',
+      headerName: ' X-Test ',
+      headerValue: ' value '
+    },
+    []
+  );
 
   assert.deepEqual(result, {
     ok: true,
@@ -179,13 +191,16 @@ test('validateRuleDraft normalizes host and optional request scope', () => {
     }
   });
 
-  const scoped = validateRuleDraft({
-    domain: 'api.example.com',
-    headerName: 'X-Test',
-    headerValue: 'value',
-    pathPrefix: 'api/v2/',
-    resourceType: 'xmlhttprequest'
-  }, []);
+  const scoped = validateRuleDraft(
+    {
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'value',
+      pathPrefix: 'api/v2/',
+      resourceType: 'xmlhttprequest'
+    },
+    []
+  );
   assert.deepEqual(scoped.rule, {
     domain: 'api.example.com',
     headerName: 'X-Test',
@@ -197,38 +212,69 @@ test('validateRuleDraft normalizes host and optional request scope', () => {
 
 test('validateRuleDraft rejects invalid and duplicate rules', () => {
   assert.equal(validateRuleDraft({ domain: '', headerName: '', headerValue: '' }, []).ok, false);
-  assert.equal(validateRuleDraft({
-    domain: 'example.com',
-    headerName: 'Bad Header',
-    headerValue: 'value'
-  }, []).error, 'Enter a valid HTTP header name.');
-  assert.equal(validateRuleDraft({
-    domain: 'example.com',
-    headerName: 'X-Test',
-    headerValue: 'bad\nvalue'
-  }, []).error, 'Header values cannot contain control characters other than tabs.');
-  assert.match(validateRuleDraft({
-    domain: 'example.com',
-    headerName: 'X-Test',
-    headerValue: 'value',
-    pathPrefix: '/api?token=1'
-  }, []).error, /valid path prefix/);
-  assert.equal(validateRuleDraft({
-    domain: 'example.com',
-    headerName: 'X-Test',
-    headerValue: 'value',
-    resourceType: 'script'
-  }, []).error, 'Choose a supported request type.');
+  assert.equal(
+    validateRuleDraft(
+      {
+        domain: 'example.com',
+        headerName: 'Bad Header',
+        headerValue: 'value'
+      },
+      []
+    ).error,
+    'Enter a valid HTTP header name.'
+  );
+  assert.equal(
+    validateRuleDraft(
+      {
+        domain: 'example.com',
+        headerName: 'X-Test',
+        headerValue: 'bad\nvalue'
+      },
+      []
+    ).error,
+    'Header values cannot contain control characters other than tabs.'
+  );
+  assert.match(
+    validateRuleDraft(
+      {
+        domain: 'example.com',
+        headerName: 'X-Test',
+        headerValue: 'value',
+        pathPrefix: '/api?token=1'
+      },
+      []
+    ).error,
+    /valid path prefix/
+  );
+  assert.equal(
+    validateRuleDraft(
+      {
+        domain: 'example.com',
+        headerName: 'X-Test',
+        headerValue: 'value',
+        resourceType: 'script'
+      },
+      []
+    ).error,
+    'Choose a supported request type.'
+  );
   assert.equal(
     validateRuleDraft(sampleRules[0], sampleRules).error,
     'A rule for that header and request scope already exists for this host in this profile.'
   );
-  assert.equal(validateRuleDraft({
-    ...sampleRules[0],
-    headerName: 'x-auth',
-    headerValue: 'different',
-    enabled: false
-  }, sampleRules, { enabled: false }).ok, false);
+  assert.equal(
+    validateRuleDraft(
+      {
+        ...sampleRules[0],
+        headerName: 'x-auth',
+        headerValue: 'different',
+        enabled: false
+      },
+      sampleRules,
+      { enabled: false }
+    ).ok,
+    false
+  );
   assert.equal(validateRuleDraft(sampleRules[0], sampleRules, { excludeId: 1 }).ok, true);
 });
 
@@ -261,7 +307,10 @@ test('conflict scans exclude non-live rules before comparing pairs', () => {
   const parkedRules = Array.from({ length: 40 }, () => ({
     ...sampleRules[0],
     profileId: 'other',
-    get enabled() { checks++; return true; }
+    get enabled() {
+      checks++;
+      return true;
+    }
   }));
   const liveRules = [sampleRules[0], { ...sampleRules[0], id: 3, headerValue: 'different' }];
   const conflicts = getActiveRuleConflicts([...parkedRules, ...liveRules]);
@@ -286,10 +335,12 @@ test('conflict detection finds different active values for the same header and h
   assert.equal(areRulesConflicting(sampleRules[0], sameValueRule), false);
   assert.equal(areRulesConflicting(sampleRules[0], pausedRule), false);
   assert.equal(findActiveRuleConflict(conflictingRule, sampleRules)?.id, 1);
-  assert.deepEqual(getActiveRuleConflicts([sampleRules[0], conflictingRule]), [{
-    leftRule: sampleRules[0],
-    rightRule: conflictingRule
-  }]);
+  assert.deepEqual(getActiveRuleConflicts([sampleRules[0], conflictingRule]), [
+    {
+      leftRule: sampleRules[0],
+      rightRule: conflictingRule
+    }
+  ]);
 });
 
 test('validateRuleDraft rejects duplicate headers even for paused drafts', () => {
@@ -315,13 +366,19 @@ test('rule collection helpers preserve exact-host behavior', () => {
 });
 
 test('normalizeRules assigns the default profile and repairs unknown ones', () => {
-  const normalized = normalizeRules([
-    sampleRules[0],
-    { ...sampleRules[1], profileId: 'staging' },
-    { ...sampleRules[0], id: 7, profileId: 'deleted-profile' }
-  ], { profileIds: new Set(['default', 'staging']) });
+  const normalized = normalizeRules(
+    [
+      sampleRules[0],
+      { ...sampleRules[1], profileId: 'staging' },
+      { ...sampleRules[0], id: 7, profileId: 'deleted-profile' }
+    ],
+    { profileIds: new Set(['default', 'staging']) }
+  );
 
-  assert.deepEqual(normalized.map((rule) => rule.profileId), ['default', 'staging', 'default']);
+  assert.deepEqual(
+    normalized.map((rule) => rule.profileId),
+    ['default', 'staging', 'default']
+  );
 });
 
 test('the same header with different values is allowed across profiles', () => {
@@ -374,15 +431,21 @@ test('a paused master switch means nothing conflicts', () => {
 test('an identical rule in another profile is not a duplicate', () => {
   const stagingRules = [{ ...sampleRules[0], profileId: 'staging' }];
 
-  assert.equal(validateRuleDraft(sampleRules[0], stagingRules, {
-    activation: { masterEnabled: true, profileId: 'prod' },
-    profileId: 'prod'
-  }).ok, true);
+  assert.equal(
+    validateRuleDraft(sampleRules[0], stagingRules, {
+      activation: { masterEnabled: true, profileId: 'prod' },
+      profileId: 'prod'
+    }).ok,
+    true
+  );
 
-  assert.equal(validateRuleDraft(sampleRules[0], stagingRules, {
-    activation: { masterEnabled: true, profileId: 'staging' },
-    profileId: 'staging'
-  }).error, 'A rule for that header and request scope already exists for this host in this profile.');
+  assert.equal(
+    validateRuleDraft(sampleRules[0], stagingRules, {
+      activation: { masterEnabled: true, profileId: 'staging' },
+      profileId: 'staging'
+    }).error,
+    'A rule for that header and request scope already exists for this host in this profile.'
+  );
 });
 
 test('profile helpers filter rules', () => {
@@ -397,8 +460,18 @@ test('buildDynamicRule preserves host-wide defaults and applies path/type scopes
   const defaultRule = buildDynamicRule(sampleRules[0]);
   assert.equal(defaultRule.condition.isUrlFilterCaseSensitive, true);
   assert.deepEqual(defaultRule.condition.resourceTypes, [
-    'main_frame', 'sub_frame', 'stylesheet', 'script', 'image', 'font', 'object',
-    'xmlhttprequest', 'ping', 'csp_report', 'media', 'other'
+    'main_frame',
+    'sub_frame',
+    'stylesheet',
+    'script',
+    'image',
+    'font',
+    'object',
+    'xmlhttprequest',
+    'ping',
+    'csp_report',
+    'media',
+    'other'
   ]);
   assert.match('https://api.example.com/path', new RegExp(defaultRule.condition.regexFilter));
   assert.doesNotMatch('http://api.example.com/path', new RegExp(defaultRule.condition.regexFilter));

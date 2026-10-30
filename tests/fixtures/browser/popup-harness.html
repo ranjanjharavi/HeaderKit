@@ -1,8 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>HeaderKit popup harness</title></head>
-<body>
-  <script type="module">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HeaderKit popup harness</title>
+  </head>
+  <body>
+    <script type="module">
       const previewParameters = new URLSearchParams(location.search);
       const storage = previewParameters.has('store')
         ? { privacyConsentVersion: Number(previewParameters.get('consent') ?? 2) }
@@ -23,9 +26,30 @@
             untilBrowserClose: false
           },
           headerRules: [
-            { id: 1, domain: 'example.com', headerName: 'X-HeaderKit-Review', headerValue: 'enabled', enabled: true, profileId: 'default' },
-            { id: 2, domain: 'example.com', headerName: 'X-Debug-Mode', headerValue: 'verbose', enabled: false, profileId: 'default' },
-            { id: 3, domain: 'staging.example.com', headerName: 'X-Environment', headerValue: 'staging', enabled: true, profileId: 'staging' }
+            {
+              id: 1,
+              domain: 'example.com',
+              headerName: 'X-HeaderKit-Review',
+              headerValue: 'enabled',
+              enabled: true,
+              profileId: 'default'
+            },
+            {
+              id: 2,
+              domain: 'example.com',
+              headerName: 'X-Debug-Mode',
+              headerValue: 'verbose',
+              enabled: false,
+              profileId: 'default'
+            },
+            {
+              id: 3,
+              domain: 'staging.example.com',
+              headerName: 'X-Environment',
+              headerValue: 'staging',
+              enabled: true,
+              profileId: 'staging'
+            }
           ]
         });
       }
@@ -45,8 +69,12 @@
       window.__HEADERKIT_CHROME_STUB__ = {
         runtime: {
           lastError: null,
-          getURL(path) { return `/extension/${path}`; },
-          openOptionsPage(callback) { callback(); }
+          getURL(path) {
+            return `/extension/${path}`;
+          },
+          openOptionsPage(callback) {
+            callback();
+          }
         },
         storage: {
           local: {
@@ -77,10 +105,21 @@
             }
             callback(true);
           },
-          remove(_details, callback) { callback(true); }
+          remove(_details, callback) {
+            callback(true);
+          }
         },
         tabs: {
-          query(_details, callback) { callback([{ id: 1, url: previewParameters.has('campaign') ? 'https://api.example.com/api/v1/users' : 'https://example.com/app?view=list#details' }]); },
+          query(_details, callback) {
+            callback([
+              {
+                id: 1,
+                url: previewParameters.has('campaign')
+                  ? 'https://api.example.com/api/v1/users'
+                  : 'https://example.com/app?view=list#details'
+              }
+            ]);
+          },
           create(details, callback) {
             document.documentElement.dataset.createdTabUrl = details.url;
             callback({ id: 2, ...details });
@@ -95,14 +134,23 @@
       await installBackgroundHarness(window.chrome);
 
       const cacheBust = Date.now();
-      const markup = await fetch('/extension/popup/index.html', { cache: 'no-store' }).then((response) => response.text());
+      const markup = await fetch('/extension/popup/index.html', { cache: 'no-store' }).then((response) =>
+        response.text()
+      );
       document.open();
-      document.write(markup
-        .replace('<head>', '<head><base href="/extension/popup/">')
-        .replace('href="../shared/styles/index.css"', `href="../shared/styles/index.css?v=${cacheBust}"`)
-        .replace('href="popup.css"', `href="popup.css?v=${cacheBust}"`)
-        .replace('<script type="module" src="main.js"></' + 'script>', '<script>window.chrome = window.__HEADERKIT_CHROME_STUB__ || parent.__HEADERKIT_CHROME_STUB__;</' + `script><script type="module" src="main.js?v=${cacheBust}"></` + 'script>'));
+      document.write(
+        markup
+          .replace('<head>', '<head><base href="/extension/popup/">')
+          .replace('href="../shared/styles/index.css"', `href="../shared/styles/index.css?v=${cacheBust}"`)
+          .replace('href="popup.css"', `href="popup.css?v=${cacheBust}"`)
+          .replace(
+            '<script type="module" src="main.js"></' + 'script>',
+            '<script>window.chrome = window.__HEADERKIT_CHROME_STUB__ || parent.__HEADERKIT_CHROME_STUB__;</' +
+              `script><script type="module" src="main.js?v=${cacheBust}"></` +
+              'script>'
+          )
+      );
       document.close();
-  </script>
-</body>
+    </script>
+  </body>
 </html>

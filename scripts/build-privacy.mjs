@@ -9,14 +9,13 @@ const docsTarget = resolve(projectRoot, 'docs/privacy-policy.html');
 const markdown = await readFile(sourcePath, 'utf8');
 const body = renderMarkdown(markdown);
 
-await Promise.all([
-  writeExtensionPrivacyPage(extensionTarget, body),
-  writeDocsPrivacyPage(docsTarget, body)
-]);
+await Promise.all([writeExtensionPrivacyPage(extensionTarget, body), writeDocsPrivacyPage(docsTarget, body)]);
 
 async function writeExtensionPrivacyPage(target, renderedBody) {
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, `<!DOCTYPE html>
+  await writeFile(
+    target,
+    `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -32,13 +31,17 @@ async function writeExtensionPrivacyPage(target, renderedBody) {
   </main>
 </body>
 </html>
-`, 'utf8');
+`,
+    'utf8'
+  );
 }
 
 async function writeDocsPrivacyPage(target, renderedBody) {
   await mkdir(dirname(target), { recursive: true });
   const articleBody = renderedBody.replace(/^\s*<h1[^>]*>.*?<\/h1>\s*/, '');
-  await writeFile(target, `<!doctype html>
+  await writeFile(
+    target,
+    `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -130,7 +133,9 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     </footer>
   </body>
 </html>
-`, 'utf8');
+`,
+    'utf8'
+  );
 }
 
 function renderMarkdown(source) {

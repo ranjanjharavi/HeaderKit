@@ -2,11 +2,7 @@
  * Opens the same product-owned confirmation surface in the popup and manager.
  * The destructive action only runs after the dialog closes with "confirm".
  */
-export function confirmDestructiveAction({
-  title,
-  message,
-  confirmLabel = 'Delete'
-}) {
+export function confirmDestructiveAction({ title, message, confirmLabel = 'Delete' }) {
   const dialog = document.getElementById('confirmationDialog');
   if (dialog.open) {
     return Promise.resolve(false);

@@ -57,31 +57,37 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
     }
     const job = { knownTab, pending: true, cancelled: false, promise: null };
     jobs.set(tabId, job);
-    job.promise = runPendingWork(() => job.pending && !job.cancelled, async () => {
-      job.pending = false;
-      const version = revision;
-      const { rules, activation, grantedOrigins } = await getState();
-      const applicableRules = filterGrantedRules(rules, grantedOrigins);
-      const tab = tabId === null ? null : job.knownTab || await getTab(tabId);
-      if (job.cancelled) {
-        return;
+    job.promise = runPendingWork(
+      () => job.pending && !job.cancelled,
+      async () => {
+        job.pending = false;
+        const version = revision;
+        const { rules, activation, grantedOrigins } = await getState();
+        const applicableRules = filterGrantedRules(rules, grantedOrigins);
+        const tab = tabId === null ? null : job.knownTab || (await getTab(tabId));
+        if (job.cancelled) {
+          return;
+        }
+        if (version !== revision || job.pending) {
+          job.pending = true;
+          return;
+        }
+        const badge =
+          tabId !== null && !tab?.url
+            ? { text: null, color: null }
+            : resolveBadge(applicableRules, activation, { url: tab?.url });
+        await paintBadge(badge, tabId, job);
+        if (version !== revision) {
+          job.pending = true;
+        }
       }
-      if (version !== revision || job.pending) {
-        job.pending = true;
-        return;
-      }
-      const badge = tabId !== null && !tab?.url
-        ? { text: null, color: null }
-        : resolveBadge(applicableRules, activation, { url: tab?.url });
-      await paintBadge(badge, tabId, job);
-      if (version !== revision) {
-        job.pending = true;
-      }
-    }).catch(onError).finally(() => {
-      if (jobs.get(tabId) === job) {
-        jobs.delete(tabId);
-      }
-    });
+    )
+      .catch(onError)
+      .finally(() => {
+        if (jobs.get(tabId) === job) {
+          jobs.delete(tabId);
+        }
+      });
     return job.promise;
   }
 
@@ -92,22 +98,29 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
       job.pending = true;
     }
     if (!refreshJob) {
-      refreshJob = runPendingWork(() => refreshPending, async () => {
-        refreshPending = false;
-        scheduleTab(null);
-        const version = navigationVersion;
-        const tabs = await queryTabs({});
-        for (const tab of tabs) {
-          if ((navigations.get(tab.id) || 0) > version) {
-            continue;
+      refreshJob = runPendingWork(
+        () => refreshPending,
+        async () => {
+          refreshPending = false;
+          scheduleTab(null);
+          const version = navigationVersion;
+          const tabs = await queryTabs({});
+          for (const tab of tabs) {
+            if ((navigations.get(tab.id) || 0) > version) {
+              continue;
+            }
+            if (!tab.url && reconciled && (!painted.has(tab.id) || painted.get(tab.id).text === null)) {
+              continue;
+            }
+            scheduleTab(tab.id, tab);
           }
-          if (!tab.url && reconciled && (!painted.has(tab.id) || painted.get(tab.id).text === null)) {
-            continue;
-          }
-          scheduleTab(tab.id, tab);
+          reconciled = true;
         }
-        reconciled = true;
-      }).catch(onError).finally(() => { refreshJob = null; });
+      )
+        .catch(onError)
+        .finally(() => {
+          refreshJob = null;
+        });
     }
     return refreshJob;
   }
@@ -160,9 +173,7 @@ export function resolveBadge(rules, activation, { url } = {}) {
     profileId: getTargetProfileId(activation)
   });
 
-  return heldBackCount > 0
-    ? { text: 'off', color: BADGE_PAUSED_COLOR }
-    : { text: '', color: null };
+  return heldBackCount > 0 ? { text: 'off', color: BADGE_PAUSED_COLOR } : { text: '', color: null };
 }
 
 /**

@@ -32,12 +32,7 @@ import {
   RULE_MESSAGE_SET_ENABLED,
   RULE_MESSAGE_DELETE
 } from './shared/runtime/messages.js';
-import {
-  RULE_STORAGE_KEY,
-  buildDynamicRule,
-  getRuleOriginPattern,
-  normalizeRules
-} from './shared/domain/rules.js';
+import { RULE_STORAGE_KEY, buildDynamicRule, getRuleOriginPattern, normalizeRules } from './shared/domain/rules.js';
 import {
   ACTIVATION_STORAGE_KEY,
   getLiveRules,
@@ -47,7 +42,12 @@ import {
   setMasterEnabled,
   startBrowserSession
 } from './shared/domain/activation.js';
-import { PROFILE_STORAGE_KEY, createDefaultProfiles, getProfileIds, normalizeProfiles } from './shared/domain/profiles.js';
+import {
+  PROFILE_STORAGE_KEY,
+  createDefaultProfiles,
+  getProfileIds,
+  normalizeProfiles
+} from './shared/domain/profiles.js';
 import { MIGRATED_KEYS, ensureMigrated } from './background/migrate.js';
 import { createBadgeController } from './background/badge.js';
 import { createSerialQueue } from './shared/runtime/serial-queue.js';
@@ -79,16 +79,17 @@ function getBadgeState() {
   return badgeStateRead;
 }
 
-const RULE_MESSAGES = new Set([
-  RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE,
-  RULE_MESSAGE_SET_ENABLED, RULE_MESSAGE_DELETE
-]);
+const RULE_MESSAGES = new Set([RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE, RULE_MESSAGE_SET_ENABLED, RULE_MESSAGE_DELETE]);
 const ACTIVATION_MESSAGES = new Set([
   ACTIVATION_MESSAGE_SET_MASTER,
-  ACTIVATION_MESSAGE_SET_PROFILE, ACTIVATION_MESSAGE_SET_DURATION
+  ACTIVATION_MESSAGE_SET_PROFILE,
+  ACTIVATION_MESSAGE_SET_DURATION
 ]);
 const PROFILE_MESSAGES = new Set([
-  PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICATE, PROFILE_MESSAGE_DELETE
+  PROFILE_MESSAGE_CREATE,
+  PROFILE_MESSAGE_RENAME,
+  PROFILE_MESSAGE_DUPLICATE,
+  PROFILE_MESSAGE_DELETE
 ]);
 
 function invalidateState() {
@@ -108,20 +109,26 @@ function areStoredValuesEqual(left, right) {
   if (left === right) {
     return true;
   }
-  if (!left || !right || typeof left !== 'object' || typeof right !== 'object'
-    || Array.isArray(left) !== Array.isArray(right)) {
+  if (
+    !left ||
+    !right ||
+    typeof left !== 'object' ||
+    typeof right !== 'object' ||
+    Array.isArray(left) !== Array.isArray(right)
+  ) {
     return false;
   }
   const keys = Object.keys(left);
-  return keys.length === Object.keys(right).length && keys.every((key) => (
-    Object.hasOwn(right, key) && areStoredValuesEqual(left[key], right[key])
-  ));
+  return (
+    keys.length === Object.keys(right).length &&
+    keys.every((key) => Object.hasOwn(right, key) && areStoredValuesEqual(left[key], right[key]))
+  );
 }
 
 function matchesStoredChanges(changes, values) {
-  return Object.entries(changes).every(([key, change]) => (
-    Object.hasOwn(values, key) && areStoredValuesEqual(change.newValue, values[key])
-  ));
+  return Object.entries(changes).every(
+    ([key, change]) => Object.hasOwn(values, key) && areStoredValuesEqual(change.newValue, values[key])
+  );
 }
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -140,8 +147,11 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (sender?.id !== chrome.runtime.id || typeof sender?.url !== 'string'
-    || !sender.url.startsWith(chrome.runtime.getURL(''))) {
+  if (
+    sender?.id !== chrome.runtime.id ||
+    typeof sender?.url !== 'string' ||
+    !sender.url.startsWith(chrome.runtime.getURL(''))
+  ) {
     return false;
   }
 
@@ -165,11 +175,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         profileCount: nextState.profiles.length - state.profiles.length,
         ruleCount: nextState.rules.length - state.rules.length
       };
-    }).then((result) => sendResponse({ ok: true, ...result })).catch((error) => {
-      // Backup contents may contain credentials. Never log the payload.
-      console.error('Could not process the backup request.');
-      sendResponse({ ok: false, error: error.message || 'Could not process the backup.' });
-    });
+    })
+      .then((result) => sendResponse({ ok: true, ...result }))
+      .catch((error) => {
+        // Backup contents may contain credentials. Never log the payload.
+        console.error('Could not process the backup request.');
+        sendResponse({ ok: false, error: error.message || 'Could not process the backup.' });
+      });
     return true;
   }
 
@@ -178,7 +190,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then((result) => sendResponse({ ok: true, ...result }))
       .catch((error) => {
         console.error('Could not process the header rule request.', error);
-        sendResponse({ ok: false, error: error.message || 'Could not update header rules.', field: error.field, conflictId: error.conflictId });
+        sendResponse({
+          ok: false,
+          error: error.message || 'Could not update header rules.',
+          field: error.field,
+          conflictId: error.conflictId
+        });
       });
     return true;
   }
@@ -203,12 +220,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       await persistState(nextState, state);
       await releaseUnusedPermissions(state.rules, nextState.rules);
       return nextState;
-    }).then(({ rules, profiles, activation, profile }) => {
-      sendResponse({ ok: true, rules, profiles, activation, profile });
-    }).catch((error) => {
-      console.error('Could not process the state request.', error);
-      sendResponse({ ok: false, error: error.message || 'Could not update profiles.' });
-    });
+    })
+      .then(({ rules, profiles, activation, profile }) => {
+        sendResponse({ ok: true, rules, profiles, activation, profile });
+      })
+      .catch((error) => {
+        console.error('Could not process the state request.', error);
+        sendResponse({ ok: false, error: error.message || 'Could not update profiles.' });
+      });
     return true;
   }
 
@@ -381,13 +400,15 @@ async function persistState(nextState, previousState) {
 async function releaseUnusedPermissions(previousRules, rules) {
   const remainingDomains = new Set(rules.map((rule) => rule.domain));
   const origins = new Set(previousRules.filter((rule) => !remainingDomains.has(rule.domain)).map(getRuleOriginPattern));
-  await Promise.all([...origins].map(async (origin) => {
-    try {
-      await removeOriginPermission(origin);
-    } catch (error) {
-      console.error(`Could not release site access for ${origin}.`, error);
-    }
-  }));
+  await Promise.all(
+    [...origins].map(async (origin) => {
+      try {
+        await removeOriginPermission(origin);
+      } catch (error) {
+        console.error(`Could not release site access for ${origin}.`, error);
+      }
+    })
+  );
 }
 
 /**

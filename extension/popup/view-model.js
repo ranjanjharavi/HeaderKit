@@ -1,8 +1,4 @@
-import {
-  formatRemainingTime,
-  getRemainingMs,
-  getTargetProfileId
-} from '../shared/domain/activation.js';
+import { formatRemainingTime, getRemainingMs, getTargetProfileId } from '../shared/domain/activation.js';
 import { getProfileName } from '../shared/domain/profiles.js';
 
 export function getActivationDisplay(profiles, activation, now = Date.now()) {
@@ -36,7 +32,5 @@ export function getManagerLinkLabel(ruleCount) {
 
 export function getManagerPath({ section = '' } = {}) {
   const targetSection = String(section).trim().replace(/^#/, '');
-  return targetSection
-    ? `options/index.html#${encodeURIComponent(targetSection)}`
-    : 'options/index.html';
+  return targetSection ? `options/index.html#${encodeURIComponent(targetSection)}` : 'options/index.html';
 }

@@ -1,275 +1,486 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HeaderKit — Rule manager</title>
-  <link rel="stylesheet" href="../shared/styles/index.css">
-  <link rel="stylesheet" href="options.css">
-</head>
-<body>
-  <section id="privacyGate" class="privacy-gate" aria-labelledby="privacyGateTitle">
-    <img class="privacy-gate-icon" src="../icons/headerkit-128.png" width="72" height="72" alt="HeaderKit">
-    <h1 id="privacyGateTitle">Review HeaderKit data handling</h1>
-    <p>HeaderKit reads tab URLs locally for the current host and toolbar badges, including background updates on approved sites. Never store URLs or send them to the developer.</p>
-    <p>Profiles, settings, and header values are stored unencrypted in this Chrome profile. Anyone with access to its files may be able to read them.</p>
-    <p>HeaderKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site access. Destination or intermediary logs may include them.</p>
-    <a class="privacy-policy-link" href="../privacy/index.html">Read the privacy policy</a>
-    <p>Accept to open HeaderKit. Existing rules and site access are unchanged.</p>
-    <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
-    <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
-  </section>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HeaderKit — Rule manager</title>
+    <link rel="stylesheet" href="../shared/styles/index.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <section id="privacyGate" class="privacy-gate" aria-labelledby="privacyGateTitle">
+      <img class="privacy-gate-icon" src="../icons/headerkit-128.png" width="72" height="72" alt="HeaderKit" />
+      <h1 id="privacyGateTitle">Review HeaderKit data handling</h1>
+      <p>
+        HeaderKit reads tab URLs locally for the current host and toolbar badges, including background updates on
+        approved sites. Never store URLs or send them to the developer.
+      </p>
+      <p>
+        Profiles, settings, and header values are stored unencrypted in this Chrome profile. Anyone with access to its
+        files may be able to read them.
+      </p>
+      <p>
+        HeaderKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site
+        access. Destination or intermediary logs may include them.
+      </p>
+      <a class="privacy-policy-link" href="../privacy/index.html">Read the privacy policy</a>
+      <p>Accept to open HeaderKit. Existing rules and site access are unchanged.</p>
+      <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
+      <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
+    </section>
 
-  <div id="appShell" class="shell options-shell" hidden>
-    <header class="options-header">
-      <div class="options-header-brand">
-        <img src="../icons/headerkit-48.png" width="32" height="32" alt="">
-        <div class="options-header-copy">
-          <h1>Rule manager</h1>
-          <p>Profiles, timing, and request-header rules.</p>
-        </div>
-      </div>
-      <div class="options-header-actions">
-        <button id="masterSwitch" class="master-switch" type="button" role="switch" aria-checked="true" aria-label="Pause all header rules">
-          <span class="master-switch-track" aria-hidden="true"><span class="master-switch-thumb"></span></span>
-          <span id="masterSwitchLabel" class="master-switch-label">On</span>
-        </button>
-        <button id="backupBtn" class="quiet-action" type="button" aria-haspopup="dialog" aria-controls="backupDialog">Export / import</button>
-        <button id="siteAccessBtn" class="quiet-action" type="button" aria-haspopup="dialog" aria-controls="siteAccessDialog">Site access</button>
-        <a class="options-header-link" href="../privacy/index.html">Privacy policy</a>
-      </div>
-    </header>
-
-    <main class="options-main">
-      <div class="options-workspace">
-        <output id="masterPausedBanner" class="master-paused-banner" hidden>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1Zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM6.5 5.5h1.25v5H6.5v-5Zm1.75 0h1.25v5H8.25v-5Z"/></svg>
-          <span class="master-paused-copy">
-            <strong id="masterPausedTitle">All header rules are paused</strong>
-            <span id="masterPausedDetail">No headers are being applied. Your rules stay saved and editable, with their own On or Paused settings.</span>
-          </span>
-          <button id="resumeMasterBtn" class="master-resume-btn" type="button">Resume</button>
-        </output>
-
-        <section class="manager-workspace" aria-label="Request-header rules">
-          <div class="profile-tabs-bar">
-            <div id="profileTabs" class="profile-tabs" role="tablist" aria-label="Rule profiles"></div>
-            <button id="manageProfilesBtn" class="quiet-action" type="button" aria-haspopup="dialog" aria-controls="profileManagerDialog">Manage profiles</button>
+    <div id="appShell" class="shell options-shell" hidden>
+      <header class="options-header">
+        <div class="options-header-brand">
+          <img src="../icons/headerkit-48.png" width="32" height="32" alt="" />
+          <div class="options-header-copy">
+            <h1>Rule manager</h1>
+            <p>Profiles, timing, and request-header rules.</p>
           </div>
+        </div>
+        <div class="options-header-actions">
+          <button
+            id="masterSwitch"
+            class="master-switch"
+            type="button"
+            role="switch"
+            aria-checked="true"
+            aria-label="Pause all header rules">
+            <span class="master-switch-track" aria-hidden="true"><span class="master-switch-thumb"></span></span>
+            <span id="masterSwitchLabel" class="master-switch-label">On</span>
+          </button>
+          <button id="backupBtn" class="quiet-action" type="button" aria-haspopup="dialog" aria-controls="backupDialog">
+            Export / import
+          </button>
+          <button
+            id="siteAccessBtn"
+            class="quiet-action"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="siteAccessDialog">
+            Site access
+          </button>
+          <a class="options-header-link" href="../privacy/index.html">Privacy policy</a>
+        </div>
+      </header>
 
-          <div id="profilePanel" role="tabpanel" aria-labelledby="profileTab-0">
-            <section id="active-setup" class="active-setup-row" aria-label="Active setup" tabindex="-1">
-              <div class="active-run-summary">
-                <span id="activeProfileRunLabel" class="active-profile-run-label">Default runs until</span>
-                <span class="setup-duration-control">
-                  <span id="durationPills" class="duration-pills" role="radiogroup" aria-label="Run this profile until">
-                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="indefinite" checked>I turn it off</label>
-                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="3600000">1 hour</label>
-                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="28800000">8 hours</label>
-                    <label class="duration-pill"><input class="sr-only" type="radio" name="duration" data-duration="session">Chrome closes</label>
-                  </span>
-                  <span id="expiryChip" class="session-count is-timer" hidden></span>
-                </span>
-                <span class="summary-separator" aria-hidden="true">·</span>
-                <span id="optionsSummary" class="options-summary">No rules in this view.</span>
-                <span id="rulesCount" hidden>0</span>
-              </div>
-              <button id="headerComposerToggle" class="primary-btn new-rule-btn" type="button" aria-expanded="false" aria-controls="headerComposer">
-                <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M7.25 2.5h1.5v4.75h4.75v1.5H8.75v4.75h-1.5V8.75H2.5v-1.5h4.75V2.5Z"/></svg>
-                New rule
+      <main class="options-main">
+        <div class="options-workspace">
+          <output id="masterPausedBanner" class="master-paused-banner" hidden>
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1Zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM6.5 5.5h1.25v5H6.5v-5Zm1.75 0h1.25v5H8.25v-5Z" />
+            </svg>
+            <span class="master-paused-copy">
+              <strong id="masterPausedTitle">All header rules are paused</strong>
+              <span id="masterPausedDetail">
+                No headers are being applied. Your rules stay saved and editable, with their own On or Paused settings.
+              </span>
+            </span>
+            <button id="resumeMasterBtn" class="master-resume-btn" type="button">Resume</button>
+          </output>
+
+          <section class="manager-workspace" aria-label="Request-header rules">
+            <div class="profile-tabs-bar">
+              <div id="profileTabs" class="profile-tabs" role="tablist" aria-label="Rule profiles"></div>
+              <button
+                id="manageProfilesBtn"
+                class="quiet-action"
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="profileManagerDialog">
+                Manage profiles
               </button>
-            </section>
-
-            <output id="activeSetupStatus" class="status-msg workspace-status" aria-live="polite"></output>
-
-            <div id="headerComposer" class="header-composer rules-composer" hidden>
-              <div class="header-composer-body">
-                <form id="headerComposerForm" class="header-composer-form" novalidate>
-                  <div class="field">
-                    <label for="domain">Exact HTTPS host</label>
-                    <input type="text" id="domain" placeholder="https://api.example.com" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                    <p class="helper-text">HeaderKit applies rules only to the exact HTTPS host. Narrow requests through optional scoping.</p>
-                  </div>
-
-                  <details id="requestScopeDetails" class="request-scope-options">
-                    <summary>Optional request scoping <span class="scope-default-label">Defaults: all paths · all requests</span></summary>
-                    <div class="request-scope-fields">
-                      <div class="field">
-                        <label for="pathPrefix">Path prefix</label>
-                        <input type="text" id="pathPrefix" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                        <p class="helper-text">Blank matches every path. A prefix also matches nested paths, not similar names.</p>
-                      </div>
-                      <div class="field">
-                        <label for="resourceType">Request type</label>
-                        <select id="resourceType" aria-describedby="ruleComposerError">
-                          <option value="all">All requests</option>
-                          <option value="xmlhttprequest">API calls (fetch/XHR)</option>
-                        </select>
-                        <p class="helper-text">Fetch/XHR excludes page loads and static assets.</p>
-                      </div>
-                    </div>
-                  </details>
-
-                  <div class="header-fields-row">
-                    <div class="field">
-                      <label for="headerName">Header name</label>
-                      <input type="text" id="headerName" data-header-name placeholder="X-HeaderKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                    </div>
-
-                    <div class="field">
-                      <label for="headerValue">Header value</label>
-                      <div class="header-value-field">
-                        <input type="text" id="headerValue" data-header-value placeholder="enabled" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                        <button class="rule-value-btn" type="button" data-header-value-toggle aria-label="Reveal value" title="Reveal value" aria-pressed="false" hidden></button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p class="helper-text disclosure-text composer-disclosure">Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only authorized systems.</p>
-
-                  <div id="siteAccessPreflight" class="site-access-preflight" role="note" aria-live="polite" hidden>
-                    <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.25 13 3v3.85c0 3.38-2.08 6.43-5 7.9-2.92-1.47-5-4.52-5-7.9V3l5-1.75Zm0 1.59L4.5 4.07v2.78c0 2.58 1.47 4.99 3.5 6.21 2.03-1.22 3.5-3.63 3.5-6.21V4.07L8 2.84Zm-.75 2.41h1.5V8h-1.5V5.25Zm0 3.75h1.5v1.5h-1.5V9Z"/></svg>
-                    <div>
-                      <strong>Site access needed for <code id="siteAccessPreflightHost"></code></strong>
-                      <p>Grant HeaderKit site access through Chrome. Include only this exact HTTPS host.</p>
-                    </div>
-                  </div>
-
-                  <p id="ruleComposerError" class="rule-form-error" role="alert" hidden></p>
-                  <div class="action-row header-composer-actions">
-                    <button id="addHeaderBtn" class="primary-btn" type="submit">Add rule</button>
-                    <button id="cancelHeaderComposerBtn" class="secondary-btn" type="button">Cancel</button>
-                  </div>
-                </form>
-              </div>
             </div>
 
-            <div id="rulesToolbar" class="rules-toolbar" hidden>
-              <div id="ruleSearchContainer" class="rule-search" hidden>
-                <label class="sr-only" for="ruleSearchInput">Search header rules</label>
-                <svg class="rule-search-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M7 2a5 5 0 1 0 3.16 8.87l2.98 2.98 1.06-1.06-2.98-2.98A5 5 0 0 0 7 2Zm-3.5 5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"/></svg>
-                <input id="ruleSearchInput" type="search" placeholder="Search hosts and headers" autocomplete="off" spellcheck="false">
+            <div id="profilePanel" role="tabpanel" aria-labelledby="profileTab-0">
+              <section id="active-setup" class="active-setup-row" aria-label="Active setup" tabindex="-1">
+                <div class="active-run-summary">
+                  <span id="activeProfileRunLabel" class="active-profile-run-label">Default runs until</span>
+                  <span class="setup-duration-control">
+                    <span
+                      id="durationPills"
+                      class="duration-pills"
+                      role="radiogroup"
+                      aria-label="Run this profile until">
+                      <label class="duration-pill">
+                        <input class="sr-only" type="radio" name="duration" data-duration="indefinite" checked />
+                        I turn it off
+                      </label>
+                      <label class="duration-pill">
+                        <input class="sr-only" type="radio" name="duration" data-duration="3600000" />
+                        1 hour
+                      </label>
+                      <label class="duration-pill">
+                        <input class="sr-only" type="radio" name="duration" data-duration="28800000" />
+                        8 hours
+                      </label>
+                      <label class="duration-pill">
+                        <input class="sr-only" type="radio" name="duration" data-duration="session" />
+                        Chrome closes
+                      </label>
+                    </span>
+                    <span id="expiryChip" class="session-count is-timer" hidden></span>
+                  </span>
+                  <span class="summary-separator" aria-hidden="true">·</span>
+                  <span id="optionsSummary" class="options-summary">No rules in this view.</span>
+                  <span id="rulesCount" hidden>0</span>
+                </div>
+                <button
+                  id="headerComposerToggle"
+                  class="primary-btn new-rule-btn"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="headerComposer">
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill="currentColor" d="M7.25 2.5h1.5v4.75h4.75v1.5H8.75v4.75h-1.5V8.75H2.5v-1.5h4.75V2.5Z" />
+                  </svg>
+                  New rule
+                </button>
+              </section>
+
+              <output id="activeSetupStatus" class="status-msg workspace-status" aria-live="polite"></output>
+
+              <div id="headerComposer" class="header-composer rules-composer" hidden>
+                <div class="header-composer-body">
+                  <form id="headerComposerForm" class="header-composer-form" novalidate>
+                    <div class="field">
+                      <label for="domain">Exact HTTPS host</label>
+                      <input
+                        type="text"
+                        id="domain"
+                        placeholder="https://api.example.com"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        aria-describedby="ruleComposerError" />
+                      <p class="helper-text">
+                        HeaderKit applies rules only to the exact HTTPS host. Narrow requests through optional scoping.
+                      </p>
+                    </div>
+
+                    <details id="requestScopeDetails" class="request-scope-options">
+                      <summary>
+                        Optional request scoping
+                        <span class="scope-default-label">Defaults: all paths · all requests</span>
+                      </summary>
+                      <div class="request-scope-fields">
+                        <div class="field">
+                          <label for="pathPrefix">Path prefix</label>
+                          <input
+                            type="text"
+                            id="pathPrefix"
+                            placeholder="/api/v1"
+                            maxlength="512"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            aria-describedby="ruleComposerError" />
+                          <p class="helper-text">
+                            Blank matches every path. A prefix also matches nested paths, not similar names.
+                          </p>
+                        </div>
+                        <div class="field">
+                          <label for="resourceType">Request type</label>
+                          <select id="resourceType" aria-describedby="ruleComposerError">
+                            <option value="all">All requests</option>
+                            <option value="xmlhttprequest">API calls (fetch/XHR)</option>
+                          </select>
+                          <p class="helper-text">Fetch/XHR excludes page loads and static assets.</p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <div class="header-fields-row">
+                      <div class="field">
+                        <label for="headerName">Header name</label>
+                        <input
+                          type="text"
+                          id="headerName"
+                          data-header-name
+                          placeholder="X-HeaderKit-Debug"
+                          autocapitalize="off"
+                          autocorrect="off"
+                          spellcheck="false"
+                          aria-describedby="ruleComposerError" />
+                      </div>
+
+                      <div class="field">
+                        <label for="headerValue">Header value</label>
+                        <div class="header-value-field">
+                          <input
+                            type="text"
+                            id="headerValue"
+                            data-header-value
+                            placeholder="enabled"
+                            autocomplete="off"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            aria-describedby="ruleComposerError" />
+                          <button
+                            class="rule-value-btn"
+                            type="button"
+                            data-header-value-toggle
+                            aria-label="Reveal value"
+                            title="Reveal value"
+                            aria-pressed="false"
+                            hidden></button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="helper-text disclosure-text composer-disclosure">
+                      Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only
+                      authorized systems.
+                    </p>
+
+                    <div id="siteAccessPreflight" class="site-access-preflight" role="note" aria-live="polite" hidden>
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path
+                          fill="currentColor"
+                          d="M8 1.25 13 3v3.85c0 3.38-2.08 6.43-5 7.9-2.92-1.47-5-4.52-5-7.9V3l5-1.75Zm0 1.59L4.5 4.07v2.78c0 2.58 1.47 4.99 3.5 6.21 2.03-1.22 3.5-3.63 3.5-6.21V4.07L8 2.84Zm-.75 2.41h1.5V8h-1.5V5.25Zm0 3.75h1.5v1.5h-1.5V9Z" />
+                      </svg>
+                      <div>
+                        <strong>
+                          Site access needed for
+                          <code id="siteAccessPreflightHost"></code>
+                        </strong>
+                        <p>Grant HeaderKit site access through Chrome. Include only this exact HTTPS host.</p>
+                      </div>
+                    </div>
+
+                    <p id="ruleComposerError" class="rule-form-error" role="alert" hidden></p>
+                    <div class="action-row header-composer-actions">
+                      <button id="addHeaderBtn" class="primary-btn" type="submit">Add rule</button>
+                      <button id="cancelHeaderComposerBtn" class="secondary-btn" type="button">Cancel</button>
+                    </div>
+                  </form>
+                </div>
               </div>
+
+              <div id="rulesToolbar" class="rules-toolbar" hidden>
+                <div id="ruleSearchContainer" class="rule-search" hidden>
+                  <label class="sr-only" for="ruleSearchInput">Search header rules</label>
+                  <svg class="rule-search-icon" viewBox="0 0 16 16" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M7 2a5 5 0 1 0 3.16 8.87l2.98 2.98 1.06-1.06-2.98-2.98A5 5 0 0 0 7 2Zm-3.5 5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z" />
+                  </svg>
+                  <input
+                    id="ruleSearchInput"
+                    type="search"
+                    placeholder="Search hosts and headers"
+                    autocomplete="off"
+                    spellcheck="false" />
+                </div>
+              </div>
+
+              <output id="headerStatus" class="status-msg workspace-status" aria-live="polite"></output>
+              <div id="ruleListContainer" class="rule-list"></div>
             </div>
-
-            <output id="headerStatus" class="status-msg workspace-status" aria-live="polite"></output>
-            <div id="ruleListContainer" class="rule-list"></div>
-          </div>
-        </section>
-      </div>
-    </main>
-
-    <dialog id="profileManagerDialog" class="profile-dialog" aria-labelledby="profileManagerTitle">
-      <div class="profile-dialog-shell">
-        <header class="profile-dialog-head">
-          <div>
-            <h2 id="profileManagerTitle">Manage profiles</h2>
-            <p id="profileManagerDescription">Organize rule sets without changing what is currently applied.</p>
-          </div>
-          <button id="closeProfileManagerBtn" class="dialog-close-btn" type="button" aria-label="Close profile manager">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z"/></svg>
-          </button>
-        </header>
-        <div id="profileList" class="profile-list"></div>
-        <form id="profileEditorForm" class="profile-editor-form" novalidate hidden>
-          <div class="field">
-            <label for="profileNameInput">Profile name</label>
-            <input id="profileNameInput" type="text" maxlength="40" autocomplete="off" required aria-describedby="profileNameHelp profileEditorError">
-            <p id="profileNameHelp" class="helper-text">Use a unique name up to 40 characters.</p>
-            <p id="profileEditorError" class="profile-editor-error" role="alert" hidden></p>
-          </div>
-          <footer class="profile-dialog-actions profile-editor-actions">
-            <button id="cancelProfileEditorBtn" class="secondary-btn" type="button">Cancel</button>
-            <button id="saveProfileEditorBtn" class="primary-btn" type="submit">Create profile</button>
-          </footer>
-        </form>
-        <output id="profileStatus" class="status-msg" aria-live="polite"></output>
-        <footer id="profileManagerActions" class="profile-dialog-actions">
-          <button id="newProfileBtn" class="secondary-btn" type="button">New profile</button>
-          <button id="doneProfileManagerBtn" class="primary-btn" type="button">Done</button>
-        </footer>
-      </div>
-    </dialog>
-
-    <dialog id="siteAccessDialog" class="profile-dialog site-access-dialog" aria-labelledby="siteAccessTitle" aria-describedby="siteAccessDescription">
-      <div class="profile-dialog-shell site-access-dialog-shell">
-        <header class="profile-dialog-head">
-          <div>
-            <h2 id="siteAccessTitle">Site access</h2>
-            <p id="siteAccessDescription">Review HeaderKit site access grants. Revoking a grant keeps rules saved but stops them from applying unless another grant still covers the host. A broad grant can cover rules listed under exact hosts.</p>
-          </div>
-          <button id="closeSiteAccessBtn" class="dialog-close-btn" type="button" aria-label="Close site access overview">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z"/></svg>
-          </button>
-        </header>
-        <label class="site-access-search" for="siteAccessSearch" hidden>
-          <span>Find a host or pattern</span>
-          <input id="siteAccessSearch" type="search" placeholder="example.com or *.example.com" autocomplete="off" aria-controls="siteAccessList" disabled>
-        </label>
-        <p id="siteAccessSummary" class="site-access-summary" aria-live="polite">Checking site access…</p>
-        <output id="siteAccessStatus" class="status-msg site-access-status" aria-live="polite"></output>
-        <section id="siteAccessList" class="site-access-list" aria-label="Site access grants" aria-busy="false"></section>
-        <footer class="profile-dialog-actions site-access-dialog-actions">
-          <button id="doneSiteAccessBtn" class="primary-btn" type="button">Done</button>
-        </footer>
-      </div>
-    </dialog>
-
-    <dialog id="backupDialog" class="profile-dialog backup-dialog" aria-labelledby="backupTitle" aria-describedby="backupDescription">
-      <div class="profile-dialog-shell backup-dialog-shell">
-        <header class="profile-dialog-head">
-          <div>
-            <h2 id="backupTitle">Export / import</h2>
-            <p id="backupDescription">Back up all profiles and rules, or add them from another HeaderKit installation.</p>
-          </div>
-          <button id="closeBackupBtn" class="dialog-close-btn" type="button" aria-label="Close export and import">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z"/></svg>
-          </button>
-        </header>
-        <div class="backup-body">
-          <p id="backupWarning" class="backup-warning">Backups include full header values, including tokens and passwords, as unencrypted text. Store and share them carefully.</p>
-          <section class="backup-section" aria-labelledby="backupExportTitle">
-            <h3 id="backupExportTitle">Export all profiles</h3>
-            <p id="backupExportScope">Saves profiles, rules, request scopes, and On/Paused settings to a JSON file. Site access, active settings, timers, and privacy consent are not included.</p>
-            <button id="exportBackupBtn" class="secondary-btn" type="button" aria-describedby="backupWarning backupExportScope backupExportStatus">Download JSON backup</button>
-            <output id="backupExportStatus" class="backup-status" aria-live="polite" aria-atomic="true"></output>
           </section>
-          <form id="backupImportForm" class="backup-section" aria-labelledby="backupImportTitle" novalidate>
-            <h3 id="backupImportTitle">Import as new profiles</h3>
-            <p id="backupImportHelp">Existing profiles stay unchanged. Imported rules start paused, even if site access is already granted. Review and turn them on when ready.</p>
-            <div class="field">
-              <label for="backupFile">HeaderKit JSON backup</label>
-              <input id="backupFile" type="file" accept=".json,application/json" aria-describedby="backupFileHelp backupStatus" aria-controls="backupPreview">
-              <p id="backupFileHelp" class="backup-file-help">Maximum 5 MiB. Matching profile names get an “imported” suffix.</p>
+        </div>
+      </main>
+
+      <dialog id="profileManagerDialog" class="profile-dialog" aria-labelledby="profileManagerTitle">
+        <div class="profile-dialog-shell">
+          <header class="profile-dialog-head">
+            <div>
+              <h2 id="profileManagerTitle">Manage profiles</h2>
+              <p id="profileManagerDescription">Organize rule sets without changing what is currently applied.</p>
             </div>
-            <p id="backupPreview" class="backup-preview" role="status" aria-atomic="true" hidden></p>
-            <button id="importBackupBtn" class="primary-btn" type="submit" aria-describedby="backupImportHelp backupPreview backupStatus" disabled>Import profiles</button>
-            <output id="backupStatus" class="backup-status" aria-live="polite" aria-atomic="true"></output>
+            <button
+              id="closeProfileManagerBtn"
+              class="dialog-close-btn"
+              type="button"
+              aria-label="Close profile manager">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z" />
+              </svg>
+            </button>
+          </header>
+          <div id="profileList" class="profile-list"></div>
+          <form id="profileEditorForm" class="profile-editor-form" novalidate hidden>
+            <div class="field">
+              <label for="profileNameInput">Profile name</label>
+              <input
+                id="profileNameInput"
+                type="text"
+                maxlength="40"
+                autocomplete="off"
+                required
+                aria-describedby="profileNameHelp profileEditorError" />
+              <p id="profileNameHelp" class="helper-text">Use a unique name up to 40 characters.</p>
+              <p id="profileEditorError" class="profile-editor-error" role="alert" hidden></p>
+            </div>
+            <footer class="profile-dialog-actions profile-editor-actions">
+              <button id="cancelProfileEditorBtn" class="secondary-btn" type="button">Cancel</button>
+              <button id="saveProfileEditorBtn" class="primary-btn" type="submit">Create profile</button>
+            </footer>
           </form>
+          <output id="profileStatus" class="status-msg" aria-live="polite"></output>
+          <footer id="profileManagerActions" class="profile-dialog-actions">
+            <button id="newProfileBtn" class="secondary-btn" type="button">New profile</button>
+            <button id="doneProfileManagerBtn" class="primary-btn" type="button">Done</button>
+          </footer>
         </div>
-        <footer class="profile-dialog-actions backup-dialog-actions">
-          <button id="doneBackupBtn" class="secondary-btn" type="button">Done</button>
-        </footer>
-      </div>
-    </dialog>
+      </dialog>
 
-    <dialog id="confirmationDialog" class="confirmation-dialog" aria-labelledby="confirmationTitle" aria-describedby="confirmationMessage">
-      <div class="confirmation-dialog-shell">
-        <div class="confirmation-dialog-icon" aria-hidden="true">
-          <svg viewBox="0 0 16 16"><path fill="currentColor" d="M6.25 2.5h3.5l.5 1H13a.75.75 0 0 1 0 1.5h-.6l-.55 7.14A1.5 1.5 0 0 1 10.35 13.5h-4.7a1.5 1.5 0 0 1-1.5-1.36L3.6 5H3a.75.75 0 0 1 0-1.5h2.75l.5-1Zm-.46 2.5.5 6.5h3.42l.5-6.5H5.79Z"/></svg>
+      <dialog
+        id="siteAccessDialog"
+        class="profile-dialog site-access-dialog"
+        aria-labelledby="siteAccessTitle"
+        aria-describedby="siteAccessDescription">
+        <div class="profile-dialog-shell site-access-dialog-shell">
+          <header class="profile-dialog-head">
+            <div>
+              <h2 id="siteAccessTitle">Site access</h2>
+              <p id="siteAccessDescription">
+                Review HeaderKit site access grants. Revoking a grant keeps rules saved but stops them from applying
+                unless another grant still covers the host. A broad grant can cover rules listed under exact hosts.
+              </p>
+            </div>
+            <button
+              id="closeSiteAccessBtn"
+              class="dialog-close-btn"
+              type="button"
+              aria-label="Close site access overview">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z" />
+              </svg>
+            </button>
+          </header>
+          <label class="site-access-search" for="siteAccessSearch" hidden>
+            <span>Find a host or pattern</span>
+            <input
+              id="siteAccessSearch"
+              type="search"
+              placeholder="example.com or *.example.com"
+              autocomplete="off"
+              aria-controls="siteAccessList"
+              disabled />
+          </label>
+          <p id="siteAccessSummary" class="site-access-summary" aria-live="polite">Checking site access…</p>
+          <output id="siteAccessStatus" class="status-msg site-access-status" aria-live="polite"></output>
+          <section
+            id="siteAccessList"
+            class="site-access-list"
+            aria-label="Site access grants"
+            aria-busy="false"></section>
+          <footer class="profile-dialog-actions site-access-dialog-actions">
+            <button id="doneSiteAccessBtn" class="primary-btn" type="button">Done</button>
+          </footer>
         </div>
-        <div class="confirmation-dialog-copy">
-          <h2 id="confirmationTitle">Delete this item?</h2>
-          <p id="confirmationMessage">This cannot be undone.</p>
-        </div>
-        <div class="confirmation-dialog-actions">
-          <button id="confirmationCancelBtn" class="secondary-btn" type="button">Cancel</button>
-          <button id="confirmationConfirmBtn" class="danger-btn" type="button">Delete</button>
-        </div>
-      </div>
-    </dialog>
-  </div>
+      </dialog>
 
-  <script type="module" src="main.js"></script>
-</body>
+      <dialog
+        id="backupDialog"
+        class="profile-dialog backup-dialog"
+        aria-labelledby="backupTitle"
+        aria-describedby="backupDescription">
+        <div class="profile-dialog-shell backup-dialog-shell">
+          <header class="profile-dialog-head">
+            <div>
+              <h2 id="backupTitle">Export / import</h2>
+              <p id="backupDescription">
+                Back up all profiles and rules, or add them from another HeaderKit installation.
+              </p>
+            </div>
+            <button id="closeBackupBtn" class="dialog-close-btn" type="button" aria-label="Close export and import">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="m3.7 2.65 4.3 4.3 4.3-4.3 1.05 1.05-4.3 4.3 4.3 4.3-1.05 1.05-4.3-4.3-4.3 4.3-1.05-1.05 4.3-4.3-4.3-4.3L3.7 2.65Z" />
+              </svg>
+            </button>
+          </header>
+          <div class="backup-body">
+            <p id="backupWarning" class="backup-warning">
+              Backups include full header values, including tokens and passwords, as unencrypted text. Store and share
+              them carefully.
+            </p>
+            <section class="backup-section" aria-labelledby="backupExportTitle">
+              <h3 id="backupExportTitle">Export all profiles</h3>
+              <p id="backupExportScope">
+                Saves profiles, rules, request scopes, and On/Paused settings to a JSON file. Site access, active
+                settings, timers, and privacy consent are not included.
+              </p>
+              <button
+                id="exportBackupBtn"
+                class="secondary-btn"
+                type="button"
+                aria-describedby="backupWarning backupExportScope backupExportStatus">
+                Download JSON backup
+              </button>
+              <output id="backupExportStatus" class="backup-status" aria-live="polite" aria-atomic="true"></output>
+            </section>
+            <form id="backupImportForm" class="backup-section" aria-labelledby="backupImportTitle" novalidate>
+              <h3 id="backupImportTitle">Import as new profiles</h3>
+              <p id="backupImportHelp">
+                Existing profiles stay unchanged. Imported rules start paused, even if site access is already granted.
+                Review and turn them on when ready.
+              </p>
+              <div class="field">
+                <label for="backupFile">HeaderKit JSON backup</label>
+                <input
+                  id="backupFile"
+                  type="file"
+                  accept=".json,application/json"
+                  aria-describedby="backupFileHelp backupStatus"
+                  aria-controls="backupPreview" />
+                <p id="backupFileHelp" class="backup-file-help">
+                  Maximum 5 MiB. Matching profile names get an “imported” suffix.
+                </p>
+              </div>
+              <p id="backupPreview" class="backup-preview" role="status" aria-atomic="true" hidden></p>
+              <button
+                id="importBackupBtn"
+                class="primary-btn"
+                type="submit"
+                aria-describedby="backupImportHelp backupPreview backupStatus"
+                disabled>
+                Import profiles
+              </button>
+              <output id="backupStatus" class="backup-status" aria-live="polite" aria-atomic="true"></output>
+            </form>
+          </div>
+          <footer class="profile-dialog-actions backup-dialog-actions">
+            <button id="doneBackupBtn" class="secondary-btn" type="button">Done</button>
+          </footer>
+        </div>
+      </dialog>
+
+      <dialog
+        id="confirmationDialog"
+        class="confirmation-dialog"
+        aria-labelledby="confirmationTitle"
+        aria-describedby="confirmationMessage">
+        <div class="confirmation-dialog-shell">
+          <div class="confirmation-dialog-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <path
+                fill="currentColor"
+                d="M6.25 2.5h3.5l.5 1H13a.75.75 0 0 1 0 1.5h-.6l-.55 7.14A1.5 1.5 0 0 1 10.35 13.5h-4.7a1.5 1.5 0 0 1-1.5-1.36L3.6 5H3a.75.75 0 0 1 0-1.5h2.75l.5-1Zm-.46 2.5.5 6.5h3.42l.5-6.5H5.79Z" />
+            </svg>
+          </div>
+          <div class="confirmation-dialog-copy">
+            <h2 id="confirmationTitle">Delete this item?</h2>
+            <p id="confirmationMessage">This cannot be undone.</p>
+          </div>
+          <div class="confirmation-dialog-actions">
+            <button id="confirmationCancelBtn" class="secondary-btn" type="button">Cancel</button>
+            <button id="confirmationConfirmBtn" class="danger-btn" type="button">Delete</button>
+          </div>
+        </div>
+      </dialog>
+    </div>
+
+    <script type="module" src="main.js"></script>
+  </body>
 </html>

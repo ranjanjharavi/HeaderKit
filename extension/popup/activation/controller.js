@@ -17,10 +17,7 @@ async function toggleMaster(forceOn = false) {
   const activation = getActivation();
   const nextEnabled = forceOn || !activation.masterEnabled;
 
-  await commitActivation(
-    nextEnabled,
-    nextEnabled ? 'Header rules resumed.' : 'All header rules paused.'
-  );
+  await commitActivation(nextEnabled, nextEnabled ? 'Header rules resumed.' : 'All header rules paused.');
 }
 
 async function resumeFromBanner() {
@@ -28,10 +25,7 @@ async function resumeFromBanner() {
 }
 
 async function commitActivation(enabled, message) {
-  const controls = [
-    document.getElementById('masterSwitch'),
-    document.getElementById('resumeMasterBtn')
-  ];
+  const controls = [document.getElementById('masterSwitch'), document.getElementById('resumeMasterBtn')];
 
   controls.forEach((control) => {
     control.disabled = true;
@@ -78,10 +72,7 @@ export function renderMasterSwitch() {
 }
 
 export function renderActivationSummary() {
-  const display = getActivationDisplay(
-    state.headers.profiles,
-    getActivation()
-  );
+  const display = getActivationDisplay(state.headers.profiles, getActivation());
   document.getElementById('activeProfileName').textContent = display.profileName;
   document.getElementById('activeUntilLabel').textContent = display.appliedUntil;
 }

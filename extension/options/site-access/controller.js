@@ -1,11 +1,7 @@
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { removeOriginPermission } from '../../shared/runtime/chrome-api.js';
 import { getProfileName } from '../../shared/domain/profiles.js';
-import {
-  filterOriginGrants,
-  getRulesForOriginGrant,
-  isBroadOrigin
-} from '../../shared/domain/site-access.js';
+import { filterOriginGrants, getRulesForOriginGrant, isBroadOrigin } from '../../shared/domain/site-access.js';
 import { createSerialQueue } from '../../shared/runtime/serial-queue.js';
 import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
 import { state } from '../state.js';
@@ -43,12 +39,15 @@ export function renderSiteAccessOverview() {
   const list = document.getElementById('siteAccessList');
   const focusedControl = list.contains(document.activeElement)
     ? {
-      action: document.activeElement.dataset.siteAccessAction,
-      origin: document.activeElement.dataset.origin
-    }
+        action: document.activeElement.dataset.siteAccessAction,
+        origin: document.activeElement.dataset.origin
+      }
     : null;
-  const expandedOrigins = new Set([...list.querySelectorAll('.site-access-rules[open]')]
-    .map((details) => details.closest('.site-access-row').dataset.siteAccessOrigin));
+  const expandedOrigins = new Set(
+    [...list.querySelectorAll('.site-access-rules[open]')].map(
+      (details) => details.closest('.site-access-row').dataset.siteAccessOrigin
+    )
+  );
   const scrollTop = list.scrollTop;
   if (!(state.grantedOrigins instanceof Set)) {
     renderLoadError();
@@ -56,9 +55,9 @@ export function renderSiteAccessOverview() {
   }
 
   const search = document.getElementById('siteAccessSearch');
-  const origins = [...state.grantedOrigins].sort((left, right) => (
-    Number(isBroadOrigin(right)) - Number(isBroadOrigin(left)) || left.localeCompare(right)
-  ));
+  const origins = [...state.grantedOrigins].sort(
+    (left, right) => Number(isBroadOrigin(right)) - Number(isBroadOrigin(left)) || left.localeCompare(right)
+  );
   list.setAttribute('aria-busy', 'false');
 
   if (!origins.length) {
@@ -214,14 +213,18 @@ function restoreListFocus(focusedControl) {
     return;
   }
 
-  const controls = [...document.querySelectorAll('#siteAccessList [data-site-access-action]')]
-    .filter((control) => !control.closest('.site-access-row')?.hidden);
-  const target = controls.find((control) => (
-    control.dataset.siteAccessAction === focusedControl.action
-      && control.dataset.origin === focusedControl.origin
-  )) || controls[0] || (document.getElementById('siteAccessSearch').disabled
-    ? document.getElementById('closeSiteAccessBtn')
-    : document.getElementById('siteAccessSearch'));
+  const controls = [...document.querySelectorAll('#siteAccessList [data-site-access-action]')].filter(
+    (control) => !control.closest('.site-access-row')?.hidden
+  );
+  const target =
+    controls.find(
+      (control) =>
+        control.dataset.siteAccessAction === focusedControl.action && control.dataset.origin === focusedControl.origin
+    ) ||
+    controls[0] ||
+    (document.getElementById('siteAccessSearch').disabled
+      ? document.getElementById('closeSiteAccessBtn')
+      : document.getElementById('siteAccessSearch'));
   target.focus({ preventScroll: true });
 }
 
@@ -230,11 +233,13 @@ function focusAfterRevocation(origin) {
     return;
   }
 
-  const controls = [...document.querySelectorAll('#siteAccessList [data-site-access-action="revoke"]')]
-    .filter((control) => !control.closest('.site-access-row')?.hidden);
-  const target = controls.find((control) => control.dataset.origin === origin)
-    || controls[0]
-    || (document.getElementById('siteAccessSearch').disabled
+  const controls = [...document.querySelectorAll('#siteAccessList [data-site-access-action="revoke"]')].filter(
+    (control) => !control.closest('.site-access-row')?.hidden
+  );
+  const target =
+    controls.find((control) => control.dataset.origin === origin) ||
+    controls[0] ||
+    (document.getElementById('siteAccessSearch').disabled
       ? document.getElementById('closeSiteAccessBtn')
       : document.getElementById('siteAccessSearch'));
   target.focus({ preventScroll: true });
@@ -361,9 +366,7 @@ function getBroadAccessDescription(origin) {
   }
 
   const match = /^https:\/\/\*\.([^/*]+)\/\*$/.exec(origin);
-  return match
-    ? `Can cover rules for ${match[1]} and its subdomains.`
-    : 'Can cover rules on multiple hosts.';
+  return match ? `Can cover rules for ${match[1]} and its subdomains.` : 'Can cover rules on multiple hosts.';
 }
 
 function getRevokeMessage(origin, ruleCount) {

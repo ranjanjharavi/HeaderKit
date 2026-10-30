@@ -48,9 +48,7 @@ export function createSiteAccessPreflight({
       return !preflight.hidden && preflight.dataset.origin === getRuleOriginPattern(rule);
     },
     syncSubmitLabel(defaultLabel) {
-      submitButton.textContent = preflight.hidden
-        ? defaultLabel || getDefaultSubmitLabel()
-        : 'Continue to Chrome';
+      submitButton.textContent = preflight.hidden ? defaultLabel || getDefaultSubmitLabel() : 'Continue to Chrome';
     }
   };
 }

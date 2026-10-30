@@ -184,9 +184,8 @@ function setBusy(operation) {
   const importButton = document.getElementById('importBackupBtn');
   importButton.disabled = busy || selectedText === null;
   importButton.textContent = operation === 'import' ? 'Importing…' : 'Import profiles';
-  document.getElementById('exportBackupBtn').textContent = operation === 'export'
-    ? 'Preparing backup…'
-    : 'Download JSON backup';
+  document.getElementById('exportBackupBtn').textContent =
+    operation === 'export' ? 'Preparing backup…' : 'Download JSON backup';
 }
 
 function setStatus(message, type = '', elementId = 'backupStatus') {

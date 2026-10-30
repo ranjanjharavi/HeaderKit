@@ -6,15 +6,10 @@ import { getRuleOriginPattern } from '../domain/rules.js';
  * stay attached to the user's click, while the early commit lets the service
  * worker finish saving if Chrome dismisses the extension popup.
  */
-export async function saveRuleBeforePermissionPrompt(rule, saveRule, {
-  requestPermission
-}) {
+export async function saveRuleBeforePermissionPrompt(rule, saveRule, { requestPermission }) {
   const persistence = settleCall(saveRule);
   const permission = settleCall(() => requestPermission(getRuleOriginPattern(rule)));
-  const [persistenceResult, permissionResult] = await Promise.allSettled([
-    persistence,
-    permission
-  ]);
+  const [persistenceResult, permissionResult] = await Promise.allSettled([persistence, permission]);
 
   if (persistenceResult.status === 'rejected') {
     throw persistenceResult.reason;

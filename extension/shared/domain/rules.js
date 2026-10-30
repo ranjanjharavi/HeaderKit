@@ -47,8 +47,13 @@ function normalizeRule(rule, profileIds) {
   const pathPrefix = normalizePathPrefix(rule.pathPrefix ?? '');
   const resourceType = normalizeResourceType(rule.resourceType ?? 'all');
 
-  if (!domain || pathPrefix === null || resourceType === null
-    || !isValidHeaderName(headerName) || !isValidHeaderValue(headerValue)) {
+  if (
+    !domain ||
+    pathPrefix === null ||
+    resourceType === null ||
+    !isValidHeaderName(headerName) ||
+    !isValidHeaderValue(headerValue)
+  ) {
     return null;
   }
 
@@ -80,11 +85,15 @@ export function normalizePathPrefix(value) {
   }
 
   const path = `/${cleanedValue.replace(/^\/+/, '')}`;
-  if (path.includes('?') || path.includes('#') || path.includes('\\')
-    || [...path].some((character) => {
+  if (
+    path.includes('?') ||
+    path.includes('#') ||
+    path.includes('\\') ||
+    [...path].some((character) => {
       const codePoint = character.codePointAt(0);
       return codePoint <= 0x20 || codePoint === 0x7f;
-    })) {
+    })
+  ) {
     return null;
   }
 
@@ -113,7 +122,9 @@ export function getDisplayPathPrefix(value) {
 }
 
 function normalizeResourceType(value) {
-  const resourceType = String(value || 'all').trim().toLowerCase();
+  const resourceType = String(value || 'all')
+    .trim()
+    .toLowerCase();
   return SUPPORTED_RESOURCE_TYPES.has(resourceType) ? resourceType : null;
 }
 
@@ -151,8 +162,12 @@ export function parseHostInput(value) {
   if (hasExplicitPort(authority)) {
     return { error: 'Enter only the host, without a port. Rules apply to all HTTPS ports.' };
   }
-  if (authority.includes('\\') || /\s/.test(authority)
-    || /[\u0000-\u001f\u007f]/.test(authority) || !URL.canParse(`https://${authority}`)) {
+  if (
+    authority.includes('\\') ||
+    /\s/.test(authority) ||
+    /[\u0000-\u001f\u007f]/.test(authority) ||
+    !URL.canParse(`https://${authority}`)
+  ) {
     return invalidHost;
   }
 
@@ -160,9 +175,7 @@ export function parseHostInput(value) {
   if (host.startsWith('[') && host.endsWith(']')) {
     return { host };
   }
-  if (host.length > 253 || !host.split('.').every((label) => (
-    /^[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?$/i.test(label)
-  ))) {
+  if (host.length > 253 || !host.split('.').every((label) => /^[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?$/i.test(label))) {
     return invalidHost;
   }
   if (/^\d+(?:\.\d+){3}$/.test(host) && !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(authority)) {
@@ -192,12 +205,11 @@ export function normalizeDomain(value) {
   return parsed.hostname && parsed.protocol === 'https:' ? parsed.hostname.toLowerCase() : '';
 }
 
-export function validateRuleDraft(draft, existingRules, {
-  excludeId = null,
-  enabled = true,
-  activation = createDefaultActivation(),
-  profileId = undefined
-} = {}) {
+export function validateRuleDraft(
+  draft,
+  existingRules,
+  { excludeId = null, enabled = true, activation = createDefaultActivation(), profileId = undefined } = {}
+) {
   const parsedHost = parseHostInput(draft?.domain);
   const headerValue = String(draft?.headerValue || '');
   const rule = {
@@ -207,9 +219,7 @@ export function validateRuleDraft(draft, existingRules, {
     pathPrefix: normalizePathPrefix(draft?.pathPrefix ?? ''),
     resourceType: normalizeResourceType(draft?.resourceType ?? 'all')
   };
-  const draftProfileId = resolveProfileId(
-    profileId ?? draft?.profileId ?? activation?.profileId ?? DEFAULT_PROFILE_ID
-  );
+  const draftProfileId = resolveProfileId(profileId ?? draft?.profileId ?? activation?.profileId ?? DEFAULT_PROFILE_ID);
 
   if (!rule.domain) {
     return { ok: false, field: 'domain', error: parsedHost.error };
@@ -222,7 +232,11 @@ export function validateRuleDraft(draft, existingRules, {
   }
 
   if (rule.pathPrefix === null) {
-    return { ok: false, field: 'pathPrefix', error: 'Enter a valid path prefix up to 512 characters, without a query or fragment.' };
+    return {
+      ok: false,
+      field: 'pathPrefix',
+      error: 'Enter a valid path prefix up to 512 characters, without a query or fragment.'
+    };
   }
 
   if (rule.resourceType === null) {
@@ -234,25 +248,32 @@ export function validateRuleDraft(draft, existingRules, {
   }
 
   if (!isValidHeaderValue(headerValue)) {
-    return { ok: false, field: 'headerValue', error: 'Header values cannot contain control characters other than tabs.' };
+    return {
+      ok: false,
+      field: 'headerValue',
+      error: 'Header values cannot contain control characters other than tabs.'
+    };
   }
 
   // A profile can set a header once per request scope for a host. The value
   // and enabled state do not change that identity; edit the existing rule instead.
   const identity = getRuleIdentityKey({ ...rule, profileId: draftProfileId });
-  const duplicateRule = (Array.isArray(existingRules) ? existingRules : []).some((existingRule) => (
-    existingRule.id !== excludeId && getRuleIdentityKey(existingRule) === identity
-  ));
+  const duplicateRule = (Array.isArray(existingRules) ? existingRules : []).some(
+    (existingRule) => existingRule.id !== excludeId && getRuleIdentityKey(existingRule) === identity
+  );
 
   if (duplicateRule) {
-    return { ok: false, field: 'headerName', error: 'A rule for that header and request scope already exists for this host in this profile.' };
+    return {
+      ok: false,
+      field: 'headerName',
+      error: 'A rule for that header and request scope already exists for this host in this profile.'
+    };
   }
 
-  const conflictingRule = findActiveRuleConflict(
-    { ...rule, enabled, profileId: draftProfileId },
-    existingRules,
-    { excludeId, activation }
-  );
+  const conflictingRule = findActiveRuleConflict({ ...rule, enabled, profileId: draftProfileId }, existingRules, {
+    excludeId,
+    activation
+  });
   if (conflictingRule) {
     return {
       ok: false,
@@ -292,17 +313,20 @@ export function getNextRuleId(rules) {
   return ids.length ? Math.max(...ids) + 1 : 1;
 }
 
-export function findActiveRuleConflict(candidate, rules, {
-  excludeId = candidate?.id ?? null,
-  activation = createDefaultActivation()
-} = {}) {
+export function findActiveRuleConflict(
+  candidate,
+  rules,
+  { excludeId = candidate?.id ?? null, activation = createDefaultActivation() } = {}
+) {
   if (!isRuleLive(candidate, activation)) {
     return null;
   }
 
-  return (Array.isArray(rules) ? rules : []).find((existingRule) => (
-    existingRule?.id !== excludeId && areRulesConflicting(candidate, existingRule, activation)
-  )) || null;
+  return (
+    (Array.isArray(rules) ? rules : []).find(
+      (existingRule) => existingRule?.id !== excludeId && areRulesConflicting(candidate, existingRule, activation)
+    ) || null
+  );
 }
 
 export function getActiveRuleConflicts(rules, activation = createDefaultActivation()) {
@@ -331,10 +355,10 @@ export function areRulesConflicting(leftRule, rightRule, activation = createDefa
     return false;
   }
 
-  const sameTarget = leftRule.domain === rightRule.domain
-    && String(leftRule.headerName).toLowerCase() === String(rightRule.headerName).toLowerCase();
-  if (!sameTarget || !doScopesOverlap(leftRule, rightRule)
-    || leftRule.headerValue === rightRule.headerValue) {
+  const sameTarget =
+    leftRule.domain === rightRule.domain &&
+    String(leftRule.headerName).toLowerCase() === String(rightRule.headerName).toLowerCase();
+  if (!sameTarget || !doScopesOverlap(leftRule, rightRule) || leftRule.headerValue === rightRule.headerValue) {
     return false;
   }
 
@@ -356,9 +380,7 @@ export function filterRulesByHost(rules, hostname) {
 
 export function filterRulesByProfile(rules, profileId) {
   const resolvedId = resolveProfileId(profileId);
-  return (Array.isArray(rules) ? rules : []).filter((rule) => (
-    resolveProfileId(rule?.profileId) === resolvedId
-  ));
+  return (Array.isArray(rules) ? rules : []).filter((rule) => resolveProfileId(rule?.profileId) === resolvedId);
 }
 
 export function groupRulesByDomain(rules) {
@@ -379,8 +401,7 @@ export function groupRulesByDomain(rules) {
 function doScopesOverlap(leftRule, rightRule) {
   const leftResourceType = normalizeResourceType(leftRule.resourceType ?? 'all') || 'all';
   const rightResourceType = normalizeResourceType(rightRule.resourceType ?? 'all') || 'all';
-  if (leftResourceType !== 'all' && rightResourceType !== 'all'
-    && leftResourceType !== rightResourceType) {
+  if (leftResourceType !== 'all' && rightResourceType !== 'all' && leftResourceType !== rightResourceType) {
     return false;
   }
 
@@ -390,16 +411,12 @@ function doScopesOverlap(leftRule, rightRule) {
     return true;
   }
 
-  return leftPath === rightPath
-    || leftPath.startsWith(`${rightPath}/`)
-    || rightPath.startsWith(`${leftPath}/`);
+  return leftPath === rightPath || leftPath.startsWith(`${rightPath}/`) || rightPath.startsWith(`${leftPath}/`);
 }
 
 export function buildDynamicRule(rule) {
   const pathCondition = normalizePathPrefix(rule.pathPrefix ?? '');
-  const pathRegex = pathCondition
-    ? `${escapeRegex(pathCondition)}(?:/|[?#]|$)`
-    : '(?:[/?#]|$)';
+  const pathRegex = pathCondition ? `${escapeRegex(pathCondition)}(?:/|[?#]|$)` : '(?:[/?#]|$)';
   const resourceType = normalizeResourceType(rule.resourceType ?? 'all') || 'all';
 
   return {

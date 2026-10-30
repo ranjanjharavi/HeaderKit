@@ -56,11 +56,10 @@ function cancelHeaderComposer() {
   setHeaderComposerExpanded(false, { reset: true, returnFocus: true });
 }
 
-export function setHeaderComposerExpanded(expanded, {
-  focusFirstField = false,
-  reset = false,
-  returnFocus = false
-} = {}) {
+export function setHeaderComposerExpanded(
+  expanded,
+  { focusFirstField = false, reset = false, returnFocus = false } = {}
+) {
   const composer = document.getElementById('headerComposer');
   const toggle = document.getElementById('headerComposerToggle');
 

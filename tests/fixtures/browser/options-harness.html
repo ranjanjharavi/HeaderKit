@@ -1,8 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>HeaderKit manager harness</title></head>
-<body>
-  <script type="module">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HeaderKit manager harness</title>
+  </head>
+  <body>
+    <script type="module">
       const previewParameters = new URLSearchParams(location.search);
       const storage = {
         privacyConsentVersion: Number(previewParameters.get('consent') ?? 2),
@@ -19,14 +22,58 @@
           durationMs: null,
           untilBrowserClose: false
         },
-        headerRules: previewParameters.has('empty') ? [] : [
-          { id: 1, domain: 'api.example.com', headerName: 'Authorization', headerValue: 'Bearer secret', enabled: true, profileId: 'default' },
-          { id: 2, domain: 'api.example.com', headerName: 'X-HeaderKit-Debug', headerValue: 'enabled', enabled: true, profileId: 'default' },
-          { id: 3, domain: 'accounts.example.com', headerName: 'X-Client', headerValue: 'headerkit', enabled: false, profileId: 'default' },
-          { id: 4, domain: 'staging.example.com', headerName: 'X-Environment', headerValue: 'staging', enabled: true, profileId: 'staging' },
-          { id: 5, domain: 'staging.example.com', headerName: 'X-Trace', headerValue: 'verbose', enabled: false, profileId: 'staging' },
-          { id: 6, domain: 'localhost', headerName: 'X-Debug', headerValue: 'true', enabled: true, profileId: 'development' }
-        ]
+        headerRules: previewParameters.has('empty')
+          ? []
+          : [
+              {
+                id: 1,
+                domain: 'api.example.com',
+                headerName: 'Authorization',
+                headerValue: 'Bearer secret',
+                enabled: true,
+                profileId: 'default'
+              },
+              {
+                id: 2,
+                domain: 'api.example.com',
+                headerName: 'X-HeaderKit-Debug',
+                headerValue: 'enabled',
+                enabled: true,
+                profileId: 'default'
+              },
+              {
+                id: 3,
+                domain: 'accounts.example.com',
+                headerName: 'X-Client',
+                headerValue: 'headerkit',
+                enabled: false,
+                profileId: 'default'
+              },
+              {
+                id: 4,
+                domain: 'staging.example.com',
+                headerName: 'X-Environment',
+                headerValue: 'staging',
+                enabled: true,
+                profileId: 'staging'
+              },
+              {
+                id: 5,
+                domain: 'staging.example.com',
+                headerName: 'X-Trace',
+                headerValue: 'verbose',
+                enabled: false,
+                profileId: 'staging'
+              },
+              {
+                id: 6,
+                domain: 'localhost',
+                headerName: 'X-Debug',
+                headerValue: 'true',
+                enabled: true,
+                profileId: 'development'
+              }
+            ]
       };
 
       if (previewParameters.has('campaign')) {
@@ -54,7 +101,9 @@
       window.__HEADERKIT_CHROME_STUB__ = {
         runtime: {
           lastError: null,
-          getURL(path) { return `/extension/${path}`; }
+          getURL(path) {
+            return `/extension/${path}`;
+          }
         },
         storage: {
           local: {
@@ -73,8 +122,16 @@
           onChanged: { addListener() {} }
         },
         permissions: {
-          onAdded: { addListener(listener) { permissionEvents.added.push(listener); } },
-          onRemoved: { addListener(listener) { permissionEvents.removed.push(listener); } },
+          onAdded: {
+            addListener(listener) {
+              permissionEvents.added.push(listener);
+            }
+          },
+          onRemoved: {
+            addListener(listener) {
+              permissionEvents.removed.push(listener);
+            }
+          },
           getAll(callback) {
             callback({ origins: [...grantedOrigins] });
           },
@@ -108,14 +165,23 @@
       await installBackgroundHarness(window.chrome);
 
       const cacheBust = Date.now();
-      const markup = await fetch('/extension/options/index.html', { cache: 'no-store' }).then((response) => response.text());
+      const markup = await fetch('/extension/options/index.html', { cache: 'no-store' }).then((response) =>
+        response.text()
+      );
       document.open();
-      document.write(markup
-        .replace('<head>', '<head><base href="/extension/options/">')
-        .replace('href="../shared/styles/index.css"', `href="../shared/styles/index.css?v=${cacheBust}"`)
-        .replace('href="options.css"', `href="options.css?v=${cacheBust}"`)
-        .replace('<script type="module" src="main.js"></' + 'script>', `<script>window.chrome = window.__HEADERKIT_CHROME_STUB__;</` + `script><script type="module" src="main.js?v=${cacheBust}"></` + 'script>'));
+      document.write(
+        markup
+          .replace('<head>', '<head><base href="/extension/options/">')
+          .replace('href="../shared/styles/index.css"', `href="../shared/styles/index.css?v=${cacheBust}"`)
+          .replace('href="options.css"', `href="options.css?v=${cacheBust}"`)
+          .replace(
+            '<script type="module" src="main.js"></' + 'script>',
+            `<script>window.chrome = window.__HEADERKIT_CHROME_STUB__;</` +
+              `script><script type="module" src="main.js?v=${cacheBust}"></` +
+              'script>'
+          )
+      );
       document.close();
-  </script>
-</body>
+    </script>
+  </body>
 </html>

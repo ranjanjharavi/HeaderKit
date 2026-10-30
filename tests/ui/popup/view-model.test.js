@@ -3,11 +3,7 @@ import test from 'node:test';
 
 import { createDefaultActivation } from '../../../extension/shared/domain/activation.js';
 import { createDefaultProfiles } from '../../../extension/shared/domain/profiles.js';
-import {
-  getActivationDisplay,
-  getManagerLinkLabel,
-  getManagerPath
-} from '../../../extension/popup/view-model.js';
+import { getActivationDisplay, getManagerLinkLabel, getManagerPath } from '../../../extension/popup/view-model.js';
 
 const now = 2_000_000;
 const profiles = [

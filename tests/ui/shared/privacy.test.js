@@ -103,7 +103,11 @@ test('both privacy gates disclose background URL reads and unencrypted storage',
 test('generated policy pages retain the source date and material disclosures', () => {
   const policy = readSource('privacy/policy.md');
   const date = policy.match(/^Last updated: (.+)$/m)[1];
-  for (const rawSource of [policy, readSource('extension/privacy/index.html'), readSource('docs/privacy-policy.html')]) {
+  for (const rawSource of [
+    policy,
+    readSource('extension/privacy/index.html'),
+    readSource('docs/privacy-policy.html')
+  ]) {
     const source = rawSource.replace(/\s+/g, ' ');
     assert.ok(source.includes(`Last updated: ${date}`));
     assert.match(source, /Toolbar badge URLs/);
@@ -113,7 +117,10 @@ test('generated policy pages retain the source date and material disclosures', (
     assert.match(source, /Mask sensitive-looking values in popup and manager lists and forms/);
     assert.match(source, /Other names may be missed/);
     assert.doesNotMatch(source, /Header values are visible while you edit/);
-    assert.match(source, /release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile/);
+    assert.match(
+      source,
+      /release unused host-specific grants after the final rule is deleted, moved to another host, or removed with a profile/
+    );
     assert.match(source, /Broader grants may remain/);
     assert.match(source, /Include full, unencrypted values, even when masked in the interface/);
     assert.match(source, /Exclude activation, timers, site access grants, and privacy consent/);

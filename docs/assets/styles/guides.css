@@ -42,7 +42,8 @@
 .guide-card:first-child {
   border-top: 1px solid var(--border);
 }
-.guide-card:hover h2, .guide-card:hover h3 {
+.guide-card:hover h2,
+.guide-card:hover h3 {
   color: var(--blue-deep);
 }
 .guide-card:hover .guide-arrow {
@@ -51,11 +52,12 @@
 .guide-card .eyebrow {
   margin-bottom: 16px;
 }
-.guide-card h2, .guide-card h3 {
+.guide-card h2,
+.guide-card h3 {
   max-width: 600px;
   font-size: 26px;
   line-height: 1.25;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
 }
 .guide-card p {
   max-width: 600px;
@@ -75,7 +77,7 @@
   color: var(--blue-deep);
   font-size: 13px;
   font-weight: 600;
-  transition: transform 200ms cubic-bezier(.22, 1, .36, 1);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .guide-layout {
   display: grid;
@@ -94,7 +96,7 @@
   color: var(--muted);
   font: 11px/1.5 var(--mono);
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
 }
 .article-toc nav {
   display: grid;
@@ -123,7 +125,7 @@
   margin: 40px 0 16px;
   font-size: 28px;
   line-height: 1.2;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
   scroll-margin-top: 32px;
 }
 .guide-prose > h2:first-child {
@@ -132,7 +134,8 @@
 .guide-prose p {
   margin-bottom: 20px;
 }
-.guide-prose ul, .guide-prose ol {
+.guide-prose ul,
+.guide-prose ol {
   padding-left: 24px;
   color: var(--ink-soft);
 }
@@ -168,7 +171,8 @@
   border-collapse: collapse;
   font-size: 14px;
 }
-.guide-prose th, .guide-prose td {
+.guide-prose th,
+.guide-prose td {
   padding: 12px;
   border-bottom: 1px solid var(--border);
   text-align: left;

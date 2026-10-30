@@ -9,14 +9,16 @@ import { getTargetProfileId } from '../../shared/domain/activation.js';
 import { isRuleGranted } from '../../shared/domain/site-access.js';
 import { saveRuleBeforePermissionPrompt } from '../../shared/runtime/site-access-save.js';
 import { sendRuleIntent } from '../../shared/runtime/rule-api.js';
-import { RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE, RULE_MESSAGE_SET_ENABLED, RULE_MESSAGE_DELETE } from '../../shared/runtime/messages.js';
+import {
+  RULE_MESSAGE_ADD,
+  RULE_MESSAGE_UPDATE,
+  RULE_MESSAGE_SET_ENABLED,
+  RULE_MESSAGE_DELETE
+} from '../../shared/runtime/messages.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { clearRuleFormError, showRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { state, getActivation } from '../state.js';
-import {
-  readGrantedOrigins,
-  ensureRulePermission
-} from '../../shared/runtime/site-access-api.js';
+import { readGrantedOrigins, ensureRulePermission } from '../../shared/runtime/site-access-api.js';
 import { showStatus } from '../../shared/ui/ui.js';
 import { siteAccessPreflight, readCreateDraft } from './composer.js';
 import { renderRules } from './view.js';
@@ -72,16 +74,11 @@ export async function addRule() {
         );
         return true;
       }
-
     } else {
       await persistRule(intent);
     }
 
-    showStatus(
-      'headerStatus',
-      needsAccess ? 'Site access granted and rule added.' : 'Header rule added.',
-      'success'
-    );
+    showStatus('headerStatus', needsAccess ? 'Site access granted and rule added.' : 'Header rule added.', 'success');
     return true;
   } catch (error) {
     console.error(error);
@@ -163,11 +160,10 @@ export async function toggleRule(id) {
   }
 
   if (!currentRule.enabled) {
-    const conflictingRule = findActiveRuleConflict(
-      { ...currentRule, enabled: true },
-      state.headers.rules,
-      { excludeId: id, activation: getActivation() }
-    );
+    const conflictingRule = findActiveRuleConflict({ ...currentRule, enabled: true }, state.headers.rules, {
+      excludeId: id,
+      activation: getActivation()
+    });
     if (conflictingRule) {
       showStatus('headerStatus', getRuleConflictMessage(conflictingRule), 'error');
       return;
@@ -223,11 +219,14 @@ export async function confirmDeleteRule(id) {
 }
 
 function getDeleteMessage(rule) {
-  const releasesAccess = state.headers.grantedOrigins?.has(getRuleOriginPattern(rule))
-    && !state.headers.rules.some((candidate) => candidate.id !== rule.id && candidate.domain === rule.domain);
-  return `The rule for ${rule.domain} will be permanently removed.${releasesAccess
-    ? ' This is the last rule for this host, so its host-specific site access grant will also be removed.'
-    : ''}`;
+  const releasesAccess =
+    state.headers.grantedOrigins?.has(getRuleOriginPattern(rule)) &&
+    !state.headers.rules.some((candidate) => candidate.id !== rule.id && candidate.domain === rule.domain);
+  return `The rule for ${rule.domain} will be permanently removed.${
+    releasesAccess
+      ? ' This is the last rule for this host, so its host-specific site access grant will also be removed.'
+      : ''
+  }`;
 }
 
 async function deleteRule(id) {

@@ -1,10 +1,5 @@
 import { RULE_STORAGE_KEY, normalizeDomain } from '../../shared/domain/rules.js';
-import {
-  createTab,
-  getExtensionUrl,
-  onStorageChanged,
-  openOptionsPage
-} from '../../shared/runtime/chrome-api.js';
+import { createTab, getExtensionUrl, onStorageChanged, openOptionsPage } from '../../shared/runtime/chrome-api.js';
 import { ACTIVATION_STORAGE_KEY } from '../../shared/domain/activation.js';
 import { PROFILE_STORAGE_KEY } from '../../shared/domain/profiles.js';
 import { createStateRefresh } from '../../shared/runtime/state-api.js';
@@ -12,13 +7,15 @@ import { state } from '../state.js';
 import { getNextTabIndex } from '../../shared/ui/ui.js';
 import { bindActivationEvents } from '../activation/controller.js';
 import { getManagerPath } from '../view-model.js';
-import { configureRuleActions, addRule, saveEditedRule, toggleRule, confirmDeleteRule, grantRuleAccess } from './actions.js';
 import {
-  bindComposerEvents,
-  openRuleEditor,
-  openCreateComposer,
-  setHeaderComposerExpanded
-} from './composer.js';
+  configureRuleActions,
+  addRule,
+  saveEditedRule,
+  toggleRule,
+  confirmDeleteRule,
+  grantRuleAccess
+} from './actions.js';
+import { bindComposerEvents, openRuleEditor, openCreateComposer, setHeaderComposerExpanded } from './composer.js';
 import { renderRules, setRuleScope, toggleDomain, toggleRuleValueVisibility } from './view.js';
 
 export function bindHeaderEvents() {
@@ -40,9 +37,8 @@ export function bindHeaderEvents() {
   chrome.permissions.onRemoved.addListener(scheduleRefresh);
 
   onStorageChanged((changes) => {
-    const touchesRules = RULE_STORAGE_KEY in changes
-      || ACTIVATION_STORAGE_KEY in changes
-      || PROFILE_STORAGE_KEY in changes;
+    const touchesRules =
+      RULE_STORAGE_KEY in changes || ACTIVATION_STORAGE_KEY in changes || PROFILE_STORAGE_KEY in changes;
 
     if (touchesRules) {
       scheduleRefresh();

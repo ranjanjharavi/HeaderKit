@@ -26,9 +26,8 @@ export function renderWorkspace() {
 
 export function bindWorkspaceEvents() {
   onStorageChanged((changes) => {
-    const touchesRules = RULE_STORAGE_KEY in changes
-      || ACTIVATION_STORAGE_KEY in changes
-      || PROFILE_STORAGE_KEY in changes;
+    const touchesRules =
+      RULE_STORAGE_KEY in changes || ACTIVATION_STORAGE_KEY in changes || PROFILE_STORAGE_KEY in changes;
 
     if (touchesRules) {
       scheduleRefresh();

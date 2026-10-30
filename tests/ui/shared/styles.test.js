@@ -9,7 +9,9 @@ function listStyles(directory = extensionRoot) {
     const url = new URL(name, directory);
     return statSync(url).isDirectory()
       ? listStyles(new URL(`${name}/`, directory))
-      : name.endsWith('.css') ? [url] : [];
+      : name.endsWith('.css')
+        ? [url]
+        : [];
   });
 }
 

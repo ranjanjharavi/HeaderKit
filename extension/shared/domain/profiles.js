@@ -52,8 +52,10 @@ function normalizeProfile(profile, usedIds) {
     return null;
   }
 
-  const name = String(profile?.name || '').trim().slice(0, MAX_PROFILE_NAME_LENGTH)
-    || (id === DEFAULT_PROFILE_ID ? DEFAULT_PROFILE_NAME : id);
+  const name =
+    String(profile?.name || '')
+      .trim()
+      .slice(0, MAX_PROFILE_NAME_LENGTH) || (id === DEFAULT_PROFILE_ID ? DEFAULT_PROFILE_NAME : id);
   const createdAt = Number.isFinite(Number(profile?.createdAt)) ? Number(profile.createdAt) : 0;
   const rawDuration = Number(profile?.defaultDurationMs);
   const defaultDurationMs = Number.isFinite(rawDuration) && rawDuration > 0 ? rawDuration : null;
@@ -78,7 +80,9 @@ export function getProfileName(profiles, id) {
 export function createProfile(name, { now = Date.now() } = {}) {
   return {
     id: createProfileId(),
-    name: String(name || '').trim().slice(0, MAX_PROFILE_NAME_LENGTH),
+    name: String(name || '')
+      .trim()
+      .slice(0, MAX_PROFILE_NAME_LENGTH),
     createdAt: now,
     defaultDurationMs: null
   };
@@ -99,8 +103,7 @@ export function cloneRulesIntoProfile(rules, sourceProfileId, targetProfileId, n
 
 export function countRulesInProfile(rules, profileId) {
   const resolvedId = resolveProfileId(profileId);
-  return (Array.isArray(rules) ? rules : [])
-    .filter((rule) => resolveProfileId(rule.profileId) === resolvedId).length;
+  return (Array.isArray(rules) ? rules : []).filter((rule) => resolveProfileId(rule.profileId) === resolvedId).length;
 }
 
 export function validateProfileDraft(draft, existingProfiles, { excludeId = null } = {}) {
@@ -114,9 +117,9 @@ export function validateProfileDraft(draft, existingProfiles, { excludeId = null
     return { ok: false, error: `Profile names are limited to ${MAX_PROFILE_NAME_LENGTH} characters.` };
   }
 
-  const duplicateProfile = (Array.isArray(existingProfiles) ? existingProfiles : []).some((profile) => (
-    profile.id !== excludeId && profile.name.toLowerCase() === name.toLowerCase()
-  ));
+  const duplicateProfile = (Array.isArray(existingProfiles) ? existingProfiles : []).some(
+    (profile) => profile.id !== excludeId && profile.name.toLowerCase() === name.toLowerCase()
+  );
 
   if (duplicateProfile) {
     return { ok: false, error: `A profile named “${name}” already exists.` };

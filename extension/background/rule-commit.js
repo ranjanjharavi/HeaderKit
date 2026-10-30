@@ -55,17 +55,12 @@ export function applyRuleIntent(message, { rules, activation, profileIds }) {
   };
   let nextRules = [...rules, rule];
   if (existingRule) {
-    nextRules = rules.map((currentRule) => currentRule.id === rule.id ? rule : currentRule);
+    nextRules = rules.map((currentRule) => (currentRule.id === rule.id ? rule : currentRule));
   }
   return { rules: nextRules, rule };
 }
 
-export async function commitRuleSet(nextRules, {
-  profileIds = null,
-  getCurrentRules,
-  applyRules,
-  storeRules
-}) {
+export async function commitRuleSet(nextRules, { profileIds = null, getCurrentRules, applyRules, storeRules }) {
   if (!Array.isArray(nextRules)) {
     throw new TypeError('Header rules must be an array.');
   }

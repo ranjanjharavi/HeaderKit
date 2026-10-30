@@ -1,8 +1,8 @@
 /* Website entry point. Keep page overrides before responsive rules. */
-@import url("./styles/base.css");
-@import url("./styles/home.css");
-@import url("./styles/guides.css");
-@import url("./styles/footer.css");
-@import url("./styles/privacy.css");
-@import url("./styles/motion.css");
-@import url("./styles/responsive.css");
+@import url('./styles/base.css');
+@import url('./styles/home.css');
+@import url('./styles/guides.css');
+@import url('./styles/footer.css');
+@import url('./styles/privacy.css');
+@import url('./styles/motion.css');
+@import url('./styles/responsive.css');

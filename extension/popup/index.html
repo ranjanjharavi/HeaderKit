@@ -1,154 +1,274 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HeaderKit</title>
-  <link rel="stylesheet" href="../shared/styles/index.css">
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <section id="privacyGate" class="privacy-gate" aria-labelledby="privacyGateTitle">
-    <img class="privacy-gate-icon" src="../icons/headerkit-128.png" width="72" height="72" alt="HeaderKit">
-    <h1 id="privacyGateTitle">Review HeaderKit data handling</h1>
-    <p>HeaderKit reads tab URLs locally for the current host and toolbar badges, including background updates on approved sites. Never store URLs or send them to the developer.</p>
-    <p>Profiles, settings, and header values are stored unencrypted in this Chrome profile. Anyone with access to its files may be able to read them.</p>
-    <p>HeaderKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site access. Destination or intermediary logs may include them.</p>
-    <a class="privacy-policy-link" href="../privacy/index.html" target="_blank" rel="noreferrer">Read the privacy policy</a>
-    <p>Accept to open HeaderKit. Existing rules and site access are unchanged.</p>
-    <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
-    <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
-  </section>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HeaderKit</title>
+    <link rel="stylesheet" href="../shared/styles/index.css" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <section id="privacyGate" class="privacy-gate" aria-labelledby="privacyGateTitle">
+      <img class="privacy-gate-icon" src="../icons/headerkit-128.png" width="72" height="72" alt="HeaderKit" />
+      <h1 id="privacyGateTitle">Review HeaderKit data handling</h1>
+      <p>
+        HeaderKit reads tab URLs locally for the current host and toolbar badges, including background updates on
+        approved sites. Never store URLs or send them to the developer.
+      </p>
+      <p>
+        Profiles, settings, and header values are stored unencrypted in this Chrome profile. Anyone with access to its
+        files may be able to read them.
+      </p>
+      <p>
+        HeaderKit has no analytics or developer server. Active header values go only to their exact HTTPS host with site
+        access. Destination or intermediary logs may include them.
+      </p>
+      <a class="privacy-policy-link" href="../privacy/index.html" target="_blank" rel="noreferrer">
+        Read the privacy policy
+      </a>
+      <p>Accept to open HeaderKit. Existing rules and site access are unchanged.</p>
+      <button id="privacyConsentBtn" class="primary-btn privacy-consent-btn" type="button">Accept and continue</button>
+      <output id="privacyConsentStatus" class="status-msg privacy-consent-status" aria-live="polite"></output>
+    </section>
 
-  <div id="appShell" class="shell" hidden>
-    <main id="headers-panel" class="popup-shell">
-      <article class="panel">
-        <div class="panel-head">
-          <div class="panel-heading">
-            <h2 class="panel-title">HeaderKit <span aria-hidden="true">·</span> Headers</h2>
-            <div class="panel-profile-summary" aria-label="Active profile and duration">
-              <button id="changeActiveSetupBtn" class="panel-profile-btn" type="button">
-                <span id="activeProfileName">Default</span>
-                <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m4.2 6.1 3.8 3.8 3.8-3.8 1.05 1.05L8 12 3.15 7.15 4.2 6.1Z"/></svg>
+    <div id="appShell" class="shell" hidden>
+      <main id="headers-panel" class="popup-shell">
+        <article class="panel">
+          <div class="panel-head">
+            <div class="panel-heading">
+              <h2 class="panel-title">
+                HeaderKit
+                <span aria-hidden="true">·</span>
+                Headers
+              </h2>
+              <div class="panel-profile-summary" aria-label="Active profile and duration">
+                <button id="changeActiveSetupBtn" class="panel-profile-btn" type="button">
+                  <span id="activeProfileName">Default</span>
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill="currentColor" d="m4.2 6.1 3.8 3.8 3.8-3.8 1.05 1.05L8 12 3.15 7.15 4.2 6.1Z" />
+                  </svg>
+                </button>
+                <span aria-hidden="true">·</span>
+                <span id="activeUntilLabel">Until turned off</span>
+              </div>
+            </div>
+            <button
+              id="masterSwitch"
+              class="master-switch"
+              type="button"
+              role="switch"
+              aria-checked="true"
+              aria-label="Pause all header rules">
+              <span class="master-switch-track" aria-hidden="true"><span class="master-switch-thumb"></span></span>
+              <span id="masterSwitchLabel" class="master-switch-label">On</span>
+            </button>
+          </div>
+
+          <div class="content-stack">
+            <output id="masterPausedBanner" class="master-paused-banner" hidden>
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1Zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM6.5 5.5h1.25v5H6.5v-5Zm1.75 0h1.25v5H8.25v-5Z" />
+              </svg>
+              <span class="master-paused-copy">
+                <strong id="masterPausedTitle">All header rules are paused</strong>
+                <span id="masterPausedDetail">
+                  No headers are being applied. Your rules stay saved and editable, with their own On or Paused
+                  settings.
+                </span>
+              </span>
+              <button id="resumeMasterBtn" class="master-resume-btn" type="button">Resume</button>
+            </output>
+
+            <div id="ruleScopeTabs" class="rule-scope-tabs" role="tablist" aria-label="Rule scope">
+              <button
+                id="currentSiteTab"
+                class="rule-scope-tab"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="ruleListContainer"
+                tabindex="0"
+                data-rule-scope="site">
+                <span id="currentSiteHost" class="rule-scope-label" aria-live="polite">Detecting current site…</span>
+                <span id="currentSiteRuleCount" class="rule-scope-count">0</span>
               </button>
-              <span aria-hidden="true">·</span>
-              <span id="activeUntilLabel">Until turned off</span>
+              <button
+                id="allRulesTab"
+                class="rule-scope-tab"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="ruleListContainer"
+                tabindex="-1"
+                data-rule-scope="all">
+                <span class="rule-scope-label">All</span>
+                <span id="allRulesCount" class="rule-scope-count">0</span>
+              </button>
             </div>
-          </div>
-          <button id="masterSwitch" class="master-switch" type="button" role="switch" aria-checked="true" aria-label="Pause all header rules">
-            <span class="master-switch-track" aria-hidden="true"><span class="master-switch-thumb"></span></span>
-            <span id="masterSwitchLabel" class="master-switch-label">On</span>
-          </button>
-        </div>
 
-        <div class="content-stack">
-          <output id="masterPausedBanner" class="master-paused-banner" hidden>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1Zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM6.5 5.5h1.25v5H6.5v-5Zm1.75 0h1.25v5H8.25v-5Z"/></svg>
-            <span class="master-paused-copy">
-              <strong id="masterPausedTitle">All header rules are paused</strong>
-              <span id="masterPausedDetail">No headers are being applied. Your rules stay saved and editable, with their own On or Paused settings.</span>
-            </span>
-            <button id="resumeMasterBtn" class="master-resume-btn" type="button">Resume</button>
-          </output>
-
-          <div id="ruleScopeTabs" class="rule-scope-tabs" role="tablist" aria-label="Rule scope">
-            <button id="currentSiteTab" class="rule-scope-tab" type="button" role="tab" aria-selected="true" aria-controls="ruleListContainer" tabindex="0" data-rule-scope="site">
-              <span id="currentSiteHost" class="rule-scope-label" aria-live="polite">Detecting current site…</span>
-              <span id="currentSiteRuleCount" class="rule-scope-count">0</span>
-            </button>
-            <button id="allRulesTab" class="rule-scope-tab" type="button" role="tab" aria-selected="false" aria-controls="ruleListContainer" tabindex="-1" data-rule-scope="all">
-              <span class="rule-scope-label">All</span>
-              <span id="allRulesCount" class="rule-scope-count">0</span>
-            </button>
-          </div>
-
-          <div id="headerComposer" class="header-composer" hidden>
-            <div class="header-composer-body">
-              <form id="headerComposerForm" class="header-composer-form" novalidate>
-                <div class="field">
-                  <label for="domain">Exact HTTPS host</label>
-                  <input type="text" id="domain" placeholder="https://api.example.com" aria-describedby="ruleComposerError">
-                  <p class="helper-text">HeaderKit applies rules only to the exact HTTPS host. Narrow requests through optional scoping.</p>
-                </div>
-
-                <div class="field">
-                  <label for="headerName">Header name</label>
-                  <input type="text" id="headerName" data-header-name placeholder="X-HeaderKit-Debug" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                </div>
-
-                <div class="field">
-                  <label for="headerValue">Header value</label>
-                  <div class="header-value-field">
-                    <input type="text" id="headerValue" data-header-value placeholder="enabled" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
-                    <button class="rule-value-btn" type="button" data-header-value-toggle aria-label="Reveal value" title="Reveal value" aria-pressed="false" hidden></button>
+            <div id="headerComposer" class="header-composer" hidden>
+              <div class="header-composer-body">
+                <form id="headerComposerForm" class="header-composer-form" novalidate>
+                  <div class="field">
+                    <label for="domain">Exact HTTPS host</label>
+                    <input
+                      type="text"
+                      id="domain"
+                      placeholder="https://api.example.com"
+                      aria-describedby="ruleComposerError" />
+                    <p class="helper-text">
+                      HeaderKit applies rules only to the exact HTTPS host. Narrow requests through optional scoping.
+                    </p>
                   </div>
-                  <p class="helper-text disclosure-text">Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only authorized systems.</p>
-                </div>
 
-                <details id="requestScopeDetails" class="request-scope-options">
-                  <summary>Optional request scoping <span class="scope-default-label">Defaults: all paths · all requests</span></summary>
-                  <div class="request-scope-fields">
-                    <div class="field">
-                      <label for="pathPrefix">Path prefix</label>
-                      <input type="text" id="pathPrefix" placeholder="/api/v1" maxlength="512" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="ruleComposerError">
+                  <div class="field">
+                    <label for="headerName">Header name</label>
+                    <input
+                      type="text"
+                      id="headerName"
+                      data-header-name
+                      placeholder="X-HeaderKit-Debug"
+                      autocapitalize="off"
+                      autocorrect="off"
+                      spellcheck="false"
+                      aria-describedby="ruleComposerError" />
+                  </div>
+
+                  <div class="field">
+                    <label for="headerValue">Header value</label>
+                    <div class="header-value-field">
+                      <input
+                        type="text"
+                        id="headerValue"
+                        data-header-value
+                        placeholder="enabled"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        aria-describedby="ruleComposerError" />
+                      <button
+                        class="rule-value-btn"
+                        type="button"
+                        data-header-value-toggle
+                        aria-label="Reveal value"
+                        title="Reveal value"
+                        aria-pressed="false"
+                        hidden></button>
                     </div>
-                    <div class="field">
-                      <label for="resourceType">Request type</label>
-                      <select id="resourceType" aria-describedby="ruleComposerError">
-                        <option value="all">All requests</option>
-                        <option value="xmlhttprequest">API calls (fetch/XHR)</option>
-                      </select>
-                    </div>
-                    <p class="helper-text request-scope-hint">Blank matches all paths. Prefixes include nested paths, not similar names. Fetch/XHR excludes page loads and static assets.</p>
+                    <p class="helper-text disclosure-text">
+                      Stored in this Chrome profile and sent only to the exact HTTPS host you approve. Use only
+                      authorized systems.
+                    </p>
                   </div>
-                </details>
-                <div id="siteAccessPreflight" class="site-access-preflight" role="note" aria-live="polite" hidden>
-                  <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.25 13 3v3.85c0 3.38-2.08 6.43-5 7.9-2.92-1.47-5-4.52-5-7.9V3l5-1.75Zm0 1.59L4.5 4.07v2.78c0 2.58 1.47 4.99 3.5 6.21 2.03-1.22 3.5-3.63 3.5-6.21V4.07L8 2.84Zm-.75 2.41h1.5V8h-1.5V5.25Zm0 3.75h1.5v1.5h-1.5V9Z"/></svg>
-                  <div>
-                    <strong>Site access needed for <code id="siteAccessPreflightHost"></code></strong>
-                    <p>Grant HeaderKit site access through Chrome. Include only this exact HTTPS host.</p>
-                  </div>
-                </div>
 
-                <p id="ruleComposerError" class="rule-form-error" role="alert" hidden></p>
-                <div class="action-row header-composer-actions">
-                  <button id="addHeaderBtn" class="primary-btn" type="submit">Add rule</button>
-                  <button id="cancelHeaderComposerBtn" class="secondary-btn" type="button">Cancel</button>
-                </div>
-              </form>
+                  <details id="requestScopeDetails" class="request-scope-options">
+                    <summary>
+                      Optional request scoping
+                      <span class="scope-default-label">Defaults: all paths · all requests</span>
+                    </summary>
+                    <div class="request-scope-fields">
+                      <div class="field">
+                        <label for="pathPrefix">Path prefix</label>
+                        <input
+                          type="text"
+                          id="pathPrefix"
+                          placeholder="/api/v1"
+                          maxlength="512"
+                          autocapitalize="off"
+                          autocorrect="off"
+                          spellcheck="false"
+                          aria-describedby="ruleComposerError" />
+                      </div>
+                      <div class="field">
+                        <label for="resourceType">Request type</label>
+                        <select id="resourceType" aria-describedby="ruleComposerError">
+                          <option value="all">All requests</option>
+                          <option value="xmlhttprequest">API calls (fetch/XHR)</option>
+                        </select>
+                      </div>
+                      <p class="helper-text request-scope-hint">
+                        Blank matches all paths. Prefixes include nested paths, not similar names. Fetch/XHR excludes
+                        page loads and static assets.
+                      </p>
+                    </div>
+                  </details>
+                  <div id="siteAccessPreflight" class="site-access-preflight" role="note" aria-live="polite" hidden>
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path
+                        fill="currentColor"
+                        d="M8 1.25 13 3v3.85c0 3.38-2.08 6.43-5 7.9-2.92-1.47-5-4.52-5-7.9V3l5-1.75Zm0 1.59L4.5 4.07v2.78c0 2.58 1.47 4.99 3.5 6.21 2.03-1.22 3.5-3.63 3.5-6.21V4.07L8 2.84Zm-.75 2.41h1.5V8h-1.5V5.25Zm0 3.75h1.5v1.5h-1.5V9Z" />
+                    </svg>
+                    <div>
+                      <strong>
+                        Site access needed for
+                        <code id="siteAccessPreflightHost"></code>
+                      </strong>
+                      <p>Grant HeaderKit site access through Chrome. Include only this exact HTTPS host.</p>
+                    </div>
+                  </div>
+
+                  <p id="ruleComposerError" class="rule-form-error" role="alert" hidden></p>
+                  <div class="action-row header-composer-actions">
+                    <button id="addHeaderBtn" class="primary-btn" type="submit">Add rule</button>
+                    <button id="cancelHeaderComposerBtn" class="secondary-btn" type="button">Cancel</button>
+                  </div>
+                </form>
+              </div>
             </div>
+
+            <output id="headerStatus" class="status-msg" aria-live="polite" aria-atomic="true"></output>
+            <div
+              id="ruleListContainer"
+              class="rule-list"
+              role="tabpanel"
+              aria-labelledby="currentSiteTab"
+              tabindex="0"></div>
+            <footer class="panel-footer">
+              <button
+                id="headerComposerToggle"
+                class="primary-btn footer-add-rule-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="headerComposer">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path fill="currentColor" d="M7.25 2.5h1.5v4.75h4.75v1.5H8.75v4.75h-1.5V8.75H2.5v-1.5h4.75V2.5Z" />
+                </svg>
+                Add rule for this site
+              </button>
+              <button id="manageRulesLink" class="manage-rules-link" type="button">Manage profiles and rules →</button>
+            </footer>
           </div>
+        </article>
+      </main>
 
-          <output id="headerStatus" class="status-msg" aria-live="polite" aria-atomic="true"></output>
-          <div id="ruleListContainer" class="rule-list" role="tabpanel" aria-labelledby="currentSiteTab" tabindex="0"></div>
-          <footer class="panel-footer">
-            <button id="headerComposerToggle" class="primary-btn footer-add-rule-btn" type="button" aria-expanded="false" aria-controls="headerComposer">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M7.25 2.5h1.5v4.75h4.75v1.5H8.75v4.75h-1.5V8.75H2.5v-1.5h4.75V2.5Z"/></svg>
-              Add rule for this site
-            </button>
-            <button id="manageRulesLink" class="manage-rules-link" type="button">Manage profiles and rules →</button>
-          </footer>
+      <dialog
+        id="confirmationDialog"
+        class="confirmation-dialog"
+        aria-labelledby="confirmationTitle"
+        aria-describedby="confirmationMessage">
+        <div class="confirmation-dialog-shell">
+          <div class="confirmation-dialog-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <path
+                fill="currentColor"
+                d="M6.25 2.5h3.5l.5 1H13a.75.75 0 0 1 0 1.5h-.6l-.55 7.14A1.5 1.5 0 0 1 10.35 13.5h-4.7a1.5 1.5 0 0 1-1.5-1.36L3.6 5H3a.75.75 0 0 1 0-1.5h2.75l.5-1Zm-.46 2.5.5 6.5h3.42l.5-6.5H5.79Z" />
+            </svg>
+          </div>
+          <div class="confirmation-dialog-copy">
+            <h2 id="confirmationTitle">Delete this item?</h2>
+            <p id="confirmationMessage">This cannot be undone.</p>
+          </div>
+          <div class="confirmation-dialog-actions">
+            <button id="confirmationCancelBtn" class="secondary-btn" type="button">Cancel</button>
+            <button id="confirmationConfirmBtn" class="danger-btn" type="button">Delete</button>
+          </div>
         </div>
-      </article>
-    </main>
+      </dialog>
+    </div>
 
-    <dialog id="confirmationDialog" class="confirmation-dialog" aria-labelledby="confirmationTitle" aria-describedby="confirmationMessage">
-      <div class="confirmation-dialog-shell">
-        <div class="confirmation-dialog-icon" aria-hidden="true">
-          <svg viewBox="0 0 16 16"><path fill="currentColor" d="M6.25 2.5h3.5l.5 1H13a.75.75 0 0 1 0 1.5h-.6l-.55 7.14A1.5 1.5 0 0 1 10.35 13.5h-4.7a1.5 1.5 0 0 1-1.5-1.36L3.6 5H3a.75.75 0 0 1 0-1.5h2.75l.5-1Zm-.46 2.5.5 6.5h3.42l.5-6.5H5.79Z"/></svg>
-        </div>
-        <div class="confirmation-dialog-copy">
-          <h2 id="confirmationTitle">Delete this item?</h2>
-          <p id="confirmationMessage">This cannot be undone.</p>
-        </div>
-        <div class="confirmation-dialog-actions">
-          <button id="confirmationCancelBtn" class="secondary-btn" type="button">Cancel</button>
-          <button id="confirmationConfirmBtn" class="danger-btn" type="button">Delete</button>
-        </div>
-      </div>
-    </dialog>
-  </div>
-
-  <script type="module" src="main.js"></script>
-</body>
+    <script type="module" src="main.js"></script>
+  </body>
 </html>

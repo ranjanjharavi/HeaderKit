@@ -28,38 +28,53 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
       removeAttribute: (name) => attributes.delete(name),
       addEventListener: (name, callback) => listeners.set(name, callback),
       dispatch: (name, event) => listeners.get(name)?.(event),
-      focus() { document.activeElement = this; },
-      remove() { overlays.delete(this); },
-      after(overlay) { overlays.add(overlay); },
+      focus() {
+        document.activeElement = this;
+      },
+      remove() {
+        overlays.delete(this);
+      },
+      after(overlay) {
+        overlays.add(overlay);
+      },
       cloneNode() {
         const clone = element();
         clone.src = this.src;
         clone.setAttribute('id', 'gallery-image');
         return clone;
       },
-      animate: supported ? (frames, options) => {
-        let finish;
-        let reject;
-        const animation = {
-          frames,
-          options,
-          finished: new Promise((resolve, fail) => {
-            finish = resolve;
-            reject = fail;
-          }),
-          finish: () => finish(),
-          cancel() {
-            this.cancelled = true;
-            reject(new Error('Cancelled'));
+      animate: supported
+        ? (frames, options) => {
+            let finish;
+            let reject;
+            const animation = {
+              frames,
+              options,
+              finished: new Promise((resolve, fail) => {
+                finish = resolve;
+                reject = fail;
+              }),
+              finish: () => finish(),
+              cancel() {
+                this.cancelled = true;
+                reject(new Error('Cancelled'));
+              }
+            };
+            animations.push(animation);
+            return animation;
           }
-        };
-        animations.push(animation);
-        return animation;
-      } : undefined
+        : undefined
     };
   }
   const elements = new Map();
-  for (const id of ['gallery-image', 'image-loading', 'gallery-status', 'retry-screenshot', 'gallery-title', 'gallery-copy']) {
+  for (const id of [
+    'gallery-image',
+    'image-loading',
+    'gallery-status',
+    'retry-screenshot',
+    'gallery-title',
+    'gallery-copy'
+  ]) {
     elements.set(id, element());
   }
   const image = elements.get('gallery-image');
@@ -80,15 +95,27 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
     document,
     URLSearchParams,
     window: { matchMedia: () => preference, location: { search: still ? '?still' : '' } },
-    Image: class { constructor() { requests.push(this); } }
+    Image: class {
+      constructor() {
+        requests.push(this);
+      }
+    }
   });
   return {
-    image, buttons, preference, document, animations, overlays, requests,
+    image,
+    buttons,
+    preference,
+    document,
+    animations,
+    overlays,
+    requests,
     loading: elements.get('image-loading'),
     status: elements.get('gallery-status'),
     retry: elements.get('retry-screenshot'),
     title: elements.get('gallery-title'),
-    select(key) { buttons.find((button) => button.dataset.shot === key).dispatch('click'); }
+    select(key) {
+      buttons.find((button) => button.dataset.shot === key).dispatch('click');
+    }
   };
 }
 

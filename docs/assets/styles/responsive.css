@@ -1,5 +1,7 @@
 @media (max-width: 1000px) {
-  .nav-shell, .section-shell, .footer-shell {
+  .nav-shell,
+  .section-shell,
+  .footer-shell {
     width: calc(100% - 56px);
   }
   .canvas-toolbar {
@@ -16,11 +18,13 @@
     grid-template-columns: minmax(0, 1fr) 240px;
     gap: 32px;
   }
-  .guide-layout, .privacy-layout {
+  .guide-layout,
+  .privacy-layout {
     grid-template-columns: 160px minmax(0, 1fr);
     gap: 32px;
   }
-  .guide-prose, .privacy-prose {
+  .guide-prose,
+  .privacy-prose {
     padding: 32px;
   }
   .footer-shell {
@@ -29,7 +33,9 @@
   }
 }
 @media (max-width: 720px) {
-  .nav-shell, .section-shell, .footer-shell {
+  .nav-shell,
+  .section-shell,
+  .footer-shell {
     width: calc(100% - 40px);
   }
   .nav-shell {
@@ -47,7 +53,8 @@
     gap: 16px;
     font-size: 12px;
   }
-  .nav-feature, .nav-source {
+  .nav-feature,
+  .nav-source {
     display: none !important;
   }
   .hero {
@@ -127,7 +134,8 @@
   .popup-section figure {
     max-width: 330px;
   }
-  .privacy-summary, .faq-section {
+  .privacy-summary,
+  .faq-section {
     grid-template-columns: 1fr;
     gap: 24px;
     padding-bottom: 40px;
@@ -145,7 +153,8 @@
   .install-panel h2 {
     font-size: 30px;
   }
-  .guide-main, .privacy-main {
+  .guide-main,
+  .privacy-main {
     padding-block: 24px 48px;
   }
   .breadcrumb {
@@ -159,7 +168,8 @@
   .guide-header h1 {
     font-size: 36px;
   }
-  .guide-intro, .privacy-hero p {
+  .guide-intro,
+  .privacy-hero p {
     margin-top: 20px;
     font-size: 16px;
   }
@@ -172,10 +182,12 @@
     gap: 24px;
     padding-block: 28px;
   }
-  .guide-card h2, .guide-card h3 {
+  .guide-card h2,
+  .guide-card h3 {
     font-size: 24px;
   }
-  .guide-layout, .privacy-layout {
+  .guide-layout,
+  .privacy-layout {
     grid-template-columns: 1fr;
     gap: 24px;
   }
@@ -190,13 +202,16 @@
     min-height: 44px;
     padding-block: 12px;
   }
-  .guide-prose, .privacy-prose {
+  .guide-prose,
+  .privacy-prose {
     padding: 24px 20px;
   }
-  .guide-prose h2, .privacy-prose h2 {
+  .guide-prose h2,
+  .privacy-prose h2 {
     font-size: 24px;
   }
-  .guide-prose th, .guide-prose td {
+  .guide-prose th,
+  .guide-prose td {
     padding: 12px 8px;
   }
   .privacy-hero {
@@ -231,10 +246,14 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     transition: none !important;
   }
-  button:active, .button:active, .guide-card:hover .guide-arrow {
+  button:active,
+  .button:active,
+  .guide-card:hover .guide-arrow {
     transform: none;
   }
 }

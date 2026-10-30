@@ -28,13 +28,15 @@ class FakeElement extends EventTarget {
 }
 
 function createDialogDocument() {
-  const elements = Object.fromEntries([
-    'confirmationDialog',
-    'confirmationConfirmBtn',
-    'confirmationCancelBtn',
-    'confirmationTitle',
-    'confirmationMessage'
-  ].map((id) => [id, new FakeElement()]));
+  const elements = Object.fromEntries(
+    [
+      'confirmationDialog',
+      'confirmationConfirmBtn',
+      'confirmationCancelBtn',
+      'confirmationTitle',
+      'confirmationMessage'
+    ].map((id) => [id, new FakeElement()])
+  );
 
   return {
     elements,

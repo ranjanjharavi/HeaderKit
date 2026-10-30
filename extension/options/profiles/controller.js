@@ -4,17 +4,17 @@ import {
   getProfileName,
   validateProfileDraft
 } from '../../shared/domain/profiles.js';
-import {
-  requestOriginPermissions
-} from '../../shared/runtime/chrome-api.js';
-import {
-  createDefaultActivation,
-  getTargetProfileId
-} from '../../shared/domain/activation.js';
+import { requestOriginPermissions } from '../../shared/runtime/chrome-api.js';
+import { createDefaultActivation, getTargetProfileId } from '../../shared/domain/activation.js';
 import { setActiveProfile } from '../../shared/runtime/activation-api.js';
 import { getMissingProfileOrigins } from '../../shared/domain/site-access.js';
 import { sendProfileIntent } from '../../shared/runtime/profile-api.js';
-import { PROFILE_MESSAGE_CREATE, PROFILE_MESSAGE_RENAME, PROFILE_MESSAGE_DUPLICATE, PROFILE_MESSAGE_DELETE } from '../../shared/runtime/messages.js';
+import {
+  PROFILE_MESSAGE_CREATE,
+  PROFILE_MESSAGE_RENAME,
+  PROFILE_MESSAGE_DUPLICATE,
+  PROFILE_MESSAGE_DELETE
+} from '../../shared/runtime/messages.js';
 import { confirmDestructiveAction } from '../../shared/ui/confirmation-dialog.js';
 import { state } from '../state.js';
 import { readGrantedOrigins } from '../../shared/runtime/site-access-api.js';
@@ -56,8 +56,9 @@ function handleProfileTabClick(event) {
   activateProfile(tab.dataset.profileTab).finally(() => {
     tab.disabled = false;
     renderProfiles();
-    const selectedTab = [...document.querySelectorAll('#profileTabs [data-profile-tab]')]
-      .find((profileTab) => profileTab.getAttribute('aria-selected') === 'true');
+    const selectedTab = [...document.querySelectorAll('#profileTabs [data-profile-tab]')].find(
+      (profileTab) => profileTab.getAttribute('aria-selected') === 'true'
+    );
     selectedTab?.focus();
   });
 }
@@ -113,17 +114,19 @@ export function renderProfiles() {
   const tabs = document.getElementById('profileTabs');
   const list = document.getElementById('profileList');
 
-  tabs.innerHTML = profiles.map((profile, index) => {
-    const isActive = profile.id === activeProfileId;
-    const ruleCount = countRulesInProfile(rules, profile.id);
+  tabs.innerHTML = profiles
+    .map((profile, index) => {
+      const isActive = profile.id === activeProfileId;
+      const ruleCount = countRulesInProfile(rules, profile.id);
 
-    return `
+      return `
       <button id="profileTab-${index}" class="profile-tab" type="button" role="tab" aria-selected="${String(isActive)}" aria-controls="profilePanel" tabindex="${isActive ? '0' : '-1'}" data-profile-tab="${escapeHtml(profile.id)}">
         <span>${escapeHtml(profile.name)}</span>
         <span class="profile-tab-count">${ruleCount}</span>
       </button>
     `;
-  }).join('');
+    })
+    .join('');
 
   const profilePanel = document.getElementById('profilePanel');
   if (selectedTabIndex >= 0) {
@@ -132,13 +135,15 @@ export function renderProfiles() {
     profilePanel.removeAttribute('aria-labelledby');
   }
 
-  document.getElementById('activeProfileRunLabel').textContent = `${getProfileName(profiles, activeProfileId)} runs until`;
+  document.getElementById('activeProfileRunLabel').textContent =
+    `${getProfileName(profiles, activeProfileId)} runs until`;
 
-  list.innerHTML = profiles.map((profile) => {
-    const ruleCount = countRulesInProfile(rules, profile.id);
-    const isActive = profile.id === activeProfileId;
+  list.innerHTML = profiles
+    .map((profile) => {
+      const ruleCount = countRulesInProfile(rules, profile.id);
+      const isActive = profile.id === activeProfileId;
 
-    return `
+      return `
       <article class="profile-row${isActive ? ' is-active' : ''}">
         <div class="profile-row-main">
           <span class="profile-row-name">${escapeHtml(profile.name)}</span>
@@ -148,13 +153,16 @@ export function renderProfiles() {
         <div class="profile-row-actions">
           <button class="profile-action-btn" type="button" data-profile-action="rename" data-id="${escapeHtml(profile.id)}">Rename</button>
           <button class="profile-action-btn" type="button" data-profile-action="duplicate" data-id="${escapeHtml(profile.id)}">Duplicate</button>
-          ${profile.id === DEFAULT_PROFILE_ID
-    ? ''
-    : `<button class="profile-action-btn danger" type="button" data-profile-action="delete" data-id="${escapeHtml(profile.id)}">Delete</button>`}
+          ${
+            profile.id === DEFAULT_PROFILE_ID
+              ? ''
+              : `<button class="profile-action-btn danger" type="button" data-profile-action="delete" data-id="${escapeHtml(profile.id)}">Delete</button>`
+          }
         </div>
       </article>
     `;
-  }).join('');
+    })
+    .join('');
 }
 
 function getActivation() {
@@ -206,7 +214,8 @@ function showProfileList({ restoreFocus = true, focusAction = null, profileId = 
   const previousEditor = profileEditor;
   profileEditor = null;
   document.getElementById('profileManagerTitle').textContent = 'Manage profiles';
-  document.getElementById('profileManagerDescription').textContent = 'Organize rule sets without changing what is currently applied.';
+  document.getElementById('profileManagerDescription').textContent =
+    'Organize rule sets without changing what is currently applied.';
   document.getElementById('profileEditorForm').reset();
   document.getElementById('profileEditorForm').hidden = true;
   document.getElementById('profileList').hidden = false;
@@ -219,8 +228,9 @@ function showProfileList({ restoreFocus = true, focusAction = null, profileId = 
   }
 
   if (focusAction && profileId) {
-    const action = [...document.querySelectorAll('#profileList [data-profile-action]')]
-      .find((button) => button.dataset.profileAction === focusAction && button.dataset.id === profileId);
+    const action = [...document.querySelectorAll('#profileList [data-profile-action]')].find(
+      (button) => button.dataset.profileAction === focusAction && button.dataset.id === profileId
+    );
     (action || document.getElementById('newProfileBtn')).focus();
     return;
   }
@@ -261,11 +271,7 @@ async function handleProfileEditorSubmit(event) {
 
   const { mode, id } = profileEditor;
   const name = document.getElementById('profileNameInput').value;
-  const validation = validateProfileDraft(
-    { name },
-    state.profiles,
-    { excludeId: mode === 'rename' ? id : null }
-  );
+  const validation = validateProfileDraft({ name }, state.profiles, { excludeId: mode === 'rename' ? id : null });
   if (!validation.ok) {
     showProfileEditorError(validation.error);
     return;
@@ -386,9 +392,7 @@ export async function activateProfile(id) {
     const name = getProfileName(state.profiles, id);
     showStatus(
       'activeSetupStatus',
-      granted
-        ? `${name} is now active.`
-        : `${name} is now active, but some of its rules still need site access.`,
+      granted ? `${name} is now active.` : `${name} is now active, but some of its rules still need site access.`,
       granted ? 'success' : 'error'
     );
   } catch (error) {

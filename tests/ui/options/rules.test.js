@@ -13,7 +13,9 @@ test('manager search and clear redraw only rules and retain search focus', async
       id: index + 1,
       domain: 'example.com',
       headerName: index === 0 ? 'X-Only' : `X-Other-${index}`,
-      headerValue: 'stored', enabled: true, profileId: 'default'
+      headerValue: 'stored',
+      enabled: true,
+      profileId: 'default'
     })),
     profiles: [{ id: 'default', name: 'Default' }],
     activation: createDefaultActivation(),
@@ -24,7 +26,12 @@ test('manager search and clear redraw only rules and retain search focus', async
     searchQuery: ''
   });
   let workspaceRenders = 0;
-  bindRuleEvents({ onRefresh: async () => {}, onRender: () => { workspaceRenders++; } });
+  bindRuleEvents({
+    onRefresh: async () => {},
+    onRender: () => {
+      workspaceRenders++;
+    }
+  });
   const search = harness.element('ruleSearchInput');
   search.value = 'X-Only';
   search.focus();
@@ -35,7 +42,7 @@ test('manager search and clear redraw only rules and retain search focus', async
   assert.equal(document.activeElement, search);
   const clear = harness.element('clear-search');
   clear.dataset.ruleAction = 'clear-search';
-  clear.closest = (selector) => selector === '[data-rule-action]' ? clear : null;
+  clear.closest = (selector) => (selector === '[data-rule-action]' ? clear : null);
   await harness.element('ruleListContainer').dispatch('click', { target: clear });
   assert.equal(workspaceRenders, 0);
   assert.equal(state.searchQuery, '');
@@ -46,7 +53,9 @@ test('manager search and clear redraw only rules and retain search focus', async
 test('manager rendering retains the live edit form, draft, locking, focus and selection', (t) => {
   const harness = createUiHarness(t);
   Object.assign(state, {
-    rules: [{ id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'stored', enabled: true, profileId: 'default' }],
+    rules: [
+      { id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'stored', enabled: true, profileId: 'default' }
+    ],
     profiles: [{ id: 'default', name: 'Default' }],
     activation: createDefaultActivation(),
     editingId: 1,
@@ -64,9 +73,13 @@ test('manager rendering retains the live edit form, draft, locking, focus and se
   input.focus();
   const form = { dataset: { id: '1' }, contains: (node) => node === input, disabled: true };
   let restored;
-  const replacement = { replaceWith: (node) => { restored = node; } };
+  const replacement = {
+    replaceWith: (node) => {
+      restored = node;
+    }
+  };
   let reads = 0;
-  harness.element('ruleListContainer').querySelector = () => reads++ === 0 ? form : replacement;
+  harness.element('ruleListContainer').querySelector = () => (reads++ === 0 ? form : replacement);
   renderRules();
   assert.equal(restored, form);
   assert.equal(restored.disabled, true);

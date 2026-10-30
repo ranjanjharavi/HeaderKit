@@ -5,15 +5,8 @@
   "minimum_chrome_version": "120",
   "description": "Create scoped request-header rules for HTTPS sites. Switch profiles, auto-pause sessions, and manage site access locally.",
   "homepage_url": "https://ranjanjharavi.github.io/HeaderKit/",
-  "permissions": [
-    "activeTab",
-    "alarms",
-    "declarativeNetRequestWithHostAccess",
-    "storage"
-  ],
-  "optional_host_permissions": [
-    "https://*/*"
-  ],
+  "permissions": ["activeTab", "alarms", "declarativeNetRequestWithHostAccess", "storage"],
+  "optional_host_permissions": ["https://*/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

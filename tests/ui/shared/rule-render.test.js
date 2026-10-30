@@ -21,15 +21,37 @@ test('rule display sorting prioritizes conflicts, then active rules', () => {
 
   const sortedRules = sortRulesForDisplay(rules, new Set([3, 4]));
 
-  assert.deepEqual(sortedRules.map((rule) => rule.id), [3, 4, 2, 1]);
-  assert.deepEqual(rules.map((rule) => rule.id), [1, 2, 3, 4]);
+  assert.deepEqual(
+    sortedRules.map((rule) => rule.id),
+    [3, 4, 2, 1]
+  );
+  assert.deepEqual(
+    rules.map((rule) => rule.id),
+    [1, 2, 3, 4]
+  );
 });
 
 test('sensitive header detection covers common credential headers', () => {
   [
-    'Authorization', 'X-Authorization', 'Cookie', 'X-Auth-Token', 'X-API-Key', 'client-secret',
-    'X-Auth', 'Session-Id', 'Password', 'X-Passwd', 'X-Signature', 'X-CSRF', 'X-XSRF',
-    'Bearer', 'X-JWT', 'Credentials', 'X-Private', 'ApiKey', 'API_KEY'
+    'Authorization',
+    'X-Authorization',
+    'Cookie',
+    'X-Auth-Token',
+    'X-API-Key',
+    'client-secret',
+    'X-Auth',
+    'Session-Id',
+    'Password',
+    'X-Passwd',
+    'X-Signature',
+    'X-CSRF',
+    'X-XSRF',
+    'Bearer',
+    'X-JWT',
+    'Credentials',
+    'X-Private',
+    'ApiKey',
+    'API_KEY'
   ].forEach((headerName) => {
     assert.equal(isSensitiveHeaderName(headerName), true, headerName);
     const rule = { id: 1, headerName, headerValue: 'credential-value', enabled: true };
@@ -39,7 +61,10 @@ test('sensitive header detection covers common credential headers', () => {
 
   ['Accept-Language', 'X-Debug-Mode', 'Content-Type'].forEach((headerName) => {
     assert.equal(isSensitiveHeaderName(headerName), false, headerName);
-    assert.match(renderRuleEditForm({ id: 1, headerName, headerValue: 'ordinary' }), /data-header-value type="text"[^>]*autocomplete="off"/);
+    assert.match(
+      renderRuleEditForm({ id: 1, headerName, headerValue: 'ordinary' }),
+      /data-header-value type="text"[^>]*autocomplete="off"/
+    );
   });
 });
 
@@ -57,7 +82,7 @@ test('header value controls mask, reveal and reset without changing the draft or
   form.querySelector = (selector) => fields[selector] || null;
   nameInput.matches = (selector) => selector === '[data-header-name]';
   nameInput.closest = () => form;
-  button.closest = (selector) => selector === 'form' ? form : button;
+  button.closest = (selector) => (selector === 'form' ? form : button);
   nameInput.value = 'Authorization';
   valueInput.value = 'draft secret';
   nameInput.focus();
@@ -127,8 +152,12 @@ test('scoped rules expose their scope and editable controls', () => {
 
 test('Unicode path prefixes remain readable in lists and edit forms', () => {
   const rule = {
-    id: 7, domain: 'api.example.com', headerName: 'X-Test', headerValue: 'value',
-    pathPrefix: '/caf%C3%A9', enabled: true
+    id: 7,
+    domain: 'api.example.com',
+    headerName: 'X-Test',
+    headerValue: 'value',
+    pathPrefix: '/caf%C3%A9',
+    enabled: true
   };
   assert.ok(renderRuleRow(rule).includes('/caf\u00e9'));
   assert.ok(renderRuleEditForm(rule).includes('value="/caf\u00e9"'));
@@ -137,13 +166,16 @@ test('Unicode path prefixes remain readable in lists and edit forms', () => {
 });
 
 test('paused rules are clearly marked while remaining editable and resumable', () => {
-  const row = renderRuleRow({
-    id: 9,
-    domain: 'api.example.com',
-    headerName: 'X-Debug',
-    headerValue: 'on',
-    enabled: false
-  }, { needsAccess: true });
+  const row = renderRuleRow(
+    {
+      id: 9,
+      domain: 'api.example.com',
+      headerName: 'X-Debug',
+      headerValue: 'on',
+      enabled: false
+    },
+    { needsAccess: true }
+  );
 
   assert.match(row, /aria-checked="false"[^>]*aria-label="Resume X-Debug rule"/);
   assert.match(row, /class="rule-enable-label">Paused</);
@@ -175,10 +207,8 @@ test('domain groups lead with conflicts, then the current site, then alphabetica
 
   const sorted = sortDomainGroups(groups, new Set([4]), 'current.example.com');
 
-  assert.deepEqual(sorted.map((group) => group.domain), [
-    'clash.example.com',
-    'current.example.com',
-    'alpha.example.com',
-    'zeta.example.com'
-  ]);
+  assert.deepEqual(
+    sorted.map((group) => group.domain),
+    ['clash.example.com', 'current.example.com', 'alpha.example.com', 'zeta.example.com']
+  );
 });

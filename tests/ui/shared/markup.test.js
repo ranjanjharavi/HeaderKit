@@ -4,8 +4,18 @@ import { readSource, readStyles } from '../../helpers/source.js';
 
 const popupStyles = readStyles('extension/shared/styles/index.css') + readStyles('extension/popup/popup.css');
 const optionsStyles = readStyles('extension/options/options.css');
-const popupRulesSource = readSource('extension/popup/headers/controller.js') + readSource('extension/popup/headers/composer.js') + readSource('extension/popup/headers/view.js') + readSource('extension/popup/headers/actions.js') + readSource('extension/popup/activation/controller.js');
-const optionsRulesSource = readSource('extension/options/rules/controller.js') + readSource('extension/options/rules/composer.js') + readSource('extension/options/rules/view.js') + readSource('extension/options/rules/actions.js') + readSource('extension/options/activation/controller.js');
+const popupRulesSource =
+  readSource('extension/popup/headers/controller.js') +
+  readSource('extension/popup/headers/composer.js') +
+  readSource('extension/popup/headers/view.js') +
+  readSource('extension/popup/headers/actions.js') +
+  readSource('extension/popup/activation/controller.js');
+const optionsRulesSource =
+  readSource('extension/options/rules/controller.js') +
+  readSource('extension/options/rules/composer.js') +
+  readSource('extension/options/rules/view.js') +
+  readSource('extension/options/rules/actions.js') +
+  readSource('extension/options/activation/controller.js');
 const optionsProfilesSource = readSource('extension/options/profiles/controller.js');
 const sharedRuleRenderSource = readSource('extension/shared/ui/rule-render.js');
 const optionsStateSource = readSource('extension/options/state.js');
@@ -23,7 +33,10 @@ test('popup and manager use readable supporting text and contrast tokens', () =>
 });
 
 test('keyboard focus and dynamic tab panels expose consistent accessible state', () => {
-  assert.match(popupStyles, /button:focus-visible,[\s\S]*?summary:focus-visible,[\s\S]*?outline:\s*2px solid var\(--primary\)/);
+  assert.match(
+    popupStyles,
+    /button:focus-visible,[\s\S]*?summary:focus-visible,[\s\S]*?outline:\s*2px solid var\(--primary\)/
+  );
   assert.doesNotMatch(`${popupStyles}\n${optionsStyles}`, /\.focus-visible\s*\{[^}]*outline:\s*(?:0|none)/s);
   assert.match(popupRulesSource, /setAttribute\([\s\S]*?'aria-labelledby',[\s\S]*?state\.headers\.scope === 'all'/);
   assert.match(optionsProfilesSource, /id="profileTab-\$\{index\}"[\s\S]*?aria-controls="profilePanel"/);
