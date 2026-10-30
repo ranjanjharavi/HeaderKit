@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { requirePrivacyConsent } from '../../../extension/shared/ui/privacy.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
-import { readSource } from '../../helpers/source.js';
+import { normalizeWhitespace, readSource } from '../../helpers/source.js';
 
 function setup(t, version) {
   const harness = createUiHarness(t);
@@ -91,7 +91,7 @@ test('a failed consent write keeps the app gated and can be retried', async (t) 
 test('both privacy gates disclose background URL reads and unencrypted storage', () => {
   for (const surface of ['popup', 'options']) {
     const markup = readSource(`extension/${surface}/index.html`);
-    const notice = markup.match(/<section id="privacyGate"[\s\S]*?<\/section>/)[0];
+    const notice = normalizeWhitespace(markup.match(/<section\b[^>]*\sid="privacyGate"[\s\S]*?<\/section>/)[0]);
     assert.match(notice, /reads tab URLs locally for the current host and toolbar badges/);
     assert.match(notice, /background updates on approved sites/);
     assert.match(notice, /Never store URLs or send them to the developer/);
@@ -108,7 +108,7 @@ test('generated policy pages retain the source date and material disclosures', (
     readSource('extension/privacy/index.html'),
     readSource('docs/privacy-policy.html')
   ]) {
-    const source = rawSource.replace(/\s+/g, ' ');
+    const source = normalizeWhitespace(rawSource);
     assert.ok(source.includes(`Last updated: ${date}`));
     assert.match(source, /Toolbar badge URLs/);
     assert.match(source, /on navigation, tab selection, and rule, activation, or site-access changes/);

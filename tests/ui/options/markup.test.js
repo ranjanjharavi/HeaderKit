@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readSource, readStyles } from '../../helpers/source.js';
+import { normalizeWhitespace, readSource, readStyles } from '../../helpers/source.js';
 
-const optionsMarkup = readSource('extension/options/index.html');
+const optionsMarkup = normalizeWhitespace(readSource('extension/options/index.html'));
 const optionsStyles = readStyles('extension/options/options.css');
 const popupRulesSource =
   readSource('extension/popup/headers/controller.js') +
@@ -58,7 +58,9 @@ test('rule manager separates active setup, rules, and profile administration', (
 
 test('site access overview audits grants and revokes without deleting rules', () => {
   assert.match(optionsMarkup, /id="siteAccessBtn"[^>]*aria-controls="siteAccessDialog"/);
-  assert.match(optionsMarkup, /<dialog id="siteAccessDialog"[^>]*aria-labelledby="siteAccessTitle"/);
+  const dialog = optionsMarkup.match(/<dialog\b[^>]*\sid="siteAccessDialog"[^>]*>/)?.[0];
+  assert.ok(dialog, 'The site access overview must use a native dialog.');
+  assert.match(dialog, /\saria-labelledby="siteAccessTitle"/);
   assert.match(optionsMarkup, /id="siteAccessList"[^>]*aria-busy="false"/);
   assert.match(
     optionsMarkup,

@@ -4,6 +4,10 @@ export function readSource(path) {
   return readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 }
 
+export function normalizeWhitespace(source) {
+  return source.replace(/\s+/g, ' ').trim();
+}
+
 export function readStyles(path) {
   const sourceUrl = new URL(`../../${path}`, import.meta.url);
   return expandStyles(sourceUrl);

@@ -1,27 +1,80 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readSource } from '../helpers/source.js';
 import { installBackgroundHarness } from '../helpers/background-harness.js';
 import { createDefaultActivation } from '../../extension/shared/domain/activation.js';
 
-const backgroundSource = readSource('extension/background.js');
+test('site permission changes immediately rebuild the applied rule set', async (t) => {
+  const harness = await worker(t);
+  const origins = [];
+  chrome.permissions.getAll = (callback) => callback({ origins: [...origins] });
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  assert.equal(added.ok, true);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  const savedRules = structuredClone(harness.storage.headerRules);
 
-test('site permission changes immediately rebuild the applied rule set', () => {
-  assert.match(backgroundSource, /chrome\.permissions\.onAdded\.addListener/);
-  assert.match(backgroundSource, /chrome\.permissions\.onRemoved\.addListener/);
-  assert.match(backgroundSource, /refreshAfterPermissionChange/);
+  origins.push('https://example.com/*');
+  chrome.permissions.onAdded.emit({ origins: [...origins] });
+  await harness.send({ type: 'headerkit:state:get' });
+  assert.deepEqual(
+    harness.getDynamicRules().map((rule) => rule.id),
+    [added.rule.id]
+  );
+
+  origins.length = 0;
+  chrome.permissions.onRemoved.emit({ origins: ['https://example.com/*'] });
+  await harness.send({ type: 'headerkit:state:get' });
+  assert.deepEqual(harness.getDynamicRules(), []);
+  assert.deepEqual(harness.storage.headerRules, savedRules);
 });
 
-test('background state changes and reads share a serial queue', () => {
-  assert.match(backgroundSource, /const enqueueBackgroundTask = createSerialQueue\(\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => handleRuleMessage\(message\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => handleActivationMessage\(message\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => initialize\(\{ newBrowserSession: true \}\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => applyExpiry\(\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => toggleMasterSwitch\(\)\)/);
-  assert.match(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshAfterPermissionChange\(\)\)/);
-  assert.doesNotMatch(backgroundSource, /enqueueBackgroundTask\(\(\) => refreshTabBadge/);
-  assert.doesNotMatch(backgroundSource, /chrome\.tabs\.onActivated\.addListener/);
+test('background state changes and reads wait for an in-flight commit in enqueue order', async (t) => {
+  const harness = await worker(t);
+  const set = chrome.storage.local.set.bind(chrome.storage.local);
+  let releaseWrite;
+  let markWriteStarted;
+  const writeStarted = new Promise((resolve) => {
+    markWriteStarted = resolve;
+  });
+  chrome.storage.local.set = (values, callback) => {
+    chrome.storage.local.set = set;
+    releaseWrite = () => set(values, callback);
+    markWriteStarted();
+  };
+  const adding = harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  await writeStarted;
+  let snapshotResolved = false;
+  const snapshot = harness.send({ type: 'headerkit:state:get' }).then((result) => {
+    snapshotResolved = true;
+    return result;
+  });
+  const pausing = harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  try {
+    await new Promise(setImmediate);
+    assert.equal(snapshotResolved, false);
+    assert.deepEqual(harness.storage.headerRules, []);
+    assert.equal(harness.storage.activation.masterEnabled, true);
+    assert.deepEqual(harness.writes, []);
+  } finally {
+    releaseWrite();
+  }
+
+  const [added, read, paused] = await Promise.all([adding, snapshot, pausing]);
+  assert.equal(added.ok, true);
+  assert.equal(read.ok, true);
+  assert.deepEqual(read.rules, added.rules);
+  assert.equal(read.activation.masterEnabled, true);
+  assert.equal(paused.ok, true);
+  assert.equal(paused.activation.masterEnabled, false);
+  assert.equal(harness.storage.activation.masterEnabled, false);
+  assert.deepEqual(harness.getDynamicRules(), []);
 });
 
 async function worker(t, stored = {}) {
