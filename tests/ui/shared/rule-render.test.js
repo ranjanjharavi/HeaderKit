@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { renderRuleEditForm, renderRuleRow } from '../../../extension/shared/ui/rule-render.js';
 import {
   isSensitiveHeaderName,
-  renderRuleEditForm,
-  renderRuleRow,
   sortDomainGroups,
   sortRulesForDisplay
-} from '../../../extension/shared/ui/rule-render.js';
+} from '../../../extension/shared/ui/rule-view-model.js';
 import { bindHeaderValueFields, syncHeaderValueField } from '../../../extension/shared/ui/header-value.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
 
