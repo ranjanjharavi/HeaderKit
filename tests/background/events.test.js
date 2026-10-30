@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { installBackgroundHarness } from '../helpers/background-harness.js';
 import { createDefaultActivation } from '../../extension/shared/domain/activation.js';
+import { CURRENT_SCHEMA_VERSION } from '../../extension/background/migrate.js';
+import { EXPIRY_ALARM } from '../../extension/background/controller.js';
 
 test('site permission changes immediately rebuild the applied rule set', async (t) => {
   const harness = await worker(t);
@@ -77,6 +79,137 @@ test('background state changes and reads wait for an in-flight commit in enqueue
   assert.deepEqual(harness.getDynamicRules(), []);
 });
 
+test('worker composition registers its listeners without eagerly reading storage', async (t) => {
+  const harness = await worker(t);
+  assert.deepEqual(harness.reads, []);
+  for (const event of [
+    chrome.storage.onChanged,
+    chrome.runtime.onMessage,
+    chrome.runtime.onInstalled,
+    chrome.runtime.onStartup,
+    chrome.permissions.onAdded,
+    chrome.permissions.onRemoved,
+    chrome.alarms.onAlarm,
+    chrome.commands.onCommand,
+    chrome.tabs.onUpdated,
+    chrome.tabs.onRemoved
+  ]) {
+    assert.equal(event.listenerCount, 1);
+  }
+  assert.equal(chrome.tabs.onActivated.listenerCount, 0);
+  chrome.commands.onCommand.emit('unrelated-command');
+  chrome.alarms.onAlarm.emit({ name: 'unrelated-alarm' });
+  await new Promise(setImmediate);
+  assert.deepEqual(harness.reads, []);
+});
+
+test('installation migrates saved data before rebuilding applied rules', async (t) => {
+  const harness = await worker(t, {
+    headerRules: [
+      { id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'default' }
+    ]
+  });
+  chrome.runtime.onInstalled.emit();
+  const state = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(state.ok, true);
+  assert.equal(harness.storage.schemaVersion, CURRENT_SCHEMA_VERSION);
+  assert.deepEqual(
+    harness.getDynamicRules().map((rule) => rule.id),
+    [1]
+  );
+  assert.equal(state.rules[0].enabled, true);
+});
+
+test('keyboard commands wait behind an in-flight activation commit on the shared queue', async (t) => {
+  const harness = await worker(t);
+  await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  const set = chrome.storage.local.set.bind(chrome.storage.local);
+  let releaseWrite;
+  let markStarted;
+  const started = new Promise((resolve) => {
+    markStarted = resolve;
+  });
+  chrome.storage.local.set = (values, callback) => {
+    chrome.storage.local.set = set;
+    releaseWrite = () => set(values, callback);
+    markStarted();
+  };
+  const pausing = harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  await started;
+  chrome.commands.onCommand.emit('toggle-master');
+  const reading = harness.send({ type: 'headerkit:state:get' });
+  try {
+    await new Promise(setImmediate);
+    assert.equal(harness.storage.activation.masterEnabled, true);
+  } finally {
+    releaseWrite();
+  }
+  assert.equal((await pausing).activation.masterEnabled, false);
+  assert.equal((await reading).activation.masterEnabled, true);
+  assert.equal(harness.storage.activation.masterEnabled, true);
+  assert.equal(harness.getDynamicRules().length, 1);
+});
+
+test('an expiry alarm parks activation, clears applied rules, and leaves saved rule flags untouched', async (t) => {
+  let now = 10_000;
+  t.mock.method(Date, 'now', () => now);
+  const harness = await worker(t, {
+    activation: { ...createDefaultActivation(), expiresAt: 20_000, durationMs: 10_000 },
+    headerRules: [
+      { id: 1, domain: 'example.com', headerName: 'X-Test', headerValue: 'one', enabled: true, profileId: 'default' }
+    ]
+  });
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(harness.getDynamicRules().length, 1);
+  const alarms = t.mock.method(chrome.alarms, 'clear');
+  now = 21_000;
+  chrome.alarms.onAlarm.emit({ name: EXPIRY_ALARM });
+  const expired = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(expired.activation.profileId, null);
+  assert.equal(harness.storage.activation.expiresAt, null);
+  assert.equal(harness.storage.headerRules[0].enabled, true);
+  assert.deepEqual(harness.getDynamicRules(), []);
+  assert.equal(alarms.mock.calls.at(-1).arguments[0], EXPIRY_ALARM);
+});
+
+test('permission cleanup failures do not turn a durable deletion into a failed request', async (t) => {
+  const harness = await worker(t);
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    profileId: 'default',
+    draft: { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' }
+  });
+  chrome.permissions.remove = (_details, callback) => {
+    chrome.runtime.lastError = { message: 'Cannot release grant' };
+    callback();
+    chrome.runtime.lastError = null;
+  };
+  const removed = await harness.send({ type: 'headerkit:rules:delete', id: added.rule.id });
+  assert.equal(removed.ok, true);
+  assert.deepEqual(harness.storage.headerRules, []);
+  assert.deepEqual(harness.getDynamicRules(), []);
+});
+
+test('alarm scheduling failures retain the committed activation and keep the queue usable', async (t) => {
+  const harness = await worker(t);
+  chrome.alarms.clear = (_name, callback) => {
+    chrome.runtime.lastError = { message: 'Alarms unavailable' };
+    callback();
+    chrome.runtime.lastError = null;
+  };
+  const selected = await harness.send({ type: 'headerkit:activation:set-duration', durationMs: 60_000 });
+  assert.equal(selected.ok, true);
+  assert.ok(harness.storage.activation.expiresAt > Date.now());
+  assert.equal(
+    (await harness.send({ type: 'headerkit:state:get' })).activation.expiresAt,
+    selected.activation.expiresAt
+  );
+});
+
 async function worker(t, stored = {}) {
   const originalChrome = globalThis.chrome;
   const originalError = console.error;
@@ -92,12 +225,16 @@ async function worker(t, stored = {}) {
   };
   const origins = ['https://example.com/*', 'https://staging.example.com/*'];
   const removed = [];
+  const reads = [];
   let failWrite = false;
   const chromeApi = {
     runtime: { lastError: null },
     storage: {
       local: {
-        get: (keys, callback) => callback(structuredClone(Object.fromEntries(keys.map((key) => [key, storage[key]])))),
+        get: (keys, callback) => {
+          reads.push([...keys]);
+          callback(structuredClone(Object.fromEntries(keys.map((key) => [key, storage[key]]))));
+        },
         set: (value, callback) => {
           if (failWrite) {
             failWrite = false;
@@ -129,6 +266,7 @@ async function worker(t, stored = {}) {
     ...harness,
     storage,
     removed,
+    reads,
     failNextWrite: () => {
       failWrite = true;
     },

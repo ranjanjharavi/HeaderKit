@@ -4,7 +4,10 @@ function createEvent() {
   const listeners = [];
   return {
     addListener: (listener) => listeners.push(listener),
-    emit: (...args) => listeners.forEach((listener) => listener(...args))
+    emit: (...args) => listeners.forEach((listener) => listener(...args)),
+    get listenerCount() {
+      return listeners.length;
+    }
   };
 }
 
@@ -31,7 +34,12 @@ export async function installBackgroundHarness(chromeApi) {
   chromeApi.storage.onChanged = storageChanges;
   chromeApi.runtime.id ??= 'headerkit-test';
   chromeApi.runtime.getURL ??= (path) => `chrome-extension://${chromeApi.runtime.id}/${path}`;
-  chromeApi.runtime.onMessage = { addListener: (listener) => messages.push(listener) };
+  chromeApi.runtime.onMessage = {
+    addListener: (listener) => messages.push(listener),
+    get listenerCount() {
+      return messages.length;
+    }
+  };
   chromeApi.runtime.onInstalled = createEvent();
   chromeApi.runtime.onStartup = createEvent();
   chromeApi.runtime.sendMessage = (message, callback) => {
