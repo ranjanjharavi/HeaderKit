@@ -12,11 +12,11 @@ Build HeaderKit artwork from [preview sources](../scripts/previews/README.md). U
 
 - Keep runtime icons in `extension/icons/`.
 - Keep store exports in `store-assets/`.
-- Keep website images in `docs/assets/` at stable URLs.
+- Keep website images in `docs/assets/img/` at stable URLs.
 
 After regenerating artwork:
 
-1. Copy final screenshots to `docs/assets/`. Remove the `-1280x800` filename suffix.
+1. Copy final screenshots to `docs/assets/img/`. Remove the `-1280x800` filename suffix.
 2. Copy the social image with its existing filename.
 3. Sync the 128px icon across runtime, store, and website directories. Keep other icon sizes for their existing purposes.
 4. Review store and website copies together.

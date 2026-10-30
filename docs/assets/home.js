@@ -143,7 +143,7 @@ function showScreenshot(key) {
     if (returnFocus) retryButton.focus();
   };
 
-  nextImage.src = 'assets/' + shot.file;
+  nextImage.src = 'assets/img/' + shot.file;
 }
 
 buttons.forEach((button) => {

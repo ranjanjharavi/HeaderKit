@@ -52,10 +52,10 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     <meta property="og:description" content="Local data, exact-host access, and plaintext header values.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
-    <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/headerkit-headers-screenshot.png">
+    <meta property="og:image" content="https://ranjanjharavi.github.io/HeaderKit/assets/img/headerkit-headers-screenshot.png">
     <meta property="og:image:alt" content="HeaderKit showing exact-host request-header rules">
     <link rel="canonical" href="https://ranjanjharavi.github.io/HeaderKit/privacy-policy.html">
-    <link rel="icon" type="image/png" href="assets/headerkit-128.png">
+    <link rel="icon" type="image/png" href="assets/img/headerkit-128.png">
     <link rel="stylesheet" href="assets/site.css">
     <script src="assets/motion.js"></script>
     <title>Privacy Policy — HeaderKit</title>
@@ -67,14 +67,14 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     <header class="site-header" data-motion="intro">
       <nav class="nav-shell" aria-label="Primary navigation">
         <a class="brand" href="./" aria-label="HeaderKit home">
-          <img src="./assets/headerkit-128.png" width="34" height="34" alt="">
+          <img src="./assets/img/headerkit-128.png" width="34" height="34" alt="">
           <span>HeaderKit</span>
         </a>
         <div class="nav-links">
           <a class="nav-feature" href="./#features">Features</a>
           <a href="guides/">Guides</a>
           <a href="./privacy-policy.html" aria-current="page">Privacy</a>
-          <a class="nav-source" href="https://github.com/ranjanjharavi/HeaderKit">Source <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/icons.svg#open-in-new"></use></svg></a>
+          <a class="nav-source" href="https://github.com/ranjanjharavi/HeaderKit">Source <svg class="open-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/img/icons.svg#open-in-new"></use></svg></a>
         </div>
       </nav>
     </header>
@@ -119,7 +119,7 @@ async function writeDocsPrivacyPage(target, renderedBody) {
     <footer class="site-footer">
       <div class="footer-shell">
         <a class="brand" href="./">
-          <img src="./assets/headerkit-128.png" width="26" height="26" alt="">
+          <img src="./assets/img/headerkit-128.png" width="26" height="26" alt="">
           <span>HeaderKit</span>
         </a>
         <p>Focused tools for API testing.</p>

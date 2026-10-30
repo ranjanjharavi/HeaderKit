@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 
@@ -78,7 +78,7 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
     elements.set(id, element());
   }
   const image = elements.get('gallery-image');
-  image.src = 'assets/headerkit-rule-manager-screenshot.png';
+  image.src = 'assets/img/headerkit-rule-manager-screenshot.png';
   image.complete = imageReady;
   image.naturalWidth = imageReady ? 1280 : 0;
   const buttons = ['manager', 'scope', 'profiles', 'access', 'headers'].map((key) => {
@@ -118,6 +118,25 @@ function setup({ reduced = false, still = false, supported = true, imageReady = 
     }
   };
 }
+
+test('every gallery selection loads an existing image from the website image directory', () => {
+  const view = setup({ reduced: true });
+  const expected = {
+    manager: 'headerkit-rule-manager-screenshot.png',
+    scope: 'headerkit-request-scoping-screenshot.png',
+    profiles: 'headerkit-manage-profiles-screenshot.png',
+    access: 'headerkit-site-access-screenshot.png',
+    headers: 'headerkit-headers-screenshot.png'
+  };
+  for (const [key, filename] of Object.entries(expected)) {
+    view.select(key);
+    const request = view.requests.at(-1);
+    assert.equal(request.src, `assets/img/${filename}`);
+    assert.ok(statSync(new URL(`../../../docs/${request.src}`, import.meta.url)).isFile());
+    request.onload();
+    assert.equal(view.image.src, request.src);
+  }
+});
 
 test('gallery keeps the current screenshot while loading, then crossfades and cleans up', async () => {
   const view = setup();
