@@ -1,0 +1,6 @@
+# Build output and local instructions.
+_site/
+coverage/
+.github/
+store-assets/
+*.md
