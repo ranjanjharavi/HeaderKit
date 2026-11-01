@@ -113,6 +113,45 @@ test('activation intents preserve current master state and reject stale profile 
   );
 });
 
+test('going live with existing conflicts is blocked with a way to reach and fix the rules', async () => {
+  const state = initialState();
+  const conflicting = { ...state.rules[0], id: 2, pathPrefix: '/api', headerValue: 'different' };
+  state.rules.push(conflicting);
+  const effects = { applyState: async () => effects.calls.push('apply'), storeState: async () => {}, calls: [] };
+
+  const pausedOnStaging = { ...state, activation: { ...state.activation, masterEnabled: false } };
+  await assert.rejects(
+    commitState(state, pausedOnStaging, effects),
+    /^Error: Two enabled X-Test rules for example\.com conflict\. Pause or change one of them, then try again\.$/
+  );
+
+  const onDefault = { ...state, activation: createDefaultActivation() };
+  const switching = { ...onDefault, activation: { ...onDefault.activation, profileId: 'staging' } };
+  await assert.rejects(
+    commitState(switching, onDefault, effects),
+    /^Error: Can't switch to Staging\. Two enabled X-Test rules for example\.com conflict\. Pause all rules, switch to Staging, then pause or change one of them\.$/
+  );
+  assert.deepEqual(effects.calls, []);
+
+  const pausedDefault = { ...state, activation: { ...createDefaultActivation(), masterEnabled: false } };
+  const pausedSwitch = { ...pausedDefault, activation: { ...pausedDefault.activation, profileId: 'staging' } };
+  await commitState(pausedSwitch, pausedDefault, effects);
+  assert.deepEqual(effects.calls, ['apply'], 'the way out: switching while paused is allowed');
+});
+
+test('conflicts in a profile that is not going live do not block unrelated changes', async () => {
+  const state = initialState();
+  state.rules.push({ ...state.rules[0], id: 2, pathPrefix: '/api', headerValue: 'different' });
+  const onDefault = { ...state, activation: createDefaultActivation() };
+  const renamed = applyProfileIntent({ type: PROFILE_MESSAGE_RENAME, id: 'staging', name: 'Test' }, onDefault);
+  const calls = [];
+  await commitState(renamed, onDefault, {
+    applyState: async () => calls.push('apply'),
+    storeState: async () => calls.push('store')
+  });
+  assert.deepEqual(calls, ['apply', 'store']);
+});
+
 test('state commit does not write storage when applying DNR fails', async () => {
   const state = initialState();
   let stored = false;

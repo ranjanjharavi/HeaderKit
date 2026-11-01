@@ -91,7 +91,7 @@ test('workspace models preserve default activation and composer locking without 
   assert.equal(empty.addRuleDisabled, false);
 });
 
-test('workspace conflict presentation follows activation and excludes rules in another profile', () => {
+test('workspace conflict presentation covers the shown profile and excludes rules in another profile', () => {
   const fixture = createBackupFixture();
   const first = fixture.rules[0];
   const rules = [
@@ -114,8 +114,17 @@ test('workspace conflict presentation follows activation and excludes rules in a
     rules,
     activation: { ...createDefaultActivation(), masterEnabled: false }
   });
-  assert.equal(paused.groups[0].conflictCount, 0);
-  assert.ok(paused.groups[0].rows.every(({ options }) => options.conflictingRules.length === 0));
+  assert.equal(paused.groups[0].conflictCount, 1, 'a conflict stays visible while paused so it can be fixed');
+  const parked = getRuleWorkspaceViewModel({
+    rules,
+    activation: { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' }
+  });
+  assert.equal(parked.groups[0].conflictCount, 1);
+  const resolved = getRuleWorkspaceViewModel({
+    rules: [first, { ...first, id: 2, headerValue: 'different', pathPrefix: '/api', enabled: false }],
+    activation: createDefaultActivation()
+  });
+  assert.equal(resolved.groups[0].conflictCount, 0, 'pausing one of the rules resolves the conflict');
 });
 
 test('rule workspace summary describes an empty view', () => {

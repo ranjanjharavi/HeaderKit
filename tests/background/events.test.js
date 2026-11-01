@@ -321,6 +321,59 @@ test('stalled badge queries do not block commits and navigation bursts avoid bro
   assert.deepEqual(texts, [{ tabId: 7, text: '' }]);
 });
 
+test('actual worker rejects a conflicting save while paused, so resume is not blocked later', async (t) => {
+  const harness = await worker(t);
+  const draft = { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' };
+  assert.equal((await harness.send({ type: 'headerkit:rules:add', draft, profileId: 'default' })).ok, true);
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  const rejected = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { ...draft, pathPrefix: '/api', headerValue: 'different' },
+    profileId: 'default'
+  });
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.conflictId, 1);
+  const resumed = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(resumed.ok, true);
+  assert.equal(resumed.activation.masterEnabled, true);
+});
+
+test('actual worker gives existing conflicting rules a way back to a working profile', async (t) => {
+  const rule = {
+    id: 1,
+    domain: 'example.com',
+    headerName: 'X-Test',
+    headerValue: 'one',
+    pathPrefix: '',
+    resourceType: 'all',
+    enabled: true,
+    profileId: 'staging'
+  };
+  const harness = await worker(t, {
+    headerRules: [rule, { ...rule, id: 2, pathPrefix: '/api', headerValue: 'different' }]
+  });
+  const blocked = await harness.send({ type: 'headerkit:activation:set-profile', profileId: 'staging' });
+  assert.equal(blocked.ok, false);
+  assert.match(blocked.error, /Can't switch to Staging.*Pause all rules, switch to Staging/);
+
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  const switched = await harness.send({ type: 'headerkit:activation:set-profile', profileId: 'staging' });
+  assert.equal(switched.ok, true);
+  assert.equal(switched.activation.profileId, 'staging');
+  const stillBlocked = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(stillBlocked.ok, false);
+  assert.match(stillBlocked.error, /Two enabled X-Test rules for example\.com conflict\. Pause or change one/);
+
+  const fixed = await harness.send({ type: 'headerkit:rules:set-enabled', id: 2, enabled: false });
+  assert.equal(fixed.ok, true);
+  const resumed = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(resumed.ok, true);
+  assert.deepEqual(
+    harness.getDynamicRules().map(({ id }) => id),
+    [1]
+  );
+});
+
 test('a reload repaints the tab badge, and later load states do not', async (context) => {
   const harness = await worker(context);
   const tab = { id: 7, url: 'https://example.com/' };

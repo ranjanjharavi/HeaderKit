@@ -398,7 +398,7 @@ for (const surface of ['options', 'popup']) {
     await harness.actions.toggleRule(1);
     assert.deepEqual(harness.calls, []);
     assert.equal(harness.state.rules[0].enabled, false);
-    assert.match(harness.element('headerStatus').textContent, /Conflicts with the active X-Test rule/);
+    assert.match(harness.element('headerStatus').textContent, /Conflicts with the enabled X-Test rule/);
   });
 
   test(`${surface} a permission API error still retains a saved rule and reports missing access`, async (t) => {
