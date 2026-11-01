@@ -6,7 +6,7 @@ import {
   RULE_MESSAGE_DELETE
 } from '../shared/runtime/messages.js';
 
-export function applyRuleIntent(message, { rules, activation, profileIds }) {
+export function applyRuleIntent(message, { rules, profileIds }) {
   const existingRule = message.type === RULE_MESSAGE_ADD ? null : rules.find((rule) => rule.id === message.id);
   if (message.type !== RULE_MESSAGE_ADD && !existingRule) {
     throw new Error('That rule no longer exists. Refresh and try again.');
@@ -37,7 +37,6 @@ export function applyRuleIntent(message, { rules, activation, profileIds }) {
   const validation = validateRuleDraft(draft, rules, {
     excludeId: existingRule?.id ?? null,
     enabled,
-    activation,
     profileId
   });
   if (!validation.ok) {

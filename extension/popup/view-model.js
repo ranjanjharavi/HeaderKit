@@ -7,7 +7,7 @@ import {
 import {
   filterRulesByHost,
   filterRulesByProfile,
-  getActiveRuleConflicts,
+  getRuleConflicts,
   groupRulesByDomain
 } from '../shared/domain/rules.js';
 import {
@@ -34,7 +34,7 @@ export function getPopupRuleViewModel({
   const scopedRules = filterRulesByProfile(rules, getTargetProfileId(resolvedActivation));
   const currentSiteRules = currentHostname ? filterRulesByHost(scopedRules, currentHostname) : [];
   const visibleRules = effectiveScope === 'all' ? scopedRules : currentSiteRules;
-  const conflictMap = createConflictMap(getActiveRuleConflicts(rules, resolvedActivation));
+  const conflictMap = createConflictMap(getRuleConflicts(scopedRules));
   const conflictingIds = new Set(conflictMap.keys());
   return {
     scope: effectiveScope,

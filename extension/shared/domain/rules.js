@@ -1,4 +1,3 @@
-import { createDefaultActivation, isRuleLive } from './activation.js';
 import { DEFAULT_PROFILE_ID, resolveProfileId } from './profiles.js';
 
 export const RULE_STORAGE_KEY = 'headerRules';
@@ -194,7 +193,7 @@ export function normalizeDomain(value) {
 export function validateRuleDraft(
   draft,
   existingRules,
-  { excludeId = null, enabled = true, activation = createDefaultActivation(), profileId = undefined } = {}
+  { excludeId = null, enabled = true, profileId = undefined } = {}
 ) {
   const parsedHost = parseHostInput(draft?.domain);
   const headerValue = String(draft?.headerValue || '');
@@ -205,7 +204,7 @@ export function validateRuleDraft(
     pathPrefix: normalizePathPrefix(draft?.pathPrefix ?? ''),
     resourceType: normalizeResourceType(draft?.resourceType ?? 'all')
   };
-  const draftProfileId = resolveProfileId(profileId ?? draft?.profileId ?? activation?.profileId ?? DEFAULT_PROFILE_ID);
+  const draftProfileId = resolveProfileId(profileId ?? draft?.profileId);
 
   if (!rule.domain) {
     return { ok: false, field: 'domain', error: parsedHost.error };
@@ -256,9 +255,8 @@ export function validateRuleDraft(
     };
   }
 
-  const conflictingRule = findActiveRuleConflict({ ...rule, enabled, profileId: draftProfileId }, existingRules, {
-    excludeId,
-    activation
+  const conflictingRule = findRuleConflict({ ...rule, enabled, profileId: draftProfileId }, existingRules, {
+    excludeId
   });
   if (conflictingRule) {
     return {
@@ -299,31 +297,23 @@ export function getNextRuleId(rules) {
   return ids.length ? Math.max(...ids) + 1 : 1;
 }
 
-export function findActiveRuleConflict(
-  candidate,
-  rules,
-  { excludeId = candidate?.id ?? null, activation = createDefaultActivation() } = {}
-) {
-  if (!isRuleLive(candidate, activation)) {
-    return null;
-  }
-
+export function findRuleConflict(candidate, rules, { excludeId = candidate?.id ?? null } = {}) {
   return (
     (Array.isArray(rules) ? rules : []).find(
-      (existingRule) => existingRule?.id !== excludeId && areRulesConflicting(candidate, existingRule, activation)
+      (existingRule) => existingRule?.id !== excludeId && areRulesConflicting(candidate, existingRule)
     ) || null
   );
 }
 
-export function getActiveRuleConflicts(rules, activation = createDefaultActivation()) {
-  const liveRules = (Array.isArray(rules) ? rules : []).filter((rule) => isRuleLive(rule, activation));
+export function getRuleConflicts(rules) {
+  const enabledRules = (Array.isArray(rules) ? rules : []).filter(isRuleEnabled);
   const conflicts = [];
 
-  for (let leftIndex = 0; leftIndex < liveRules.length; leftIndex += 1) {
-    for (let rightIndex = leftIndex + 1; rightIndex < liveRules.length; rightIndex += 1) {
-      const leftRule = liveRules[leftIndex];
-      const rightRule = liveRules[rightIndex];
-      if (areRulesConflicting(leftRule, rightRule, activation)) {
+  for (let leftIndex = 0; leftIndex < enabledRules.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < enabledRules.length; rightIndex += 1) {
+      const leftRule = enabledRules[leftIndex];
+      const rightRule = enabledRules[rightIndex];
+      if (doRulesClash(leftRule, rightRule)) {
         conflicts.push({ leftRule, rightRule });
       }
     }
@@ -333,26 +323,29 @@ export function getActiveRuleConflicts(rules, activation = createDefaultActivati
 }
 
 /**
- * Rules conflict only when they are live together, target the same header, and
- * their path/resource scopes overlap.
+ * Only one profile applies at a time, so rules conflict when they are enabled in the same profile. 
+ * Pausing everything or parking the profile does not resolve a conflict, because it comes back as soon as that profile goes live.
  */
-export function areRulesConflicting(leftRule, rightRule, activation = createDefaultActivation()) {
-  if (!isRuleLive(leftRule, activation) || !isRuleLive(rightRule, activation)) {
-    return false;
-  }
+export function areRulesConflicting(leftRule, rightRule) {
+  return isRuleEnabled(leftRule) && isRuleEnabled(rightRule) && doRulesClash(leftRule, rightRule);
+}
 
-  const sameTarget =
+function isRuleEnabled(rule) {
+  return Boolean(rule) && rule.enabled !== false;
+}
+
+function doRulesClash(leftRule, rightRule) {
+  return (
+    resolveProfileId(leftRule.profileId) === resolveProfileId(rightRule.profileId) &&
     leftRule.domain === rightRule.domain &&
-    String(leftRule.headerName).toLowerCase() === String(rightRule.headerName).toLowerCase();
-  if (!sameTarget || !doScopesOverlap(leftRule, rightRule) || leftRule.headerValue === rightRule.headerValue) {
-    return false;
-  }
-
-  return true;
+    String(leftRule.headerName).toLowerCase() === String(rightRule.headerName).toLowerCase() &&
+    leftRule.headerValue !== rightRule.headerValue &&
+    doScopesOverlap(leftRule, rightRule)
+  );
 }
 
 export function getRuleConflictMessage(conflictingRule) {
-  return `Conflicts with the active ${conflictingRule.headerName} rule for ${conflictingRule.domain} because their request scopes overlap and they use different values.`;
+  return `Conflicts with the enabled ${conflictingRule.headerName} rule for ${conflictingRule.domain} because their request scopes overlap and they use different values.`;
 }
 
 export function filterRulesByHost(rules, hostname) {

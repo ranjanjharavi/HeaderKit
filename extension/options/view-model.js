@@ -1,5 +1,5 @@
 import { createDefaultActivation, getTargetProfileId } from '../shared/domain/activation.js';
-import { filterRulesByProfile, getActiveRuleConflicts, groupRulesByDomain } from '../shared/domain/rules.js';
+import { filterRulesByProfile, getRuleConflicts, groupRulesByDomain } from '../shared/domain/rules.js';
 import { createConflictMap, createDomainGroupModel, sortDomainGroups } from '../shared/ui/rule-view-model.js';
 
 const SEARCH_VISIBLE_FROM = 5;
@@ -20,7 +20,7 @@ export function getRuleWorkspaceViewModel({
   const summary = getRuleWorkspaceSummary(scopedRules);
   const searchEnabled = summary.totalRules >= SEARCH_VISIBLE_FROM;
   const effectiveQuery = searchEnabled ? searchQuery : '';
-  const conflictMap = createConflictMap(getActiveRuleConflicts(rules, resolvedActivation));
+  const conflictMap = createConflictMap(getRuleConflicts(scopedRules));
   const conflictingIds = new Set(conflictMap.keys());
   const visibleRules = filterRulesBySearch(scopedRules, effectiveQuery);
   const editingRule = rules.find((rule) => rule.id === editingId);
