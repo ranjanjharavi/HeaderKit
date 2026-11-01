@@ -321,6 +321,39 @@ test('stalled badge queries do not block commits and navigation bursts avoid bro
   assert.deepEqual(texts, [{ tabId: 7, text: '' }]);
 });
 
+test('a reload repaints the tab badge, and later load states do not', async (context) => {
+  const harness = await worker(context);
+  const tab = { id: 7, url: 'https://example.com/' };
+  const texts = [];
+  chrome.permissions.getAll = (callback) => callback({ origins: ['https://example.com/*'] });
+  chrome.action.setBadgeText = async (details) => {
+    texts.push(details);
+  };
+  chrome.tabs.query = (_query, callback) => callback([tab]);
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' },
+    profileId: 'default'
+  });
+  assert.equal(added.ok, true);
+  await new Promise(setImmediate);
+  assert.deepEqual(
+    texts.filter(({ tabId }) => tabId === 7),
+    [{ tabId: 7, text: '1' }]
+  );
+
+  // A reload reports its commit as `loading`, with no `url` in changeInfo.
+  texts.length = 0;
+  chrome.tabs.onUpdated.emit(7, { status: 'loading' }, tab);
+  await new Promise(setImmediate);
+  assert.deepEqual(texts, [{ tabId: 7, text: '1' }]);
+
+  texts.length = 0;
+  chrome.tabs.onUpdated.emit(7, { status: 'complete' }, tab);
+  await new Promise(setImmediate);
+  assert.deepEqual(texts, []);
+});
+
 test('worker cache avoids repeated reads and tracks committed writes and external changes', async (context) => {
   const harness = await worker(context);
   let reads = 0;

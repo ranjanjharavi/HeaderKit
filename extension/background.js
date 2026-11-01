@@ -108,8 +108,9 @@ chromeApi.commands.onCommand.addListener((command) => {
   });
 });
 chromeApi.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url) {
-    badges.refreshTab(tabId, { ...tab, url: changeInfo.url });
+  // `loading` marks the navigation commit, including reloads, which carry no `url`.
+  if (changeInfo.url || changeInfo.status === 'loading') {
+    badges.refreshTab(tabId, { ...tab, url: changeInfo.url ?? tab.url });
   }
 });
 chromeApi.tabs.onRemoved.addListener((tabId) => {
