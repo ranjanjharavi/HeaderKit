@@ -1,3 +1,4 @@
+import { keepRuleListFocus } from '../../shared/ui/rule-list-focus.js';
 import { renderDomainGroup } from '../../shared/ui/rule-render.js';
 
 /** Render a prepared model without changing page state or replacing a live editor. */
@@ -8,11 +9,13 @@ export function renderRules(model) {
   const focusedInput = preservedForm?.contains(document.activeElement) ? document.activeElement : null;
   const selectionStart = focusedInput?.selectionStart;
   const selectionEnd = focusedInput?.selectionEnd;
+  const restoreFocus = keepRuleListFocus(container);
   updateSummary(model);
 
   if (!model.groups.length) {
     container.innerHTML = getEmptyRulesMessage(model.searchQuery);
     syncAddRuleActions(model.addRuleDisabled);
+    restoreFocus();
     return;
   }
   container.innerHTML = model.groups.map(renderDomainGroup).join('');
@@ -25,6 +28,7 @@ export function renderRules(model) {
     }
   }
   syncAddRuleActions(model.addRuleDisabled);
+  restoreFocus();
 }
 
 export function syncAddRuleActions(disabled) {

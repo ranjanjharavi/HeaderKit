@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { bindHeaderValueFields } from '../../shared/ui/header-value.js';
+import { keepRuleListFocus } from '../../shared/ui/rule-list-focus.js';
 import {
   configureRuleActions,
   grantRuleAccess,
@@ -115,6 +116,8 @@ async function handleRuleFormSubmit(event) {
     return;
   }
 
+  // Disabling the focused Save button can drop focus before the list re-renders.
+  const restoreFocus = keepRuleListFocus(document.getElementById('ruleListContainer'));
   buttons.forEach((button) => {
     button.disabled = true;
   });
@@ -128,7 +131,12 @@ async function handleRuleFormSubmit(event) {
         button.disabled = false;
       });
       saveButton.textContent = 'Save changes';
+      // A rejected save keeps the form open, so stay on Save unless an error took focus.
+      if (document.activeElement === document.body) {
+        saveButton.focus();
+      }
     }
+    restoreFocus();
   }
 }
 
