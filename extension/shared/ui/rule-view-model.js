@@ -1,3 +1,4 @@
+import { isRuleEnabled } from '../domain/rules.js';
 import { isRuleGranted } from '../domain/site-access.js';
 
 export function isSensitiveHeaderName(headerName) {
@@ -53,8 +54,8 @@ export function createRuleRowModel(
       revealed: revealedRuleIds.has(rule.id),
       editing: rule.id === editingId,
       editProfiles,
-      // Unknown grants must not mislabel every rule as broken.
-      needsAccess: Boolean(grantedOrigins) && !isRuleGranted(rule, grantedOrigins)
+      // A paused rule isn't being applied anyway. Unknown grants must not mislabel every rule as broken.
+      needsAccess: isRuleEnabled(rule) && Boolean(grantedOrigins) && !isRuleGranted(rule, grantedOrigins)
     }
   };
 }

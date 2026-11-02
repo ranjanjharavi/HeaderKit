@@ -330,7 +330,7 @@ export function areRulesConflicting(leftRule, rightRule) {
   return isRuleEnabled(leftRule) && isRuleEnabled(rightRule) && doRulesClash(leftRule, rightRule);
 }
 
-function isRuleEnabled(rule) {
+export function isRuleEnabled(rule) {
   return Boolean(rule) && rule.enabled !== false;
 }
 
