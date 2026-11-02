@@ -25,6 +25,21 @@ test('a profile needs one origin per distinct host', () => {
   assert.deepEqual(getProfileOrigins(rules, 'missing'), []);
 });
 
+test('paused rules need no site access until they are resumed', () => {
+  const paused = (id, domain) => ({ ...rules[0], id, domain, enabled: false, profileId: 'copy' });
+  const allPaused = [paused(5, 'paused.example.com'), paused(6, 'paused.example.net')];
+  assert.deepEqual(getProfileOrigins(allPaused, 'copy'), []);
+  assert.deepEqual(getMissingProfileOrigins(allPaused, 'copy', new Set()), []);
+
+  const live = { ...rules[0], id: 7, domain: 'live.example.com', enabled: true, profileId: 'copy' };
+  assert.deepEqual(getMissingProfileOrigins([...allPaused, live], 'copy', new Set()), ['https://live.example.com/*']);
+  assert.deepEqual(
+    getMissingProfileOrigins([paused(8, 'live.example.com'), live], 'copy', new Set()),
+    ['https://live.example.com/*'],
+    'an enabled rule still needs a host that a paused rule shares'
+  );
+});
+
 test('only the origins not already granted are requested', () => {
   const granted = new Set(['https://api.example.com/*']);
 
