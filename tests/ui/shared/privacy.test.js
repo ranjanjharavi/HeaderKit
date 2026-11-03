@@ -67,6 +67,8 @@ test('a failed consent write keeps the app gated and can be retried', async (t) 
   t.mock.method(console, 'error', () => {});
   const save = chrome.storage.local.set;
   chrome.storage.local.set = (_value, callback) => {
+    // Chrome drops focus from a disabled control after about a frame.
+    document.activeElement = document.body;
     chrome.runtime.lastError = { message: 'Storage unavailable' };
     callback();
     delete chrome.runtime.lastError;
@@ -74,10 +76,12 @@ test('a failed consent write keeps the app gated and can be retried', async (t) 
   const pending = requirePrivacyConsent();
   await Promise.resolve();
 
+  harness.element('privacyConsentBtn').focus();
   await harness.element('privacyConsentBtn').dispatch('click');
   assert.equal(harness.element('privacyGate').hidden, false);
   assert.equal(harness.element('appShell').hidden, true);
   assert.equal(harness.element('privacyConsentBtn').disabled, false);
+  assert.equal(document.activeElement, harness.element('privacyConsentBtn'));
   assert.match(harness.element('privacyConsentStatus').textContent, /could not save your choice/);
   assert.equal(harness.stored.privacyConsentVersion, 1);
 
