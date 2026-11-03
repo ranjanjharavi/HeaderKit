@@ -13,6 +13,29 @@ export function showStatus(elementId, message, type) {
   }, 2800);
 }
 
+/**
+ * Disabling or hiding a focused control drops focus after about a frame, and re-enabling it doesn't bring focus back.
+ * A control that stays hidden hands focus to the fallback.
+ */
+export function keepControlFocus(fallback = null) {
+  const focused = document.activeElement;
+  if (!focused || focused === document.body) {
+    return () => {};
+  }
+  return () => {
+    // Leave it if something else has taken focus, such as an error field.
+    // Chrome can keep reporting a hidden control as active until it clears focus, so check for that too.
+    if (document.activeElement !== document.body && document.activeElement !== focused) {
+      return;
+    }
+    if (focused.checkVisibility()) {
+      focused.focus();
+    } else {
+      fallback?.focus();
+    }
+  };
+}
+
 export function getNextTabIndex(key, currentIndex, tabCount) {
   switch (key) {
     case 'Home':

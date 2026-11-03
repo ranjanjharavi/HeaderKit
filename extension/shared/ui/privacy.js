@@ -1,4 +1,5 @@
 import { storageLocalGet, storageLocalSet } from '../runtime/chrome-api.js';
+import { keepControlFocus } from './ui.js';
 
 const PRIVACY_CONSENT_KEY = 'privacyConsentVersion';
 const PRIVACY_CONSENT_VERSION = 2;
@@ -19,6 +20,7 @@ export async function requirePrivacyConsent() {
   app.hidden = true;
   await new Promise((resolve) => {
     acceptButton.addEventListener('click', async () => {
+      const restoreFocus = keepControlFocus();
       acceptButton.disabled = true;
       status.textContent = '';
 
@@ -30,6 +32,7 @@ export async function requirePrivacyConsent() {
         console.error('Could not save privacy consent.', error);
         status.textContent = 'Chrome could not save your choice. Please try again.';
         acceptButton.disabled = false;
+        restoreFocus();
       }
     });
   });

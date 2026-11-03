@@ -1,6 +1,7 @@
 import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight.js';
 import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { bindHeaderValueFields, syncHeaderValueField } from '../../shared/ui/header-value.js';
+import { keepControlFocus } from '../../shared/ui/ui.js';
 import { state } from '../state.js';
 import { syncAddRuleActions } from './view.js';
 
@@ -26,6 +27,7 @@ async function handleComposerSubmit(event) {
     return;
   }
 
+  const restoreFocus = keepControlFocus();
   addButton.disabled = true;
   addButton.textContent = 'Adding…';
 
@@ -36,6 +38,7 @@ async function handleComposerSubmit(event) {
   } finally {
     addButton.disabled = false;
     siteAccessPreflight.syncSubmitLabel('Add rule');
+    restoreFocus();
   }
 }
 

@@ -7,7 +7,7 @@ import {
 import { setActivationDuration, setMasterEnabled } from '../../shared/runtime/activation-api.js';
 import { getProfileName } from '../../shared/domain/profiles.js';
 
-import { showStatus } from '../../shared/ui/ui.js';
+import { keepControlFocus, showStatus } from '../../shared/ui/ui.js';
 import { state, getActivation } from '../state.js';
 
 let onChanged;
@@ -27,7 +27,10 @@ export function bindActivationEvents(callbacks) {
 async function toggleMaster(forceOn = false) {
   const activation = getActivation();
   const nextEnabled = forceOn || !activation.masterEnabled;
-  const controls = [document.getElementById('masterSwitch'), document.getElementById('resumeMasterBtn')];
+  const masterSwitch = document.getElementById('masterSwitch');
+  const controls = [masterSwitch, document.getElementById('resumeMasterBtn')];
+  // The resume button hides once rules are live, so the switch takes over from it.
+  const restoreFocus = keepControlFocus(masterSwitch);
 
   controls.forEach((control) => {
     control.disabled = true;
@@ -44,6 +47,7 @@ async function toggleMaster(forceOn = false) {
     controls.forEach((control) => {
       control.disabled = false;
     });
+    restoreFocus();
   }
 }
 
@@ -60,6 +64,10 @@ export function renderMasterSwitch() {
   document.getElementById('masterSwitchLabel').textContent = activation.masterEnabled ? 'On' : 'Paused';
 
   const banner = document.getElementById('masterPausedBanner');
+  // Hiding the focused resume button would drop focus, so hand it to the switch first.
+  if (status === 'live' && banner.contains(document.activeElement)) {
+    masterSwitch.focus();
+  }
   banner.hidden = status === 'live';
   if (status !== 'live') {
     const parked = status === 'parked';
