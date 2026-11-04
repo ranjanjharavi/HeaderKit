@@ -8,9 +8,23 @@ export function showStatus(elementId, message, type) {
   element.classList.add('visible', type);
   element.textContent = message;
   globalThis.clearTimeout(element._statusTimer);
-  element._statusTimer = globalThis.setTimeout(() => {
-    element.classList.remove('visible', 'success', 'error');
-  }, 2800);
+  // An error may need acting on, so it stays until the next message replaces it.
+  if (type !== 'error') {
+    element._statusTimer = globalThis.setTimeout(() => {
+      element.classList.remove('visible', 'success', 'error');
+    }, 2800);
+  }
+}
+
+export function clearStatus(elementId) {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    return;
+  }
+
+  element.textContent = '';
+  element.classList.remove('visible', 'success', 'error');
+  globalThis.clearTimeout(element._statusTimer);
 }
 
 /**

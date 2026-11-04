@@ -6,6 +6,7 @@ import { state } from '../../../extension/options/state.js';
 import { createDefaultActivation, getTargetProfileId } from '../../../extension/shared/domain/activation.js';
 import { applyProfileIntent, applyActivationIntent } from '../../../extension/background/state-commit.js';
 import { createBackupFixture } from '../../helpers/backup.js';
+import { showStatus } from '../../../extension/shared/ui/ui.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
 
 async function setup(t) {
@@ -234,6 +235,38 @@ test('profile activation requests missing access in the click task before readin
   harness.calls.length = 0;
   await activateProfile('qa');
   assert.deepEqual(harness.calls, []);
+});
+
+for (const declined of [false, true]) {
+  test(`switching while paused does not claim the profile is active, access declined: ${declined}`, async (t) => {
+    const harness = await setup(t);
+    await new Promise((resolve) =>
+      chrome.runtime.sendMessage({ type: 'headerkit:activation:set-master', enabled: false }, resolve)
+    );
+    state.activation = harness.getStored().activation;
+    if (declined) {
+      enableStagingRule();
+      chrome.permissions.request = (_details, callback) => callback(false);
+    }
+    await activateProfile('qa');
+    assert.equal(state.activation.profileId, 'qa');
+    const status = harness.element('activeSetupStatus');
+    assert.equal(
+      status.textContent,
+      declined
+        ? 'QA is selected. Rules stay paused, and some still need site access.'
+        : 'QA is selected. Rules stay paused until you resume them.'
+    );
+    assert.equal(status.classList.contains('error'), declined);
+  });
+}
+
+test('opening the profile manager clears a message left from last time', async (t) => {
+  const harness = await setup(t);
+  showStatus('profileStatus', 'Could not delete that profile.', 'error');
+  await harness.element('manageProfilesBtn').dispatch('click');
+  assert.equal(harness.element('profileStatus').textContent, '');
+  assert.equal(harness.element('profileStatus').classList.contains('visible'), false);
 });
 
 test('switching to an all-paused profile requests no access and reports no missing access', async (t) => {
