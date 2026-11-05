@@ -120,6 +120,20 @@ test('installation migrates saved data before rebuilding applied rules', async (
   assert.equal(state.rules[0].enabled, true);
 });
 
+test('the keyboard command resumes after a timer expired instead of needing two presses', async (t) => {
+  const harness = await worker(t, {
+    activation: { ...createDefaultActivation(), profileId: null, lastProfileId: 'staging' }
+  });
+  chrome.commands.onCommand.emit('toggle-master');
+  const resumed = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(resumed.activation.profileId, 'staging');
+  assert.equal(resumed.activation.masterEnabled, true);
+  chrome.commands.onCommand.emit('toggle-master');
+  const paused = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(paused.activation.profileId, 'staging');
+  assert.equal(paused.activation.masterEnabled, false);
+});
+
 test('keyboard commands wait behind an in-flight activation commit on the shared queue', async (t) => {
   const harness = await worker(t);
   await harness.send({

@@ -168,6 +168,42 @@ test('options resuming an expired timer moves focus to the master switch', async
   assert.equal(document.activeElement, harness.element('masterSwitch'));
 });
 
+for (const [surface, render, setActivation] of [
+  ['options', renderOptionsSwitch, (activation) => (optionsState.activation = activation)],
+  ['popup', renderPopupSwitch, (activation) => (popupState.headers.activation = activation)]
+]) {
+  test(`${surface} switch does not read On after a timer expired`, (t) => {
+    resetState();
+    const harness = createUiHarness(t);
+    setActivation({ ...createDefaultActivation(), profileId: null, lastProfileId: 'default' });
+    render();
+    assert.equal(harness.element('masterSwitch').getAttribute('aria-checked'), 'false');
+    assert.equal(harness.element('masterSwitch').getAttribute('aria-label'), 'Resume all header rules');
+    assert.equal(harness.element('masterSwitchLabel').textContent, 'Paused');
+    assert.equal(harness.element('masterPausedBanner').hidden, false);
+  });
+}
+
+test('popup switch resumes rather than pauses after a timer expired', async (t) => {
+  resetState();
+  popupState.headers.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' };
+  const harness = createUiHarness(t);
+  bindPopupActivation({ onChanged() {} });
+  await harness.element('masterSwitch').dispatch('click');
+  assert.deepEqual(harness.requests, [{ type: 'headerkit:activation:set-master', enabled: true }]);
+});
+
+test('options switch resumes through the profile path after a timer expired', async (t) => {
+  resetState();
+  optionsState.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' };
+  const harness = createUiHarness(t);
+  const resumed = [];
+  bindOptionsActivation({ onChanged() {}, onResumeProfile: async (profileId) => resumed.push(profileId) });
+  await harness.element('masterSwitch').dispatch('click');
+  assert.deepEqual(resumed, ['default']);
+  assert.deepEqual(harness.requests, []);
+});
+
 test('options pause commits activation and leaves saved rule flags intact', async (t) => {
   resetState();
   const harness = createUiHarness(t);

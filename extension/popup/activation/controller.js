@@ -14,8 +14,7 @@ export function bindActivationEvents(callbacks) {
 }
 
 async function toggleMaster(forceOn = false) {
-  const activation = getActivation();
-  const nextEnabled = forceOn || !activation.masterEnabled;
+  const nextEnabled = forceOn || getActivationStatus(getActivation()) !== 'live';
 
   await commitActivation(nextEnabled, nextEnabled ? 'Header rules resumed.' : 'All header rules paused.');
 }
@@ -55,12 +54,11 @@ export function renderMasterSwitch() {
   const status = getActivationStatus(activation);
   const masterSwitch = document.getElementById('masterSwitch');
 
-  masterSwitch.setAttribute('aria-checked', String(activation.masterEnabled));
-  masterSwitch.setAttribute(
-    'aria-label',
-    activation.masterEnabled ? 'Pause all header rules' : 'Resume all header rules'
-  );
-  document.getElementById('masterSwitchLabel').textContent = activation.masterEnabled ? 'On' : 'Paused';
+  // An expired timer leaves masterEnabled on with nothing applied, so show what is really happening.
+  const isLive = status === 'live';
+  masterSwitch.setAttribute('aria-checked', String(isLive));
+  masterSwitch.setAttribute('aria-label', isLive ? 'Pause all header rules' : 'Resume all header rules');
+  document.getElementById('masterSwitchLabel').textContent = isLive ? 'On' : 'Paused';
 
   const banner = document.getElementById('masterPausedBanner');
   // Hiding the focused resume button would drop focus, so hand it to the switch first.
