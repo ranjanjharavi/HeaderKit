@@ -10,7 +10,7 @@ Modify request headers on exact HTTPS hosts. Group rules into profiles. Scope re
 
 - Create, edit, pause, resume, or delete exact-host rules.
 - Match all paths and request types by default. Narrow to a path prefix or fetch/XHR calls.
-- Detect overlapping active rules with conflicting header values.
+- Reject overlapping enabled rules with conflicting header values in the same profile.
 - Mask sensitive-looking values in popup and manager lists/forms. Reveal as needed.
 - Reuse existing site access, including broader grants. Request missing access through Chrome.
 - Remove the final rule for a host to release its host-specific grant. Broader grants may remain.
@@ -25,7 +25,7 @@ Use authorized systems only.
 - Move rules between profiles through the edit form.
 - Duplicate profiles with all copied rules paused.
 - Delete a profile to delete its rules.
-- Switch profiles to request missing site access in one prompt. Declined rules stay saved. Use **Grant** to allow them later.
+- Switch profiles to request missing site access for enabled rules in one prompt. Declined rules stay saved. Use **Grant** to allow them later.
 
 ### Export / import
 
