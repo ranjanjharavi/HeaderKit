@@ -401,6 +401,23 @@ for (const surface of ['options', 'popup']) {
     assert.match(harness.element('headerStatus').textContent, /Conflicts with the enabled X-Test rule/);
   });
 
+  test(`${surface} toggle status reports the change even if the state refresh was superseded`, async (t) => {
+    const rule = {
+      id: 1,
+      domain: 'api.example.com',
+      headerName: 'X-Test',
+      headerValue: 'old',
+      pathPrefix: '',
+      enabled: true,
+      profileId: 'default'
+    };
+    const harness = setup(t, surface, [rule]);
+    harness.actions.configureRuleActions({ onRender() {}, onRefresh: async () => {} });
+    await harness.actions.toggleRule(1);
+    assert.equal(harness.state.rules[0].enabled, true, 'the refresh did not apply');
+    assert.equal(harness.element('headerStatus').textContent, 'Rule paused.');
+  });
+
   test(`${surface} a permission API error still retains a saved rule and reports missing access`, async (t) => {
     const harness = setup(t, surface);
     harness.draft({});
