@@ -97,8 +97,8 @@ export function renderValueVisibilityIcon(revealed) {
 export function renderConflictNotice(conflictingRules) {
   const detail =
     conflictingRules.length === 1
-      ? 'Request scope overlaps another active rule with a different value.'
-      : `Request scope overlaps ${conflictingRules.length} active rules with different values.`;
+      ? 'Request scope overlaps another enabled rule with a different value. Pause or change one of them.'
+      : `Request scope overlaps ${conflictingRules.length} enabled rules with different values. Pause or change them until none overlap.`;
 
   return `
     <div class="rule-conflict-notice" role="note">

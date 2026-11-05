@@ -53,6 +53,8 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
       getAttribute: (name) => attributes.get(name),
       removeAttribute: (name) => attributes.delete(name),
       querySelector: () => null,
+      contains: () => false,
+      checkVisibility: () => true,
       matches: () => false,
       addEventListener(name, handler, options = {}) {
         if (!handlers.has(name)) handlers.set(name, new Map());
@@ -92,6 +94,7 @@ export function createUiHarness(t, { failCommit = false, holdCommit = false } = 
     return pill;
   });
   globalThis.document = {
+    body: element('body'),
     getElementById: element,
     querySelectorAll: () => pills
   };

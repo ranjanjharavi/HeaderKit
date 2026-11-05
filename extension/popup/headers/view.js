@@ -1,18 +1,23 @@
+import { keepRuleListFocus } from '../../shared/ui/rule-list-focus.js';
 import { renderDomainGroup, renderRuleRow } from '../../shared/ui/rule-render.js';
 import { escapeHtml } from '../../shared/ui/ui.js';
 
 export function renderRules(model) {
   const container = document.getElementById('ruleListContainer');
+  const restoreFocus = keepRuleListFocus(container);
   container.classList.toggle('is-empty', !model.visibleRuleCount);
+  container.innerHTML = getRuleListMarkup(model);
+  restoreFocus();
+}
+
+function getRuleListMarkup(model) {
   if (!model.visibleRuleCount) {
-    container.innerHTML = getEmptyRulesMessage(model);
-    return;
+    return getEmptyRulesMessage(model);
   }
   if (model.scope === 'all') {
-    container.innerHTML = `<div class="all-rule-groups">${model.groups.map(renderDomainGroup).join('')}</div>`;
-    return;
+    return `<div class="all-rule-groups">${model.groups.map(renderDomainGroup).join('')}</div>`;
   }
-  container.innerHTML = `
+  return `
     <div class="current-rule-list" aria-label="Rules for ${escapeHtml(model.currentHostname)}">
       ${model.rows.map(({ rule, options }) => renderRuleRow(rule, options)).join('')}
     </div>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { requirePrivacyConsent } from '../../../extension/shared/ui/privacy.js';
+import { requirePrivacyConsent, showStartupError } from '../../../extension/shared/ui/privacy.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
 import { normalizeWhitespace, readSource } from '../../helpers/source.js';
 
@@ -67,6 +67,8 @@ test('a failed consent write keeps the app gated and can be retried', async (t) 
   t.mock.method(console, 'error', () => {});
   const save = chrome.storage.local.set;
   chrome.storage.local.set = (_value, callback) => {
+    // Chrome drops focus from a disabled control after about a frame.
+    document.activeElement = document.body;
     chrome.runtime.lastError = { message: 'Storage unavailable' };
     callback();
     delete chrome.runtime.lastError;
@@ -74,18 +76,37 @@ test('a failed consent write keeps the app gated and can be retried', async (t) 
   const pending = requirePrivacyConsent();
   await Promise.resolve();
 
+  harness.element('privacyConsentBtn').focus();
   await harness.element('privacyConsentBtn').dispatch('click');
   assert.equal(harness.element('privacyGate').hidden, false);
   assert.equal(harness.element('appShell').hidden, true);
   assert.equal(harness.element('privacyConsentBtn').disabled, false);
+  assert.equal(document.activeElement, harness.element('privacyConsentBtn'));
   assert.match(harness.element('privacyConsentStatus').textContent, /could not save your choice/);
+  assert.equal(harness.element('privacyConsentStatus').classList.contains('visible'), true);
+  assert.equal(harness.element('privacyConsentStatus').classList.contains('error'), true);
   assert.equal(harness.stored.privacyConsentVersion, 1);
 
   chrome.storage.local.set = save;
   await harness.element('privacyConsentBtn').dispatch('click');
   await pending;
+  assert.equal(harness.element('privacyConsentStatus').classList.contains('visible'), false);
   assert.equal(harness.stored.privacyConsentVersion, 2);
   assert.equal(harness.element('appShell').hidden, false);
+});
+
+test('a startup error appears on whichever screen is showing', (t) => {
+  const harness = createUiHarness(t);
+  showStartupError('Could not start.');
+  assert.equal(harness.element('privacyConsentStatus').textContent, 'Could not start.');
+  assert.equal(harness.element('privacyConsentStatus').classList.contains('visible'), true);
+  assert.equal(harness.element('headerStatus').classList.contains('visible'), false);
+
+  harness.element('privacyGate').hidden = true;
+  showStartupError('Could not start.');
+  assert.equal(harness.element('headerStatus').textContent, 'Could not start.');
+  assert.equal(harness.element('headerStatus').classList.contains('visible'), true);
+  assert.equal(harness.element('headerStatus').classList.contains('error'), true);
 });
 
 test('both privacy gates disclose background URL reads and unencrypted storage', () => {

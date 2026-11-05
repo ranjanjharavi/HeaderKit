@@ -145,6 +145,73 @@ test('a delayed sweep cannot repaint a stale URL over a newer navigation', async
   );
 });
 
+test('a navigation restores a badge Chrome cleared, even when the count is unchanged', async () => {
+  const tabTexts = new Map();
+  const controller = createBadgeController({
+    getState: async () => ({ rules, activation: on, grantedOrigins: new Set(['https://api.example.com/*']) }),
+    queryTabs: async () => [],
+    getTab: async () => null,
+    action: {
+      setBadgeText: async ({ tabId, text }) => {
+        tabTexts.set(tabId, text);
+      },
+      setBadgeBackgroundColor: async () => {}
+    },
+    onError: (error) => {
+      throw error;
+    }
+  });
+  controller.refreshTab(7, { url: 'https://api.example.com/one' });
+  await controller.whenIdle();
+  assert.equal(tabTexts.get(7), '2');
+
+  // Chrome clears a tab's badge when a navigation commits.
+  tabTexts.delete(7);
+  controller.refreshTab(7, { url: 'https://api.example.com/two' });
+  await controller.whenIdle();
+  assert.equal(tabTexts.get(7), '2');
+});
+
+test('a navigation during a paint restores the badge once that paint settles', async () => {
+  const tabTexts = new Map();
+  let stallNextPaint = true;
+  let releasePaint;
+  let markPaintStarted;
+  const paintStarted = new Promise((resolve) => {
+    markPaintStarted = resolve;
+  });
+  const controller = createBadgeController({
+    getState: async () => ({ rules, activation: on, grantedOrigins: new Set(['https://api.example.com/*']) }),
+    queryTabs: async () => [],
+    getTab: async () => null,
+    action: {
+      setBadgeText: async ({ tabId, text }) => {
+        tabTexts.set(tabId, text);
+        if (tabId === 7 && stallNextPaint) {
+          stallNextPaint = false;
+          markPaintStarted();
+          await new Promise((resolve) => {
+            releasePaint = resolve;
+          });
+        }
+      },
+      setBadgeBackgroundColor: async () => {}
+    },
+    onError: (error) => {
+      throw error;
+    }
+  });
+  controller.refreshTab(7, { url: 'https://api.example.com/one' });
+  await paintStarted;
+
+  // The in-flight write has landed, then the navigation commit clears it.
+  tabTexts.delete(7);
+  controller.refreshTab(7, { url: 'https://api.example.com/two' });
+  releasePaint();
+  await controller.whenIdle();
+  assert.equal(tabTexts.get(7), '2');
+});
+
 test('badge refresh returns without waiting for a stalled paint and converges on newer state', async () => {
   let activation = on;
   let releasePaint;

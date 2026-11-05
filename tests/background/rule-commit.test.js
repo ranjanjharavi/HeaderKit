@@ -273,6 +273,62 @@ test('rule intents reject duplicates, overlapping live values, and unknown profi
   );
 });
 
+test('rule intents reject conflicts in the rule profile even when that profile is not live', () => {
+  const rule = { ...previousRules[0], profileId: 'default', pathPrefix: '', resourceType: 'all' };
+  const overlap = { ...rule, pathPrefix: '/api', headerValue: 'different' };
+  const add = { type: RULE_MESSAGE_ADD, draft: overlap, profileId: 'default' };
+  for (const activation of [
+    { ...createDefaultActivation(), masterEnabled: false },
+    { ...createDefaultActivation(), profileId: null },
+    { ...createDefaultActivation(), profileId: 'staging', lastProfileId: 'staging' }
+  ]) {
+    assert.throws(
+      () => applyRuleIntent(add, { ...intentState([rule]), activation }),
+      (error) => error.field === 'headerValue' && error.conflictId === 1
+    );
+  }
+
+  const stagingRule = { ...overlap, id: 2, profileId: 'staging' };
+  const liveInDefault = intentState([rule, stagingRule]);
+  assert.throws(
+    () => applyRuleIntent({ type: RULE_MESSAGE_UPDATE, id: 1, draft: rule, profileId: 'staging' }, liveInDefault),
+    (error) => error.field === 'headerValue' && error.conflictId === 2
+  );
+  assert.throws(
+    () =>
+      applyRuleIntent(
+        { type: RULE_MESSAGE_SET_ENABLED, id: 2, enabled: true },
+        {
+          ...intentState([rule, { ...overlap, id: 2, enabled: false }]),
+          activation: { ...createDefaultActivation(), masterEnabled: false }
+        }
+      ),
+    (error) => error.conflictId === 1
+  );
+});
+
+test('rule intents still allow paused overlaps and the same header in another profile', () => {
+  const rule = { ...previousRules[0], profileId: 'default', pathPrefix: '', resourceType: 'all' };
+  const pausedOverlap = { ...rule, id: 2, pathPrefix: '/api', headerValue: 'different', enabled: false };
+  const edited = applyRuleIntent(
+    {
+      type: RULE_MESSAGE_UPDATE,
+      id: 2,
+      draft: { ...pausedOverlap, headerValue: 'changed' },
+      profileId: 'default'
+    },
+    intentState([rule, pausedOverlap])
+  );
+  assert.equal(edited.rule.headerValue, 'changed');
+  assert.equal(edited.rule.enabled, false);
+  const elsewhere = applyRuleIntent(
+    { type: RULE_MESSAGE_ADD, draft: { ...pausedOverlap, enabled: undefined }, profileId: 'staging' },
+    intentState([rule])
+  );
+  assert.equal(elsewhere.rule.profileId, 'staging');
+  assert.equal(elsewhere.rule.enabled, true);
+});
+
 test('commitRuleSet rejects duplicate headers before applying them', async () => {
   let applied = false;
   const conflictingRules = [

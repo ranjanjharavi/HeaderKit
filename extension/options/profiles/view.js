@@ -1,6 +1,6 @@
 import { DEFAULT_PROFILE_ID, countRulesInProfile, getProfileName } from '../../shared/domain/profiles.js';
 import { getTargetProfileId } from '../../shared/domain/activation.js';
-import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
+import { clearStatus, escapeHtml, showStatus } from '../../shared/ui/ui.js';
 import { state, getActivation } from '../state.js';
 
 let profileEditor = null;
@@ -64,6 +64,7 @@ export function focusSelectedProfileTab() {
 
 export function openProfileManager() {
   showProfileList({ restoreFocus: false });
+  clearStatus('profileStatus');
   document.getElementById('profileManagerDialog').showModal();
 }
 
@@ -215,10 +216,14 @@ export function showProfileDeleted({ profile, ruleCount }) {
   showStatus('profileStatus', `Deleted ${profile.name}. ${getDeleteConsequence(ruleCount)}`, 'success');
 }
 
-export function showProfileActivated({ name, granted }) {
-  showStatus(
-    'activeSetupStatus',
-    granted ? `${name} is now active.` : `${name} is now active, but some of its rules still need site access.`,
-    granted ? 'success' : 'error'
-  );
+export function showProfileActivated({ name, granted, paused }) {
+  let message = granted
+    ? `${name} is now active.`
+    : `${name} is now active, but some of its rules still need site access.`;
+  if (paused) {
+    message = granted
+      ? `${name} is selected. Rules stay paused until you resume them.`
+      : `${name} is selected. Rules stay paused, and some still need site access.`;
+  }
+  showStatus('activeSetupStatus', message, granted ? 'success' : 'error');
 }

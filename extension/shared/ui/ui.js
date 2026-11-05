@@ -8,9 +8,46 @@ export function showStatus(elementId, message, type) {
   element.classList.add('visible', type);
   element.textContent = message;
   globalThis.clearTimeout(element._statusTimer);
-  element._statusTimer = globalThis.setTimeout(() => {
-    element.classList.remove('visible', 'success', 'error');
-  }, 2800);
+  // An error may need acting on, so it stays until the next message replaces it.
+  if (type !== 'error') {
+    element._statusTimer = globalThis.setTimeout(() => {
+      element.classList.remove('visible', 'success', 'error');
+    }, 2800);
+  }
+}
+
+export function clearStatus(elementId) {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    return;
+  }
+
+  element.textContent = '';
+  element.classList.remove('visible', 'success', 'error');
+  globalThis.clearTimeout(element._statusTimer);
+}
+
+/**
+ * Disabling or hiding a focused control drops focus after about a frame, and re-enabling it doesn't bring focus back.
+ * A control that stays hidden hands focus to the fallback.
+ */
+export function keepControlFocus(fallback = null) {
+  const focused = document.activeElement;
+  if (!focused || focused === document.body) {
+    return () => {};
+  }
+  return () => {
+    // Leave it if something else has taken focus, such as an error field.
+    // Chrome can keep reporting a hidden control as active until it clears focus, so check for that too.
+    if (document.activeElement !== document.body && document.activeElement !== focused) {
+      return;
+    }
+    if (focused.checkVisibility()) {
+      focused.focus();
+    } else {
+      fallback?.focus();
+    }
+  };
 }
 
 export function getNextTabIndex(key, currentIndex, tabCount) {

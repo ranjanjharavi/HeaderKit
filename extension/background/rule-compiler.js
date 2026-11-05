@@ -18,8 +18,12 @@ const REQUEST_RESOURCE_TYPES = [
 /** Compile a business rule to Chrome DNR data; eligibility and application belong to the caller. */
 export function buildDynamicRule(rule) {
   const pathCondition = normalizePathPrefix(rule.pathPrefix ?? '');
+  const resourceType = normalizeResourceType(rule.resourceType ?? 'all');
+  // Never widen a scope it can't read: that could send the header, often a secret, to more requests than intended.
+  if (pathCondition === null || resourceType === null) {
+    throw new Error(`Rule ${rule.id} has an invalid request scope.`);
+  }
   const pathRegex = pathCondition ? `${escapeRegex(pathCondition)}(?:/|[?#]|$)` : '(?:[/?#]|$)';
-  const resourceType = normalizeResourceType(rule.resourceType ?? 'all') || 'all';
 
   return {
     id: rule.id,

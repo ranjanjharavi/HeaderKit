@@ -2,7 +2,7 @@ import { createSiteAccessPreflight } from '../../shared/ui/site-access-preflight
 import { clearRuleFormError } from '../../shared/ui/rule-form-errors.js';
 import { bindHeaderValueFields, syncHeaderValueField } from '../../shared/ui/header-value.js';
 import { state, getScopedRules } from '../state.js';
-import { showStatus } from '../../shared/ui/ui.js';
+import { keepControlFocus, showStatus } from '../../shared/ui/ui.js';
 import { getDisplayPathPrefix } from '../../shared/domain/rules.js';
 
 export const siteAccessPreflight = {};
@@ -56,6 +56,7 @@ async function handleComposerSubmit(event) {
     return;
   }
 
+  const restoreFocus = keepControlFocus();
   addButton.disabled = true;
   addButton.textContent = state.headers.editingId ? 'Updating…' : 'Adding…';
 
@@ -67,6 +68,7 @@ async function handleComposerSubmit(event) {
   } finally {
     addButton.disabled = false;
     configureComposer();
+    restoreFocus();
   }
 }
 

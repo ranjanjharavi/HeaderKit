@@ -120,6 +120,20 @@ test('installation migrates saved data before rebuilding applied rules', async (
   assert.equal(state.rules[0].enabled, true);
 });
 
+test('the keyboard command resumes after a timer expired instead of needing two presses', async (t) => {
+  const harness = await worker(t, {
+    activation: { ...createDefaultActivation(), profileId: null, lastProfileId: 'staging' }
+  });
+  chrome.commands.onCommand.emit('toggle-master');
+  const resumed = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(resumed.activation.profileId, 'staging');
+  assert.equal(resumed.activation.masterEnabled, true);
+  chrome.commands.onCommand.emit('toggle-master');
+  const paused = await harness.send({ type: 'headerkit:state:get' });
+  assert.equal(paused.activation.profileId, 'staging');
+  assert.equal(paused.activation.masterEnabled, false);
+});
+
 test('keyboard commands wait behind an in-flight activation commit on the shared queue', async (t) => {
   const harness = await worker(t);
   await harness.send({
@@ -319,6 +333,92 @@ test('stalled badge queries do not block commits and navigation bursts avoid bro
   await new Promise(setImmediate);
   assert.equal(queries, before);
   assert.deepEqual(texts, [{ tabId: 7, text: '' }]);
+});
+
+test('actual worker rejects a conflicting save while paused, so resume is not blocked later', async (t) => {
+  const harness = await worker(t);
+  const draft = { domain: 'example.com', headerName: 'X-Test', headerValue: 'one' };
+  assert.equal((await harness.send({ type: 'headerkit:rules:add', draft, profileId: 'default' })).ok, true);
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  const rejected = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { ...draft, pathPrefix: '/api', headerValue: 'different' },
+    profileId: 'default'
+  });
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.conflictId, 1);
+  const resumed = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(resumed.ok, true);
+  assert.equal(resumed.activation.masterEnabled, true);
+});
+
+test('actual worker gives existing conflicting rules a way back to a working profile', async (t) => {
+  const rule = {
+    id: 1,
+    domain: 'example.com',
+    headerName: 'X-Test',
+    headerValue: 'one',
+    pathPrefix: '',
+    resourceType: 'all',
+    enabled: true,
+    profileId: 'staging'
+  };
+  const harness = await worker(t, {
+    headerRules: [rule, { ...rule, id: 2, pathPrefix: '/api', headerValue: 'different' }]
+  });
+  const blocked = await harness.send({ type: 'headerkit:activation:set-profile', profileId: 'staging' });
+  assert.equal(blocked.ok, false);
+  assert.match(blocked.error, /Can't switch to Staging.*Pause all rules, switch to Staging/);
+
+  await harness.send({ type: 'headerkit:activation:set-master', enabled: false });
+  const switched = await harness.send({ type: 'headerkit:activation:set-profile', profileId: 'staging' });
+  assert.equal(switched.ok, true);
+  assert.equal(switched.activation.profileId, 'staging');
+  const stillBlocked = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(stillBlocked.ok, false);
+  assert.match(stillBlocked.error, /Two enabled X-Test rules for example\.com conflict\. Pause or change one/);
+
+  const fixed = await harness.send({ type: 'headerkit:rules:set-enabled', id: 2, enabled: false });
+  assert.equal(fixed.ok, true);
+  const resumed = await harness.send({ type: 'headerkit:activation:set-master', enabled: true });
+  assert.equal(resumed.ok, true);
+  assert.deepEqual(
+    harness.getDynamicRules().map(({ id }) => id),
+    [1]
+  );
+});
+
+test('a reload repaints the tab badge, and later load states do not', async (context) => {
+  const harness = await worker(context);
+  const tab = { id: 7, url: 'https://example.com/' };
+  const texts = [];
+  chrome.permissions.getAll = (callback) => callback({ origins: ['https://example.com/*'] });
+  chrome.action.setBadgeText = async (details) => {
+    texts.push(details);
+  };
+  chrome.tabs.query = (_query, callback) => callback([tab]);
+  const added = await harness.send({
+    type: 'headerkit:rules:add',
+    draft: { domain: 'example.com', headerName: 'X-One', headerValue: 'one' },
+    profileId: 'default'
+  });
+  assert.equal(added.ok, true);
+  await new Promise(setImmediate);
+  assert.deepEqual(
+    texts.filter(({ tabId }) => tabId === 7),
+    [{ tabId: 7, text: '1' }]
+  );
+
+  // A reload reports its commit as `loading`, with no `url` in changeInfo.
+  texts.length = 0;
+  chrome.tabs.onUpdated.emit(7, { status: 'loading' }, tab);
+  await new Promise(setImmediate);
+  assert.deepEqual(texts, [{ tabId: 7, text: '1' }]);
+
+  texts.length = 0;
+  chrome.tabs.onUpdated.emit(7, { status: 'complete' }, tab);
+  await new Promise(setImmediate);
+  assert.deepEqual(texts, []);
 });
 
 test('worker cache avoids repeated reads and tracks committed writes and external changes', async (context) => {

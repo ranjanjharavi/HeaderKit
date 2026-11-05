@@ -5,8 +5,8 @@ import {
   areRulesConflicting,
   filterRulesByHost,
   filterRulesByProfile,
-  findActiveRuleConflict,
-  getActiveRuleConflicts,
+  findRuleConflict,
+  getRuleConflicts,
   getNextRuleId,
   getDisplayPathPrefix,
   groupRulesByDomain,
@@ -64,12 +64,16 @@ test('resource types normalize supported business scopes and reject unsupported 
 test('normalizeDomain accepts HTTPS hosts and rejects HTTP', () => {
   assert.equal(normalizeDomain('API.Example.com/path'), 'api.example.com');
   assert.equal(normalizeDomain('https://api.example.com:8443/path'), 'api.example.com');
+  assert.equal(normalizeDomain('https://user:secret@api.example.com/path'), 'api.example.com');
+  assert.equal(normalizeDomain('localhost:3000/path'), 'localhost');
   assert.equal(normalizeDomain('http://localhost:3000'), '');
 });
 
 test('normalizeDomain rejects unsupported protocols and empty values', () => {
   assert.equal(normalizeDomain('chrome://extensions'), '');
   assert.equal(normalizeDomain('file:///tmp/example'), '');
+  assert.equal(normalizeDomain('mailto:someone@example.com'), '');
+  assert.equal(normalizeDomain('someone@example.com'), '');
   assert.equal(normalizeDomain(''), '');
 });
 
@@ -310,7 +314,7 @@ test('header values retain horizontal tabs and Unicode with normal outer whitesp
   assert.deepEqual(normalizeRules([{ ...rule, headerValue: ' \t ' }]), []);
 });
 
-test('conflict scans exclude non-live rules before comparing pairs', () => {
+test('conflict scans read each rule enabled state once and only pair within a profile', () => {
   let checks = 0;
   const parkedRules = Array.from({ length: 40 }, () => ({
     ...sampleRules[0],
@@ -321,12 +325,12 @@ test('conflict scans exclude non-live rules before comparing pairs', () => {
     }
   }));
   const liveRules = [sampleRules[0], { ...sampleRules[0], id: 3, headerValue: 'different' }];
-  const conflicts = getActiveRuleConflicts([...parkedRules, ...liveRules]);
+  const conflicts = getRuleConflicts([...parkedRules, ...liveRules]);
   assert.deepEqual(conflicts, [{ leftRule: liveRules[0], rightRule: liveRules[1] }]);
   assert.equal(checks, parkedRules.length);
 });
 
-test('conflict detection finds different active values for the same header and host', () => {
+test('conflict detection finds different enabled values for the same header and host', () => {
   const conflictingRule = {
     id: 3,
     domain: 'api.example.com',
@@ -342,8 +346,8 @@ test('conflict detection finds different active values for the same header and h
   assert.equal(areRulesConflicting(matchingRule, conflictingRule), true);
   assert.equal(areRulesConflicting(sampleRules[0], sameValueRule), false);
   assert.equal(areRulesConflicting(sampleRules[0], pausedRule), false);
-  assert.equal(findActiveRuleConflict(conflictingRule, sampleRules)?.id, 1);
-  assert.deepEqual(getActiveRuleConflicts([sampleRules[0], conflictingRule]), [
+  assert.equal(findRuleConflict(conflictingRule, sampleRules)?.id, 1);
+  assert.deepEqual(getRuleConflicts([sampleRules[0], conflictingRule]), [
     {
       leftRule: sampleRules[0],
       rightRule: conflictingRule
@@ -393,11 +397,10 @@ test('normalizeRules assigns the default profile and repairs unknown ones', () =
 test('the same header with different values is allowed across profiles', () => {
   const stagingRule = { ...sampleRules[0], profileId: 'staging' };
   const prodRule = { ...sampleRules[0], id: 9, headerValue: 'different', profileId: 'prod' };
-  const activation = { masterEnabled: true, profileId: 'staging' };
 
-  assert.equal(areRulesConflicting(stagingRule, prodRule, activation), false);
-  assert.deepEqual(getActiveRuleConflicts([stagingRule, prodRule], activation), []);
-  assert.equal(findActiveRuleConflict(prodRule, [stagingRule], { activation }), null);
+  assert.equal(areRulesConflicting(stagingRule, prodRule), false);
+  assert.deepEqual(getRuleConflicts([stagingRule, prodRule]), []);
+  assert.equal(findRuleConflict(prodRule, [stagingRule]), null);
 });
 
 test('conflicts only occur when request scopes overlap', () => {
@@ -421,38 +424,26 @@ test('the same header can have different values in disjoint scopes', () => {
   assert.equal(validateRuleDraft({ ...adminRule, pathPrefix: '/api/v2' }, [apiRule]).ok, false);
 });
 
-test('conflicts inside the active profile are still caught', () => {
+test('conflicts inside a profile are caught whether or not it is the active one', () => {
   const stagingRule = { ...sampleRules[0], profileId: 'staging' };
   const clashingRule = { ...sampleRules[0], id: 9, headerValue: 'different', profileId: 'staging' };
-  const activation = { masterEnabled: true, profileId: 'staging' };
 
-  assert.equal(areRulesConflicting(stagingRule, clashingRule, activation), true);
-  assert.equal(findActiveRuleConflict(clashingRule, [stagingRule], { activation })?.id, 1);
-});
-
-test('a paused master switch means nothing conflicts', () => {
-  const clashingRule = { ...sampleRules[0], id: 9, headerValue: 'different' };
-  const activation = { masterEnabled: false, profileId: 'default' };
-
-  assert.deepEqual(getActiveRuleConflicts([sampleRules[0], clashingRule], activation), []);
+  assert.equal(areRulesConflicting(stagingRule, clashingRule), true);
+  assert.equal(findRuleConflict(clashingRule, [stagingRule])?.id, 1);
+  assert.deepEqual(getRuleConflicts([stagingRule, clashingRule]), [{ leftRule: stagingRule, rightRule: clashingRule }]);
+  assert.equal(
+    validateRuleDraft({ ...clashingRule, pathPrefix: '/api' }, [stagingRule], { profileId: 'staging' }).conflictId,
+    1
+  );
 });
 
 test('an identical rule in another profile is not a duplicate', () => {
   const stagingRules = [{ ...sampleRules[0], profileId: 'staging' }];
 
-  assert.equal(
-    validateRuleDraft(sampleRules[0], stagingRules, {
-      activation: { masterEnabled: true, profileId: 'prod' },
-      profileId: 'prod'
-    }).ok,
-    true
-  );
+  assert.equal(validateRuleDraft(sampleRules[0], stagingRules, { profileId: 'prod' }).ok, true);
 
   assert.equal(
-    validateRuleDraft(sampleRules[0], stagingRules, {
-      activation: { masterEnabled: true, profileId: 'staging' },
-      profileId: 'staging'
-    }).error,
+    validateRuleDraft(sampleRules[0], stagingRules, { profileId: 'staging' }).error,
     'A rule for that header and request scope already exists for this host in this profile.'
   );
 });

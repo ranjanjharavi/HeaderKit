@@ -126,14 +126,45 @@ test('update preparation preserves paused state and its profile unless a page ex
   assert.deepEqual({ rule, draft, context }, before);
 });
 
-test('resume preparation checks live conflicts but pausing never requests access', () => {
+test('add, update and resume reject conflicts even when nothing is live', () => {
+  const { workflows, calls } = setup();
+  const enabled = createRule();
+  const draft = { domain: enabled.domain, headerName: 'X-Test', headerValue: 'different', pathPrefix: '/api' };
+  const masterPaused = createContext({
+    rules: [enabled],
+    activation: { ...createDefaultActivation(), masterEnabled: false }
+  });
+  const parked = createContext({
+    rules: [enabled],
+    activation: { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' }
+  });
+  for (const context of [masterPaused, parked]) {
+    const added = workflows.prepareAdd(draft, context);
+    assert.equal(added.ok, false);
+    assert.equal(added.conflictId, 1);
+    assert.equal(added.field, 'headerValue');
+  }
+
+  const qaRule = createRule({ id: 2, profileId: 'qa', pathPrefix: '/api', headerValue: 'different' });
+  const moved = workflows.prepareUpdate(qaRule, draft, createContext({ rules: [enabled, qaRule] }), 'default');
+  assert.equal(moved.ok, false);
+  assert.equal(moved.conflictId, 1);
+
+  const paused = createRule({ id: 3, enabled: false, pathPrefix: '/api', headerValue: 'different' });
+  const resumed = workflows.prepareToggle(paused, { ...masterPaused, rules: [enabled, paused] });
+  assert.equal(resumed.ok, false);
+  assert.equal(resumed.conflictId, 1);
+  assert.deepEqual(calls, []);
+});
+
+test('resume preparation checks conflicts but pausing never requests access', () => {
   const { workflows, calls } = setup();
   const paused = createRule({ enabled: false, pathPrefix: '/api' });
   const active = createRule({ id: 2, headerValue: 'different' });
   const conflict = workflows.prepareToggle(paused, createContext({ rules: [paused, active] }));
   assert.equal(conflict.ok, false);
   assert.equal(conflict.conflictId, 2);
-  assert.match(conflict.error, /Conflicts with the active X-Test rule/);
+  assert.match(conflict.error, /Conflicts with the enabled X-Test rule/);
   assert.deepEqual(calls, []);
   const resume = workflows.prepareToggle(paused, createContext({ rules: [paused] }));
   assert.equal(resume.rule.enabled, true);

@@ -1,4 +1,4 @@
-import { requirePrivacyConsent } from '../shared/ui/privacy.js';
+import { requirePrivacyConsent, showStartupError } from '../shared/ui/privacy.js';
 import { bindRuleEvents, initializeRules } from './rules/controller.js';
 import { bindProfileEvents, activateProfile } from './profiles/controller.js';
 import { bindSiteAccessEvents } from './site-access/controller.js';
@@ -10,8 +10,7 @@ import { bindWorkspaceEvents, refreshFromStorage, renderWorkspace } from './work
 document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {
     console.error('Could not start the rule manager.', error);
-    const status = document.getElementById('privacyConsentStatus');
-    status.textContent = 'HeaderKit could not start. Reload this page and try again.';
+    showStartupError('HeaderKit could not start. Reload this page and try again.');
   });
 });
 

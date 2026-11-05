@@ -81,8 +81,8 @@ test('row models carry editing and reveal state without changing the supplied ru
   assert.equal(model.options.editing, true);
   assert.equal(model.options.revealed, true);
   assert.equal(model.options.editProfiles, profiles);
-  // Saved paused rules still disclose missing access, as before the extraction.
-  assert.equal(model.options.needsAccess, true);
+  // A paused rule isn't being applied anyway, and asks for access when it is resumed.
+  assert.equal(model.options.needsAccess, false);
   assert.deepEqual([...revealedRuleIds], [1]);
   assert.equal(current.enabled, false);
 });
@@ -92,6 +92,10 @@ test('unknown grants hide access warnings while known exact, broad and wildcard 
   assert.equal(createRuleRowModel(current).options.needsAccess, false);
   assert.equal(createRuleRowModel(current, { grantedOrigins: null }).options.needsAccess, false);
   assert.equal(createRuleRowModel(current, { grantedOrigins: new Set() }).options.needsAccess, true);
+  assert.equal(
+    createRuleRowModel({ ...current, enabled: false }, { grantedOrigins: new Set() }).options.needsAccess,
+    false
+  );
   for (const origin of ['https://api.example.com/*', 'https://*/*', 'https://*.example.com/*']) {
     assert.equal(createRuleRowModel(current, { grantedOrigins: new Set([origin]) }).options.needsAccess, false);
   }

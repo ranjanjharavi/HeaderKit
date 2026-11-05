@@ -1,13 +1,12 @@
 import { getCurrentTab } from '../shared/runtime/chrome-api.js';
 import { bindHeaderEvents, initializeHeaders } from './headers/controller.js';
-import { requirePrivacyConsent } from '../shared/ui/privacy.js';
+import { requirePrivacyConsent, showStartupError } from '../shared/ui/privacy.js';
 import { showStatus } from '../shared/ui/ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   start().catch((error) => {
     console.error('Could not start the popup.', error);
-    const status = document.getElementById('privacyConsentStatus');
-    status.textContent = 'HeaderKit could not start. Close the popup and try again.';
+    showStartupError('HeaderKit could not start. Close the popup and try again.');
   });
 });
 

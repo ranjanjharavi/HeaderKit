@@ -127,6 +127,15 @@ test('Unicode and encoded paths compile against serialized URLs without losing s
   );
 });
 
+test('an invalid request scope fails closed instead of matching more requests', () => {
+  for (const scope of [{ pathPrefix: '/a?b' }, { pathPrefix: '/../admin' }, { resourceType: 'bogus' }]) {
+    assert.throws(
+      () => buildDynamicRule({ ...sampleRule, ...scope }),
+      (error) => /invalid request scope/.test(error.message) && !error.message.includes(sampleRule.headerValue)
+    );
+  }
+});
+
 test('DNR path case sensitivity agrees with domain conflict detection', () => {
   const upperRule = { ...sampleRule, pathPrefix: '/API' };
   const lowerRule = { ...sampleRule, id: 3, pathPrefix: '/api', headerValue: 'different' };
@@ -165,13 +174,14 @@ for (const domain of ['localhost', '127.0.0.1', '[::1]', '[2001:db8::1]', 'xn--b
   });
 }
 
-test('resource-type normalization retains supported scopes and the existing compiler fallback', () => {
-  for (const resourceType of [undefined, null, '', 'all', ' ALL ', 'script']) {
+test('resource-type normalization retains supported scopes and rejects others', () => {
+  for (const resourceType of [undefined, null, '', 'all', ' ALL ']) {
     assert.deepEqual(buildDynamicRule({ ...sampleRule, resourceType }).condition.resourceTypes, allResourceTypes);
   }
   for (const resourceType of ['xmlhttprequest', ' XMLHTTPREQUEST ']) {
     assert.deepEqual(buildDynamicRule({ ...sampleRule, resourceType }).condition.resourceTypes, ['xmlhttprequest']);
   }
+  assert.throws(() => buildDynamicRule({ ...sampleRule, resourceType: 'script' }), /invalid request scope/);
   // Invalid write intents are still rejected by the domain, not accepted by this fallback.
   assert.equal(validateRuleDraft({ ...sampleRule, resourceType: 'script' }, []).field, 'resourceType');
 });

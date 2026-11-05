@@ -105,8 +105,7 @@ export async function toggleRule(id) {
         return;
       }
     }
-    const toggledRule = state.rules.find((rule) => rule.id === id);
-    showStatus('headerStatus', toggledRule?.enabled ? 'Rule resumed.' : 'Rule paused.', 'success');
+    showStatus('headerStatus', change.rule.enabled ? 'Rule resumed.' : 'Rule paused.', 'success');
   } catch (error) {
     console.error(error);
     showStatus('headerStatus', error.message || 'Could not toggle that rule.', 'error');

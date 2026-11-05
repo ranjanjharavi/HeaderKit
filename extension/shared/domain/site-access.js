@@ -1,13 +1,15 @@
-import { filterRulesByProfile, getRuleOriginPattern } from './rules.js';
+import { filterRulesByProfile, getRuleOriginPattern, isRuleEnabled } from './rules.js';
 
 const BROAD_ORIGIN_PATTERNS = new Set(['https://*/*', '<all_urls>']);
 
 /**
- * Every origin a profile needs in order to apply all of its rules.
+ * Every origin a profile needs in order to apply its enabled rules.
+ * Paused rules ask for access when they are resumed, so switching to an all-paused copy or import asks for nothing.
  */
 export function getProfileOrigins(rules, profileId) {
-  return [...new Set(filterRulesByProfile(rules, profileId).map((rule) => getRuleOriginPattern(rule)))].sort(
-    (left, right) => left.localeCompare(right)
+  const enabledRules = filterRulesByProfile(rules, profileId).filter(isRuleEnabled);
+  return [...new Set(enabledRules.map((rule) => getRuleOriginPattern(rule)))].sort((left, right) =>
+    left.localeCompare(right)
   );
 }
 

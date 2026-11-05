@@ -7,7 +7,7 @@ import {
 import { setActivationDuration, setMasterEnabled } from '../../shared/runtime/activation-api.js';
 import { getProfileName } from '../../shared/domain/profiles.js';
 
-import { showStatus } from '../../shared/ui/ui.js';
+import { keepControlFocus, showStatus } from '../../shared/ui/ui.js';
 import { state, getActivation } from '../state.js';
 
 let onChanged;
@@ -18,16 +18,23 @@ let durationPending = false;
 export function bindActivationEvents(callbacks) {
   onChanged = callbacks.onChanged;
   onResumeProfile = callbacks.onResumeProfile;
-  document.getElementById('masterSwitch').addEventListener('click', () => toggleMaster());
+  document.getElementById('masterSwitch').addEventListener('click', handleMasterSwitchClick);
   document.getElementById('resumeMasterBtn').addEventListener('click', resumeFromBanner);
   const durationPills = document.getElementById('durationPills');
   durationPills.addEventListener('change', handleDurationChange);
 }
 
+function handleMasterSwitchClick() {
+  return getActivationStatus(getActivation()) === 'parked' ? resumeFromBanner() : toggleMaster();
+}
+
 async function toggleMaster(forceOn = false) {
   const activation = getActivation();
   const nextEnabled = forceOn || !activation.masterEnabled;
-  const controls = [document.getElementById('masterSwitch'), document.getElementById('resumeMasterBtn')];
+  const masterSwitch = document.getElementById('masterSwitch');
+  const controls = [masterSwitch, document.getElementById('resumeMasterBtn')];
+  // The resume button hides once rules are live, so the switch takes over from it.
+  const restoreFocus = keepControlFocus(masterSwitch);
 
   controls.forEach((control) => {
     control.disabled = true;
@@ -44,6 +51,7 @@ async function toggleMaster(forceOn = false) {
     controls.forEach((control) => {
       control.disabled = false;
     });
+    restoreFocus();
   }
 }
 
@@ -52,14 +60,17 @@ export function renderMasterSwitch() {
   const status = getActivationStatus(activation);
   const masterSwitch = document.getElementById('masterSwitch');
 
-  masterSwitch.setAttribute('aria-checked', String(activation.masterEnabled));
-  masterSwitch.setAttribute(
-    'aria-label',
-    activation.masterEnabled ? 'Pause all header rules' : 'Resume all header rules'
-  );
-  document.getElementById('masterSwitchLabel').textContent = activation.masterEnabled ? 'On' : 'Paused';
+  // An expired timer leaves masterEnabled on with nothing applied, so show what is really happening.
+  const isLive = status === 'live';
+  masterSwitch.setAttribute('aria-checked', String(isLive));
+  masterSwitch.setAttribute('aria-label', isLive ? 'Pause all header rules' : 'Resume all header rules');
+  document.getElementById('masterSwitchLabel').textContent = isLive ? 'On' : 'Paused';
 
   const banner = document.getElementById('masterPausedBanner');
+  // Hiding the focused resume button would drop focus, so hand it to the switch first.
+  if (status === 'live' && banner.contains(document.activeElement)) {
+    masterSwitch.focus();
+  }
   banner.hidden = status === 'live';
   if (status !== 'live') {
     const parked = status === 'parked';

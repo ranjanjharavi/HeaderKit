@@ -1,10 +1,5 @@
 import { getTargetProfileId } from '../domain/activation.js';
-import {
-  findActiveRuleConflict,
-  getRuleConflictMessage,
-  getRuleOriginPattern,
-  validateRuleDraft
-} from '../domain/rules.js';
+import { findRuleConflict, getRuleConflictMessage, getRuleOriginPattern, validateRuleDraft } from '../domain/rules.js';
 import { isRuleGranted } from '../domain/site-access.js';
 import { requestOriginPermission } from './chrome-api.js';
 import { RULE_MESSAGE_ADD, RULE_MESSAGE_UPDATE, RULE_MESSAGE_SET_ENABLED, RULE_MESSAGE_DELETE } from './messages.js';
@@ -60,7 +55,7 @@ export function createRuleWorkflows({
 
 function prepareAdd(draft, { rules, activation, grantedOrigins }) {
   const profileId = getTargetProfileId(activation);
-  const validation = validateRuleDraft(draft, rules, { activation, profileId });
+  const validation = validateRuleDraft(draft, rules, { profileId });
   if (!validation.ok) {
     return validation;
   }
@@ -71,11 +66,10 @@ function prepareAdd(draft, { rules, activation, grantedOrigins }) {
   );
 }
 
-function prepareUpdate(rule, draft, { rules, activation, grantedOrigins }, profileId = rule.profileId) {
+function prepareUpdate(rule, draft, { rules, grantedOrigins }, profileId = rule.profileId) {
   const validation = validateRuleDraft(draft, rules, {
     excludeId: rule.id,
     enabled: rule.enabled,
-    activation,
     profileId
   });
   if (!validation.ok) {
@@ -88,13 +82,11 @@ function prepareUpdate(rule, draft, { rules, activation, grantedOrigins }, profi
   );
 }
 
-function prepareToggle(rule, { rules, activation, grantedOrigins }) {
+function prepareToggle(rule, { rules, grantedOrigins }) {
   const toggledRule = { ...rule, enabled: !rule.enabled };
-  if (toggledRule.enabled) {
-    const conflict = findActiveRuleConflict(toggledRule, rules, { excludeId: rule.id, activation });
-    if (conflict) {
-      return { ok: false, error: getRuleConflictMessage(conflict), conflictId: conflict.id };
-    }
+  const conflict = findRuleConflict(toggledRule, rules, { excludeId: rule.id });
+  if (conflict) {
+    return { ok: false, error: getRuleConflictMessage(conflict), conflictId: conflict.id };
   }
   return prepareChange(
     toggledRule,

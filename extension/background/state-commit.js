@@ -2,10 +2,17 @@ import {
   DEFAULT_PROFILE_ID,
   cloneRulesIntoProfile,
   createProfile,
+  getProfileName,
   validateProfileDraft
 } from '../shared/domain/profiles.js';
-import { getActiveRuleConflicts, getNextRuleId, getRuleConflictMessage } from '../shared/domain/rules.js';
-import { setActiveProfile, setActivationDuration, setMasterEnabled } from '../shared/domain/activation.js';
+import { getNextRuleId, getRuleConflicts } from '../shared/domain/rules.js';
+import {
+  getLiveRules,
+  getTargetProfileId,
+  setActiveProfile,
+  setActivationDuration,
+  setMasterEnabled
+} from '../shared/domain/activation.js';
 import {
   ACTIVATION_MESSAGE_SET_MASTER,
   ACTIVATION_MESSAGE_SET_PROFILE,
@@ -103,9 +110,9 @@ function getDurationOptions({ durationMs = null, untilBrowserClose = false }) {
 }
 
 export async function commitState(nextState, previousState, { applyState, storeState }) {
-  const [conflict] = getActiveRuleConflicts(nextState.rules, nextState.activation);
+  const [conflict] = getRuleConflicts(getLiveRules(nextState.rules, nextState.activation));
   if (conflict) {
-    throw new Error(getRuleConflictMessage(conflict.leftRule));
+    throw new Error(getLiveConflictMessage(conflict.leftRule, nextState, previousState));
   }
   await applyState(nextState);
   try {
@@ -119,4 +126,20 @@ export async function commitState(nextState, previousState, { applyState, storeS
     throw error;
   }
   return nextState;
+}
+
+/**
+ * Saves reject new conflicts, so this only catches rules saved before that check.
+ * The manager lists one profile at a time, so a blocked switch must explain how to reach the rules: a switch while paused is allowed because nothing goes live.
+ */
+function getLiveConflictMessage({ headerName, domain }, nextState, previousState) {
+  const conflict = `Two enabled ${headerName} rules for ${domain} conflict.`;
+  const { profileId } = nextState.activation;
+
+  if (profileId === getTargetProfileId(previousState.activation)) {
+    return `${conflict} Pause or change one of them, then try again.`;
+  }
+
+  const profileName = getProfileName(nextState.profiles, profileId);
+  return `Can't switch to ${profileName}. ${conflict} Pause all rules, switch to ${profileName}, then pause or change one of them.`;
 }

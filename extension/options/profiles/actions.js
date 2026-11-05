@@ -99,7 +99,8 @@ export function createProfileActions({
 
     await setProfile(id);
     await refreshState();
-    return { name: getProfileName(getState().profiles, id), granted };
+    const { profiles, activation: updatedActivation } = getState();
+    return { name: getProfileName(profiles, id), granted, paused: updatedActivation?.masterEnabled === false };
   }
 
   return { prepareSave, save, prepareDeletion, remove, activate };

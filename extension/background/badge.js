@@ -31,6 +31,7 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
   async function paintBadge(badge, tabId, job) {
     const target = tabId === null ? {} : { tabId };
     const previous = painted.get(tabId);
+    const navigation = navigations.get(tabId);
     if (tabId === null && badge.color && previous?.color !== badge.color) {
       await action.setBadgeBackgroundColor({ ...target, color: badge.color });
     }
@@ -40,7 +41,8 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
     if (previous?.text !== badge.text) {
       await action.setBadgeText({ ...target, text: badge.text });
     }
-    if (!job.cancelled) {
+    // A navigation during this paint may already have cleared the text again.
+    if (!job.cancelled && navigations.get(tabId) === navigation) {
       painted.set(tabId, badge);
     }
   }
@@ -136,6 +138,8 @@ export function createBadgeController({ getState, queryTabs, getTab, action, onE
   }
 
   function refreshTab(tabId, knownTab = null) {
+    // Chrome clears a tab's badge when a navigation commits, so the last paint no longer holds.
+    painted.delete(tabId);
     navigations.set(tabId, ++navigationVersion);
     return scheduleTab(tabId, knownTab);
   }

@@ -56,6 +56,154 @@ test('UI dispatch snapshots listeners and removes one-time handlers before calli
   assert.deepEqual(calls, ['first', 'first-finished', 'second', 'added']);
 });
 
+for (const [surface, bindActivation] of [
+  ['options', bindOptionsActivation],
+  ['popup', bindPopupActivation]
+]) {
+  test(`${surface} master switch keeps focus through its save`, async (t) => {
+    resetState();
+    const harness = createUiHarness(t, { holdCommit: true });
+    bindActivation({ onChanged() {}, onResumeProfile() {} });
+    const masterSwitch = harness.element('masterSwitch');
+    masterSwitch.focus();
+    const commit = masterSwitch.dispatch('click');
+    // Chrome drops focus from a disabled control after about a frame.
+    document.activeElement = document.body;
+    harness.releaseCommit();
+    await commit;
+    assert.equal(masterSwitch.disabled, false);
+    assert.equal(document.activeElement, masterSwitch);
+  });
+
+  test(`${surface} resume button keeps focus when the save is rejected`, async (t) => {
+    resetState();
+    const harness = createUiHarness(t, { holdCommit: true, failCommit: true });
+    bindActivation({ onChanged() {}, onResumeProfile() {} });
+    const resume = harness.element('resumeMasterBtn');
+    resume.focus();
+    const commit = resume.dispatch('click');
+    document.activeElement = document.body;
+    harness.releaseCommit();
+    await commit;
+    assert.equal(document.activeElement, resume);
+  });
+
+  for (const focusCleared of [true, false]) {
+    test(`${surface} master switch takes focus when the resume button hides, focus cleared: ${focusCleared}`, async (t) => {
+      resetState();
+      const harness = createUiHarness(t, { holdCommit: true });
+      bindActivation({ onChanged() {}, onResumeProfile() {} });
+      const resume = harness.element('resumeMasterBtn');
+      resume.focus();
+      const commit = resume.dispatch('click');
+      resume.checkVisibility = () => false;
+      resume.focus = () => {};
+      // Chrome can keep reporting a hidden control as active until it clears focus.
+      if (focusCleared) {
+        document.activeElement = document.body;
+      }
+      harness.releaseCommit();
+      await commit;
+      assert.equal(document.activeElement, harness.element('masterSwitch'));
+    });
+  }
+}
+
+for (const [surface, render] of [
+  ['options', renderOptionsSwitch],
+  ['popup', renderPopupSwitch]
+]) {
+  test(`${surface} a render that hides the focused resume button moves focus to the switch`, (t) => {
+    resetState();
+    const harness = createUiHarness(t);
+    const banner = harness.element('masterPausedBanner');
+    const resume = harness.element('resumeMasterBtn');
+    banner.contains = (node) => node === resume;
+    resume.focus();
+    render();
+    assert.equal(banner.hidden, true);
+    assert.equal(document.activeElement, harness.element('masterSwitch'));
+  });
+
+  test(`${surface} a render leaves focus alone when it is elsewhere or the banner stays`, (t) => {
+    resetState();
+    const harness = createUiHarness(t);
+    const banner = harness.element('masterPausedBanner');
+    const resume = harness.element('resumeMasterBtn');
+    banner.contains = (node) => node === resume;
+    const search = harness.element('ruleSearchInput');
+    search.focus();
+    render();
+    assert.equal(document.activeElement, search);
+
+    resume.focus();
+    const paused = { ...createDefaultActivation(), masterEnabled: false };
+    optionsState.activation = paused;
+    popupState.headers.activation = paused;
+    render();
+    assert.equal(banner.hidden, false);
+    assert.equal(document.activeElement, resume);
+  });
+}
+
+test('options resuming an expired timer moves focus to the master switch', async (t) => {
+  resetState();
+  optionsState.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' };
+  const harness = createUiHarness(t);
+  const banner = harness.element('masterPausedBanner');
+  const resume = harness.element('resumeMasterBtn');
+  banner.contains = (node) => node === resume;
+  const resumed = [];
+  bindOptionsActivation({
+    onChanged() {},
+    async onResumeProfile(profileId) {
+      resumed.push(profileId);
+      optionsState.activation = createDefaultActivation();
+      renderOptionsSwitch();
+    }
+  });
+  resume.focus();
+  await resume.dispatch('click');
+  assert.deepEqual(resumed, ['default']);
+  assert.equal(document.activeElement, harness.element('masterSwitch'));
+});
+
+for (const [surface, render, setActivation] of [
+  ['options', renderOptionsSwitch, (activation) => (optionsState.activation = activation)],
+  ['popup', renderPopupSwitch, (activation) => (popupState.headers.activation = activation)]
+]) {
+  test(`${surface} switch does not read On after a timer expired`, (t) => {
+    resetState();
+    const harness = createUiHarness(t);
+    setActivation({ ...createDefaultActivation(), profileId: null, lastProfileId: 'default' });
+    render();
+    assert.equal(harness.element('masterSwitch').getAttribute('aria-checked'), 'false');
+    assert.equal(harness.element('masterSwitch').getAttribute('aria-label'), 'Resume all header rules');
+    assert.equal(harness.element('masterSwitchLabel').textContent, 'Paused');
+    assert.equal(harness.element('masterPausedBanner').hidden, false);
+  });
+}
+
+test('popup switch resumes rather than pauses after a timer expired', async (t) => {
+  resetState();
+  popupState.headers.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' };
+  const harness = createUiHarness(t);
+  bindPopupActivation({ onChanged() {} });
+  await harness.element('masterSwitch').dispatch('click');
+  assert.deepEqual(harness.requests, [{ type: 'headerkit:activation:set-master', enabled: true }]);
+});
+
+test('options switch resumes through the profile path after a timer expired', async (t) => {
+  resetState();
+  optionsState.activation = { ...createDefaultActivation(), profileId: null, lastProfileId: 'default' };
+  const harness = createUiHarness(t);
+  const resumed = [];
+  bindOptionsActivation({ onChanged() {}, onResumeProfile: async (profileId) => resumed.push(profileId) });
+  await harness.element('masterSwitch').dispatch('click');
+  assert.deepEqual(resumed, ['default']);
+  assert.deepEqual(harness.requests, []);
+});
+
 test('options pause commits activation and leaves saved rule flags intact', async (t) => {
   resetState();
   const harness = createUiHarness(t);

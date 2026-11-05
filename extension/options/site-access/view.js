@@ -1,6 +1,6 @@
 import { getProfileName } from '../../shared/domain/profiles.js';
 import { filterOriginGrants, getRulesForOriginGrant, isBroadOrigin } from '../../shared/domain/site-access.js';
-import { escapeHtml, showStatus } from '../../shared/ui/ui.js';
+import { clearStatus, escapeHtml, showStatus } from '../../shared/ui/ui.js';
 import { state } from '../state.js';
 
 const revokingOrigins = new Set();
@@ -173,10 +173,7 @@ export function renderLoading() {
 }
 
 export function clearSiteAccessStatus() {
-  const status = document.getElementById('siteAccessStatus');
-  status.textContent = '';
-  status.classList.remove('visible', 'success', 'error');
-  globalThis.clearTimeout(status._statusTimer);
+  clearStatus('siteAccessStatus');
 }
 
 export function renderLoadError() {

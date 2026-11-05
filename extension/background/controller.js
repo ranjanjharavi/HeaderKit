@@ -1,5 +1,5 @@
 import { mergeBackup, parseBackup, serializeBackup } from '../shared/domain/backup.js';
-import { setMasterEnabled } from '../shared/domain/activation.js';
+import { getActivationStatus, setMasterEnabled } from '../shared/domain/activation.js';
 import { getRuleOriginPattern } from '../shared/domain/rules.js';
 import { STATE_MESSAGE_GET } from '../shared/runtime/messages.js';
 import { applyRuleIntent, commitRuleSet } from './rule-commit.js';
@@ -77,7 +77,7 @@ export function createWorkerController({
 
   async function toggleMasterSwitch() {
     const state = await stateStore.load();
-    const activation = setMasterEnabled(state.activation, !state.activation.masterEnabled);
+    const activation = setMasterEnabled(state.activation, getActivationStatus(state.activation) !== 'live');
     await persistState({ ...state, activation }, state);
   }
 

@@ -96,7 +96,7 @@ test('parked-profile display uses the last selected profile and unknown grants d
   assert.equal(getPopupRuleViewModel(snapshot).addRuleDisabled, true);
 });
 
-test('popup row and group conflict metadata is prepared consistently for the active profile', () => {
+test('popup row and group conflict metadata is prepared consistently for the shown profile', () => {
   const snapshot = ruleSnapshot();
   const first = snapshot.rules[0];
   snapshot.rules.push({ ...first, id: 11, headerValue: 'different', pathPrefix: '/api' });
@@ -115,7 +115,11 @@ test('popup row and group conflict metadata is prepared consistently for the act
     ...snapshot,
     activation: { ...createDefaultActivation(), masterEnabled: false }
   });
-  assert.ok(paused.rows.every(({ options }) => options.conflictingRules.length === 0));
+  assert.deepEqual(
+    paused.rows[0].options.conflictingRules.map((rule) => rule.id),
+    [11],
+    'a conflict stays visible while paused so it can be fixed'
+  );
 });
 
 test('empty popup rule models retain explicit counts and flags for rendering', () => {

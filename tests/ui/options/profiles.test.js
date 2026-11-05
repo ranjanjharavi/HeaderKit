@@ -6,6 +6,7 @@ import { state } from '../../../extension/options/state.js';
 import { createDefaultActivation, getTargetProfileId } from '../../../extension/shared/domain/activation.js';
 import { applyProfileIntent, applyActivationIntent } from '../../../extension/background/state-commit.js';
 import { createBackupFixture } from '../../helpers/backup.js';
+import { showStatus } from '../../../extension/shared/ui/ui.js';
 import { createUiHarness } from '../../helpers/ui-harness.js';
 
 async function setup(t) {
@@ -80,6 +81,11 @@ async function setup(t) {
   renderProfiles();
   await harness.element('manageProfilesBtn').dispatch('click');
   return { ...harness, messages, calls, actionButton, tabs, getStored: () => stored };
+}
+
+// The QA fixture's only host without site access belongs to this paused rule.
+function enableStagingRule() {
+  state.rules = state.rules.map((rule) => (rule.domain === 'staging.example.com' ? { ...rule, enabled: true } : rule));
 }
 
 async function flush() {
@@ -218,6 +224,7 @@ test('profile deletion waits for product confirmation and never deletes Default'
 
 test('profile activation requests missing access in the click task before reading grants or committing', async (t) => {
   const harness = await setup(t);
+  enableStagingRule();
   const activating = activateProfile('qa');
   assert.deepEqual(harness.calls, ['request']);
   await activating;
@@ -230,9 +237,52 @@ test('profile activation requests missing access in the click task before readin
   assert.deepEqual(harness.calls, []);
 });
 
+for (const declined of [false, true]) {
+  test(`switching while paused does not claim the profile is active, access declined: ${declined}`, async (t) => {
+    const harness = await setup(t);
+    await new Promise((resolve) =>
+      chrome.runtime.sendMessage({ type: 'headerkit:activation:set-master', enabled: false }, resolve)
+    );
+    state.activation = harness.getStored().activation;
+    if (declined) {
+      enableStagingRule();
+      chrome.permissions.request = (_details, callback) => callback(false);
+    }
+    await activateProfile('qa');
+    assert.equal(state.activation.profileId, 'qa');
+    const status = harness.element('activeSetupStatus');
+    assert.equal(
+      status.textContent,
+      declined
+        ? 'QA is selected. Rules stay paused, and some still need site access.'
+        : 'QA is selected. Rules stay paused until you resume them.'
+    );
+    assert.equal(status.classList.contains('error'), declined);
+  });
+}
+
+test('opening the profile manager clears a message left from last time', async (t) => {
+  const harness = await setup(t);
+  showStatus('profileStatus', 'Could not delete that profile.', 'error');
+  await harness.element('manageProfilesBtn').dispatch('click');
+  assert.equal(harness.element('profileStatus').textContent, '');
+  assert.equal(harness.element('profileStatus').classList.contains('visible'), false);
+});
+
+test('switching to an all-paused profile requests no access and reports no missing access', async (t) => {
+  const harness = await setup(t);
+  state.rules = state.rules.map((rule) => ({ ...rule, enabled: false }));
+  await activateProfile('qa');
+  assert.equal(harness.calls.includes('request'), false);
+  assert.equal(state.activation.profileId, 'qa');
+  assert.equal(harness.element('activeSetupStatus').textContent, 'QA is now active.');
+  assert.equal(harness.element('activeSetupStatus').classList.contains('error'), false);
+});
+
 for (const failure of ['denied', 'error']) {
   test(`a ${failure} permission request still activates the profile and reports incomplete access`, async (t) => {
     const harness = await setup(t);
+    enableStagingRule();
     chrome.permissions.request = (_details, callback) => {
       harness.calls.push('request');
       if (failure === 'error') chrome.runtime.lastError = { message: 'Permission surface closed' };
