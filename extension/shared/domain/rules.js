@@ -187,6 +187,10 @@ export function normalizeDomain(value) {
   }
 
   const parsed = new URL(candidate);
+  // Without a scheme, `mailto:someone@example.com` parses as credentials for example.com.
+  if (!hadHttpsProtocol && (parsed.username || parsed.password)) {
+    return '';
+  }
   return parsed.hostname && parsed.protocol === 'https:' ? parsed.hostname.toLowerCase() : '';
 }
 
@@ -323,7 +327,7 @@ export function getRuleConflicts(rules) {
 }
 
 /**
- * Only one profile applies at a time, so rules conflict when they are enabled in the same profile. 
+ * Only one profile applies at a time, so rules conflict when they are enabled in the same profile.
  * Pausing everything or parking the profile does not resolve a conflict, because it comes back as soon as that profile goes live.
  */
 export function areRulesConflicting(leftRule, rightRule) {

@@ -64,12 +64,16 @@ test('resource types normalize supported business scopes and reject unsupported 
 test('normalizeDomain accepts HTTPS hosts and rejects HTTP', () => {
   assert.equal(normalizeDomain('API.Example.com/path'), 'api.example.com');
   assert.equal(normalizeDomain('https://api.example.com:8443/path'), 'api.example.com');
+  assert.equal(normalizeDomain('https://user:secret@api.example.com/path'), 'api.example.com');
+  assert.equal(normalizeDomain('localhost:3000/path'), 'localhost');
   assert.equal(normalizeDomain('http://localhost:3000'), '');
 });
 
 test('normalizeDomain rejects unsupported protocols and empty values', () => {
   assert.equal(normalizeDomain('chrome://extensions'), '');
   assert.equal(normalizeDomain('file:///tmp/example'), '');
+  assert.equal(normalizeDomain('mailto:someone@example.com'), '');
+  assert.equal(normalizeDomain('someone@example.com'), '');
   assert.equal(normalizeDomain(''), '');
 });
 

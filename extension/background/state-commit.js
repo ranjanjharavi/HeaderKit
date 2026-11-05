@@ -139,7 +139,7 @@ function getLiveConflictMessage({ headerName, domain }, nextState, previousState
   if (profileId === getTargetProfileId(previousState.activation)) {
     return `${conflict} Pause or change one of them, then try again.`;
   }
-  
+
   const profileName = getProfileName(nextState.profiles, profileId);
   return `Can't switch to ${profileName}. ${conflict} Pause all rules, switch to ${profileName}, then pause or change one of them.`;
 }
